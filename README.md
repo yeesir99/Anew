@@ -1,76 +1,70 @@
-# Anew — A股每日量化研究与风险监测
+# Anew — A股每日量化研究与风险监测（免 Token 数据源版）
 
-面向 A 股的每日收盘数据采集、全球财经新闻与交易所公告整理、技术分析、市场热点/异动扫描、量化指标和风险提示。通过 GitHub Actions 自动运行，报告以 Markdown 保存到 `reports/`，结构化数据保存到 `data/`。
+面向 A 股的每日收盘数据采集、全球财经新闻与公告整理、技术分析、市场异动扫描和风险提示。通过 GitHub Actions 自动运行，报告以 Markdown 保存到 `reports/`，数据保存到 `data/`。
 
-> 本项目是研究与信息整理工具，不构成投资建议。指标和规则信号不代表收益承诺；使用者应独立核验数据、公告和交易规则。
+> 本项目是研究工具，不构成投资建议。免费公开接口可能限流、变更或短暂不可用；关键行情与公告应交叉核验。
 
-## 当前版本能力
+## 免费数据源
 
-- Tushare Pro：交易日历、股票基础资料、A 股日线行情；尝试获取每日基本面指标（接口权限不足时会记录告警并继续）。
-- GDELT DOC：全球财经相关新闻检索。
-- Tushare `anns_d`：在账号权限允许时获取公告索引；公告原文应以巨潮资讯/交易所披露页面为准。
-- 技术指标：收益率、均线、RSI、MACD、成交额变化、波动率、区间高低点。
-- 市场扫描：涨跌幅榜、成交额榜、放量异动、行业/概念字段（源数据提供时）。
-- 风险规则：大幅波动、放量下跌、价格偏离均线、数据缺失等提示。
-- 可选 OpenAI API：生成中文新闻与行情解读；未配置时仍生成规则化报告。
+- **A股全市场日终快照**：AKShare 调用东方财富公开行情接口，无需 Tushare Token。覆盖全市场快照字段（价格、涨跌幅、成交量/额、换手率、量比等）。
+- **技术指标历史数据**：对成交额排名靠前的股票调用 AKShare 历史日线接口，计算 MA5/10/20/60、RSI14、MACD、20日年化波动率。默认前 300 只，避免对免费端点发起数千次请求。
+- **全球财经新闻**：GDELT DOC API，无需 API Key。
+- **公告索引**：AKShare 公告接口尽力采集；接口不可用时会记录告警。公告原文请以巨潮资讯和交易所披露页面为准。
 
-## 初始化配置
+## 免 Token 运行
 
-在 GitHub 仓库 **Settings → Secrets and variables → Actions → New repository secret** 添加：
+行情、新闻和公告采集不需要 Tushare Token，也不需要设置任何行情 API Key。
 
-| Secret | 必需 | 用途 |
-|---|---:|---|
-| `TUSHARE_TOKEN` | 是 | A 股行情与交易日历 |
-| `OPENAI_API_KEY` | 否 | AI 解读（未配置则跳过） |
-| `OPENAI_MODEL` | 否 | 模型名；默认 `gpt-4.1-mini` |
+可选配置 AI 解读：
+- GitHub **Settings → Secrets and variables → Actions → New repository secret** 添加 `OPENAI_API_KEY`。
+- 可在 Actions Variables 添加 `OPENAI_MODEL`（默认 `gpt-4.1-mini`）。
+- 不配置 AI Key 时仍生成规则化量化报告。
 
-Tushare 不同接口有积分/权限要求。若 `daily_basic` 或 `anns_d` 无权限，程序会给出提示；请在 Tushare 账户开通相应权限。不要把 Token 写入代码、提交到仓库或放入普通变量。
+## 技术指标覆盖范围
+
+全市场快照用于市场宽度、涨跌幅、成交额榜和单日异动分析。历史均线、RSI、MACD 等技术指标默认只对成交额排名前 300 的股票计算；其余股票的历史技术字段为空，不会伪造信号。
+
+可通过 workflow 环境变量 `MAX_HISTORY_STOCKS` 调整：
+- `300`：默认，较适合免费接口及 Actions 运行时长。
+- `0`：尝试覆盖全部股票，耗时较长，可能触发数据源限流。
+- `HISTORY_WORKERS`：并发数，默认 4；不建议大幅提高。
 
 ## 自动运行时间（北京时间）
 
-- **收盘采集**：工作日 19:30（UTC 11:30），自动检查交易日历，非交易日跳过。
-- **早间报告**：每天 08:10（UTC 00:10），读取最近一次收盘数据并生成晨报。
-
-GitHub Actions 的 cron 使用 UTC。定时任务可能因 GitHub Actions 排队而延迟。首次配置后可在 Actions 页面手动运行 workflow 验证。
+- 收盘采集：工作日 19:30（UTC 11:30），交易日历检查后执行。
+- 早间报告：每天 08:10（UTC 00:10），读取最近一次收盘数据。
+- GitHub Actions 可能排队延迟；可在 Actions 页面手动运行 workflow。
 
 ## 本地运行
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-export TUSHARE_TOKEN="你的token"
 python -m src.main close
 python -m src.main morning
 ```
 
-## 报告与数据
+## 数据与报告
 
-- `data/latest_market.csv`：最近一次成功采集的日线行情。
-- `data/latest_news.json`：新闻条目。
-- `data/latest_announcements.json`：公告索引（可能为空，取决于权限）。
-- `reports/YYYY-MM-DD-close.md`：收盘分析。
+- `data/latest_market.csv`：最近一次行情快照。
+- `data/latest_news.json`：全球财经新闻。
+- `data/latest_announcements.json`：公告索引（可能为空）。
+- `reports/YYYY-MM-DD-close.md`：收盘报告。
 - `reports/YYYY-MM-DD-morning.md`：晨报。
 
-Workflow 会把数据与报告提交回 `main`，便于下一次运行读取。请注意这些提交会使仓库持续增长；后续可迁移到对象存储或数据库。
+## 限制与风险
 
-## 数据口径与限制
+1. AKShare 是数据接口封装库，底层依赖东方财富等公开网页/API；免费服务没有生产级 SLA，接口可能改版、限流或在 GitHub Actions 云环境不可用。
+2. 行情快照的“最新交易日”应由接口返回时间及市场状态核验；若在非交易时段/节假日运行，不应将旧快照误认为当天行情。
+3. 历史技术指标默认只覆盖成交额前 300 只，不能把该子集的指标覆盖率理解为全市场覆盖。
+4. 免费公告接口可用性不保证；公告原文以巨潮资讯（CNINFO）及上交所、深交所、北交所官网为准。
+5. GDELT 英文新闻覆盖面不等于完整全球财经新闻数据库，新闻结论应阅读原文核验。
+6. 本系统不发交易指令、不自动下单；指标和风险规则仅供研究。
 
-1. 日线数据以 Tushare 返回为准，交易日历决定是否采集。Tushare 行情通常在收盘后延迟入库，19:30 是预留缓冲时间，不保证数据源准时完成。
-2. GDELT 新闻覆盖面和语言质量不均；搜索结果不是完整新闻数据库，需阅读原文核验。
-3. 公告索引依赖 Tushare 权限；公告内容应跳转巨潮资讯或交易所官网核对。本项目不绕过登录、验证码或付费权限。
-4. 技术指标基于日线历史数据；当前版本不做盘中实时行情、不发交易指令，也不自动下单。
-5. 行业/概念聚合取决于源数据字段可用性；没有可靠分类字段时不会伪造行业结论。
+## 参考资料
 
-## 项目结构
+- AKShare 文档：https://akshare.akfamily.xyz/
+- BaoStock 文档（可作为后续历史行情备选）：https://www.baostock.com/
+- GDELT DOC API：https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
 
-```
-.github/workflows/       定时任务
-src/
-  collectors/            行情、新闻、公告采集
-  processors/            指标、扫描与风险规则
-  reports/               报告生成
-  main.py                命令入口
-data/                    持久化数据
-reports/                 Markdown 报告
-```
