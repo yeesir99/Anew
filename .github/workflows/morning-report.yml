@@ -30,7 +30,6 @@ jobs:
         run: pip install -r requirements.txt
       - name: Generate morning report
         env:
-          TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
         run: python -m src.main morning
