@@ -3,15 +3,14 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 
 from .collectors import (collect_announcements, collect_market, collect_news,
-                         is_open_day, tushare_pro, write_json)
+                         is_open_day, write_json)
 from .reporting import render_report
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,16 +27,15 @@ def setup() -> None:
 
 def close_run() -> None:
     day = date.today()
-    pro = tushare_pro()
-    if not is_open_day(pro, day):
+    if not is_open_day(day):
         LOG.info("%s 非上交所交易日，跳过收盘采集。", day)
         return
-    LOG.info("开始采集 %s A股日线数据", day)
-    market = collect_market(pro, day)
+    LOG.info("开始采集 %s A股收盘数据（免费数据源）", day)
+    market = collect_market(day)
     if market.empty:
         raise RuntimeError("行情数据为空，停止生成报告以避免误报。")
     news = collect_news()
-    announcements = collect_announcements(pro, day)
+    announcements = collect_announcements(day)
     market.to_csv(DATA / "latest_market.csv", index=False, encoding="utf-8-sig")
     market.to_csv(DATA / f"market_{day.isoformat()}.csv", index=False, encoding="utf-8-sig")
     write_json(str(DATA / "latest_news.json"), news)
@@ -69,10 +67,7 @@ def main() -> None:
     setup()
     if len(sys.argv) != 2 or sys.argv[1] not in {"close", "morning"}:
         raise SystemExit("用法：python -m src.main close|morning")
-    if sys.argv[1] == "close":
-        close_run()
-    else:
-        morning_run()
+    close_run() if sys.argv[1] == "close" else morning_run()
 
 
 if __name__ == "__main__":
