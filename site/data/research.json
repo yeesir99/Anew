@@ -1,6 +1,6 @@
 {
   "privacy": "public_research_only",
-  "generated_at": "2026-11-20T16:51:49+00:00",
+  "generated_at": "2026-11-20T17:05:20+00:00",
   "market_status": "validated",
   "sections": {
     "overview": {
@@ -12263,7 +12263,189 @@
       "note": "份额变化按相同代码、交易所和来源口径比较；份额变化不等于机构净买入。"
     },
     "external-market-data": {
-      "leaders": []
+      "leaders": [
+        {
+          "ticker": "300308",
+          "name": "中际旭创",
+          "change_pct": -3.722,
+          "amount": 14940766555.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": 0.8287
+        },
+        {
+          "ticker": "300502",
+          "name": "新易盛",
+          "change_pct": -1.233,
+          "amount": 14741024147.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": 1.0169
+        },
+        {
+          "ticker": "300750",
+          "name": "宁德时代",
+          "change_pct": -2.899,
+          "amount": 10455465952.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": 1.2672
+        },
+        {
+          "ticker": "601899",
+          "name": "紫金矿业",
+          "change_pct": -0.628,
+          "amount": 10188133129.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": 1.3936
+        },
+        {
+          "ticker": "600519",
+          "name": "贵州茅台",
+          "change_pct": 1.749,
+          "amount": 9796311852.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": 1.5646
+        },
+        {
+          "ticker": "688825",
+          "name": "长鑫科技",
+          "change_pct": -6.24,
+          "amount": 9717083220.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "688256",
+          "name": "寒武纪",
+          "change_pct": -1.499,
+          "amount": 9471877907.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "688981",
+          "name": "中芯国际",
+          "change_pct": 2.626,
+          "amount": 8827798486.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "002384",
+          "name": "东山精密",
+          "change_pct": -5.718,
+          "amount": 7539580046.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "688347",
+          "name": "华虹宏力",
+          "change_pct": -5.169,
+          "amount": 6750311752.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "688012",
+          "name": "中微公司",
+          "change_pct": 1.949,
+          "amount": 6633553000.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "600036",
+          "name": "招商银行",
+          "change_pct": 1.57,
+          "amount": 6583134882.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "002463",
+          "name": "沪电股份",
+          "change_pct": -0.962,
+          "amount": 6483530484.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "601318",
+          "name": "中国平安",
+          "change_pct": 1.464,
+          "amount": 6456398114.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "688041",
+          "name": "海光信息",
+          "change_pct": -8.75,
+          "amount": 6244450170.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "600900",
+          "name": "长江电力",
+          "change_pct": 2.396,
+          "amount": 6052738365.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "002371",
+          "name": "北方华创",
+          "change_pct": -2.199,
+          "amount": 5881075244.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "603986",
+          "name": "兆易创新",
+          "change_pct": -5.909,
+          "amount": 5777651418.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "603259",
+          "name": "药明康德",
+          "change_pct": -2.486,
+          "amount": 5719792047.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        },
+        {
+          "ticker": "600410",
+          "name": "华胜天成",
+          "change_pct": 3.713,
+          "amount": 5370209068.0,
+          "main_net_inflow": null,
+          "turnover_rate": null,
+          "volume_ratio": null
+        }
+      ],
+      "note": "按全市场成交额排序；成交额表示交易活跃度，不代表资金净流入。"
     },
     "data-sources": {
       "items": [
@@ -12294,9 +12476,8 @@
         },
         {
           "source": "etf_shares_sse",
-          "status": "success",
-          "records": 927,
-          "detail": "交易所公开份额数据；份额变化不等于机构净买入"
+          "status": "failed",
+          "detail": "Expecting value: line 1 column 1 (char 0)"
         },
         {
           "source": "etf_shares_szse",
@@ -12311,14 +12492,14 @@
       "minimum_sessions": 10,
       "sessions": 7,
       "industry_count": 1053,
-      "generated_at": "2026-11-20T16:51:49+00:00"
+      "generated_at": "2026-11-20T17:05:20+00:00"
     },
     "reports": {
       "items": [
         {
           "trade_date": "2026-11-20",
           "title": "12栏目公开研究日报",
-          "markdown": "# A-Share Alpha Radar｜12栏目公开研究日报\n\n> 交易日：2026-11-20；生成时间：2026-11-20T16:51:49+00:00；状态：validated\n\n## 1. 市场广度与风险偏好\n交易日 2026-11-20；覆盖 5576 只；上涨 313、下跌 5235；涨跌幅中位数 -5.0755%。\n\n## 2. 行业强弱排名\n行业数据日 2026-11-17；集成电路制造 5.82%；橡胶助剂 3.32%；厨房小家电 3.2%；半导体材料 2.67%；钼 2.38%；医疗器械 1.86%；辅助生殖 1.84%；商业服务 0.7%；烟草与大麻 0.3%；个护用品Ⅲ 0.17%\n\n## 3. 主线候选与证据覆盖\n仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。\n\n## 4. 行业轮动（5/10/20日）\n5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。\n\n## 5. 公开资金流估算\n本日记录 84 条；仅为公开主力资金估算，非机构账户数据。\n\n## 6. ETF份额变化\n本日份额快照 927 条；只有存在上一交易日同口径记录时才计算变化率。\n\n## 7. 宽基指数与宏观环境\n当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。\n\n## 8. 个股活跃度与异动\n成交活跃榜按全市场成交额排序；成交额表示交易活动，不表示净流入。\n\n## 9. 技术结构与趋势\n当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。\n\n## 10. 公告、政策与事件\n公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。\n\n## 11. 盈利、估值与基本面\n尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。\n\n## 12. 风险、数据质量与行动清单\n数据状态：validated；数据日：2026-11-20；行情上游可能延迟或限流。该报告仅作研究辅助，不构成投资建议。\n\n## 数据口径与限制\n- 行业历史从本次云端持久化启用后逐日累积；NAS 已退役，不存在可恢复的 NAS 历史库。\n- 主力资金为公开市场估算，ETF份额变化不是机构净买入；成交额不是净流入。\n- 主线、机构持仓、订单簿、授权一致预期等缺失数据不会用推断值填充。\n- 公开站点只包含公开市场数据，不读取个人持仓、成本、账户或私人证据。\n",
+          "markdown": "# A-Share Alpha Radar｜12栏目公开研究日报\n\n> 交易日：2026-11-20；生成时间：2026-11-20T17:05:20+00:00；状态：validated\n\n## 1. 市场广度与风险偏好\n交易日 2026-11-20；覆盖 5576 只；上涨 313、下跌 5235；涨跌幅中位数 -5.0755%。\n\n## 2. 行业强弱排名\n行业数据日 2026-11-17；集成电路制造 5.82%；橡胶助剂 3.32%；厨房小家电 3.2%；半导体材料 2.67%；钼 2.38%；医疗器械 1.86%；辅助生殖 1.84%；商业服务 0.7%；烟草与大麻 0.3%；个护用品Ⅲ 0.17%\n\n## 3. 主线候选与证据覆盖\n仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。\n\n## 4. 行业轮动（5/10/20日）\n5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。\n\n## 5. 公开资金流估算\n本日记录 84 条；仅为公开主力资金估算，非机构账户数据。\n\n## 6. ETF份额变化\n本日份额快照 927 条；只有存在上一交易日同口径记录时才计算变化率。\n\n## 7. 宽基指数与宏观环境\n当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。\n\n## 8. 个股活跃度与异动\n有效成交活跃榜 20 只，按全市场成交额排序；成交额表示交易活动，不表示净流入。\n\n## 9. 技术结构与趋势\n当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。\n\n## 10. 公告、政策与事件\n公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。\n\n## 11. 盈利、估值与基本面\n尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。\n\n## 12. 风险、数据质量与行动清单\n数据状态：validated；数据日：2026-11-20；行情上游可能延迟或限流。该报告仅作研究辅助，不构成投资建议。\n\n## 数据口径与限制\n- 行业历史从本次云端持久化启用后逐日累积；NAS 已退役，不存在可恢复的 NAS 历史库。\n- 主力资金为公开市场估算，ETF份额变化不是机构净买入；成交额不是净流入。\n- 主线、机构持仓、订单簿、授权一致预期等缺失数据不会用推断值填充。\n- 公开站点只包含公开市场数据，不读取个人持仓、成本、账户或私人证据。\n",
           "data_status": "validated"
         }
       ],
@@ -12334,7 +12515,7 @@
   "notes": [
     "本公开快照不包含个人持仓、成本、账户、私人笔记或证据台账。",
     "行业主线、行业轮动、机构资金和完整12栏目报告尚未通过独立数据源及隐私审查，故不伪造结果。",
-    "行业/资金/ETF模块只有当日采集成功且通过日期检查时才更新。",
+    "行业/资金/ETF模块仅在来源、日期和字段校验通过后更新；实时接口失败时保留明确的历史/缺失状态。",
     "行业轮动和回测需要持续积累的同口径历史数据；新云端历史从迁移后开始。"
   ]
 }
