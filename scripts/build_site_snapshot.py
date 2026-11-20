@@ -43,9 +43,13 @@ def main() -> None:
         OUT.mkdir(parents=True, exist_ok=True)
         (OUT / "latest.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         breadth = snapshot["market_breadth"]
+        coverage = snapshot["coverage"]
+        ui_breadth = {**breadth, "up": coverage["up"], "down": coverage["down"],
+                      "flat": coverage["unchanged"], "total": count,
+                      "turnover": breadth.get("aggregate_turnover_cny")}
         sections = {
-            "overview": {"count": count, "up": breadth["up"], "down": breadth["down"]},
-            "market-breadth": {"item": {"trade_date": snapshot["trade_date"], "payload": breadth}},
+            "overview": {"count": count, "up": coverage["up"], "down": coverage["down"]},
+            "market-breadth": {"item": {"trade_date": snapshot["trade_date"], "payload": ui_breadth}},
             "industries": {"items": []}, "themes": {"items": []}, "rotation": {"items": []},
             "capital-flows": {"items": []}, "etf-shares": {"items": []},
             "external-market-data": {"leaders": []},
