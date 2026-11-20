@@ -140,8 +140,14 @@ def collect_market(day: date) -> pd.DataFrame:
                 failures += 1
                 if failures <= 5:
                     LOG.warning("个股历史K线获取失败：%s", exc)
+    if not histories:
+        raise RuntimeError("无法从历史K线接口独立核验本次行情日期；拒绝将未核验的现货快照标记为当日数据。")
+    history = pd.concat(histories, ignore_index=True)
+    observed_dates = pd.to_datetime(history["trade_date"], format="%Y%m%d", errors="coerce").dropna()
+    if observed_dates.empty or observed_dates.max().date() != day:
+        observed = observed_dates.max().date().isoformat() if not observed_dates.empty else "unavailable"
+        raise RuntimeError(f"现货行情日期未通过历史K线交叉核验：期望 {day.isoformat()}，历史接口最新日期 {observed}")
     if histories:
-        history = pd.concat(histories, ignore_index=True)
         tech = _technical_history(history, day.strftime("%Y%m%d"))
         keep = [c for c in ["ts_code", "ma5", "ma10", "ma20", "ma60", "rsi14",
                              "macd_dif", "macd_dea", "macd_hist", "volatility20",

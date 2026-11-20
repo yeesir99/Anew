@@ -1,0 +1,78 @@
+name: A-Share Alpha Radar — public GitHub cloud runtime
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/build_site_snapshot.py'
+      - 'requirements.txt'
+      - 'site/**'
+      - '.github/workflows/cloud-public.yml'
+  schedule:
+    - cron: "35 11 * * 1-5" # 19:35 Asia/Shanghai, after the close
+
+permissions:
+  contents: write
+
+concurrency:
+  group: anew-public-cloud
+  cancel-in-progress: false
+
+jobs:
+  collect-build-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout public research source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install public research dependencies
+        run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Collect latest public A-share market data
+        env:
+          MAX_HISTORY_STOCKS: "300"
+          HISTORY_WORKERS: "4"
+          TZ: Asia/Shanghai
+        run: python -m src.main close
+      - name: Build validated static dashboard data
+        env:
+          TZ: Asia/Shanghai
+        run: python scripts/build_site_snapshot.py
+      - name: Validate privacy boundary and static data
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("site/data")
+          latest = json.loads((root / "latest.json").read_text(encoding="utf-8"))
+          research = json.loads((root / "research.json").read_text(encoding="utf-8"))
+          assert research["privacy"] == "public_research_only"
+          assert latest["coverage"]["valid_stock_count"] >= 2500
+          assert latest["data_status"] in {"validated", "stale"}
+          assert not any(k in research["sections"] for k in ("portfolio", "evidence", "personal_accounts"))
+          print("Validated public snapshot:", latest["trade_date"], latest["coverage"]["valid_stock_count"])
+          PY
+      - name: Commit public market data and reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data reports site/data
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update cloud market snapshot and research report"
+            git push origin HEAD:main
+          fi
+      - name: Publish static dashboard to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: site
+          force_orphan: true

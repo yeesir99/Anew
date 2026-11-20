@@ -1,25 +1,31 @@
 # Anew — A股公开研究数据与 A-Share Alpha Radar 公共展示
 
-This repository hosts the public static dashboard for A-Share Alpha Radar.
+This repository runs the public research collector and static dashboard entirely on GitHub Actions. It does not require a NAS, private repository token, or external deployment credential.
 
-## Publishing pipeline
+## Cloud runtime
 
-- The private source repository `yeesir99/a-share-alpha-radar` runs the GitHub Actions cloud batch at 17:35 China time on weekdays and on demand.
-- The private workflow publishes only an explicitly allow-listed public JSON snapshot and static HTML to this repository's `gh-pages` branch.
-- The former duplicate public collector workflow has been disabled so it cannot overwrite the private workflow's newer research snapshot.
-- GitHub Pages: **Settings → Pages → Deploy from a branch → gh-pages → /(root)**.
+- Workflow: `.github/workflows/cloud-public.yml`
+- Schedule: weekdays at 19:35 China Standard Time, after the close; manual dispatch and relevant source pushes are also supported.
+- Runtime: ephemeral GitHub-hosted Ubuntu runner; Python dependencies installed per run.
+- Collection: AKShare public A-share spot data and optional liquid-stock historical technical indicators.
+- Output: versioned public CSV/Markdown history in `data/` and `reports/`; static JSON in `site/data/`.
+- Deployment: same-repository `GITHUB_TOKEN` publishes `site/` to `gh-pages`; no cross-repository token is required.
 - Dashboard: https://yeesir99.github.io/Anew/
 
 ## Privacy boundary
 
-This repository and its Pages website are public. Personal holdings, costs, quantities, market values, account details, private notes, manual evidence records, portfolio-derived reports, and secrets must never be committed here. The publisher excludes portfolio and evidence endpoints and withholds legacy Markdown reports pending a separate public/private review.
+This repository and Pages site are public. Only public-market data, public announcements/news, and public research reports belong here. Personal holdings, quantities, cost basis, account data, private notes, manual evidence records, and portfolio-derived reports must remain in the private repository/private storage and must never be committed to this repository. The site builder reads only `data/latest_market.csv`; it does not read portfolio or private database tables.
 
-## Data-source limitations
+## Data quality and limitations
 
-The cloud batch uses public industry/market snapshots, sampled stock technicals, public sector-flow estimates, ETF share snapshots, public announcements/RSS, industry valuation snapshots, and a third-party monthly stock archive when each source is available. Providers can fail independently; the generated JSON includes per-job outcomes and source status.
+The workflow fails rather than publishing if the full-market snapshot has fewer than 2,500 valid stocks or required fields are absent. Snapshot freshness is displayed explicitly; stale snapshots are labeled stale rather than silently represented as current. AKShare's spot endpoint is a public EastMoney-backed endpoint and is not an independent market-data source. Provider failures and rate limits can delay collection.
 
-The `modi-hu/stock-data` archive declares EastMoney as its upstream. It is a third-party cache, not an independent market-data source. Turnover is trading activity, not net capital inflow. Public main-flow estimates are not institution-specific account flows. ETF share changes are not institutional net purchases.
+Turnover is trading activity, not net capital inflow. Public flow estimates are not institutional account-level flows. ETF share changes are not institutional net purchases. Technical indicators on the liquid-stock subset are not full-market historical coverage.
 
-The dashboard is not yet the complete legacy product: private portfolio functions, private evidence records, and the fully reviewed 12-section report are not published. Historical signal observations are not a transaction-level backtest.
+## Product scope and unfinished research modules
+
+Market breadth, leaders/laggards, turnover, and selected technical indicators can be produced from the current public feed. Industry taxonomy/history, evidence-backed theme scoring, multi-period industry rotation, independently sourced capital-flow verification, and a complete 12-section research report require additional validated data sources and tests. The dashboard deliberately displays these as unavailable rather than inventing values.
+
+The private repository's temporary PostgreSQL service is ephemeral and is not a persistent personal-data store. Personal portfolio/evidence migration and encrypted private dashboard storage remain separate tasks; preserve the NAS database and backups until a secure private-data migration is completed and verified. Do not delete or shut down the NAS as part of this public pipeline change.
 
 Research support only; not investment advice.
