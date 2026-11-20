@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - 'src/**'
-      - 'scripts/build_site_snapshot.py'
+      - 'scripts/**'
       - 'requirements.txt'
       - 'site/**'
       - '.github/workflows/cloud-public.yml'
@@ -56,6 +56,17 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: python scripts/build_site_snapshot.py
+      - name: Collect public industry, capital-flow and ETF-share history
+        if: steps.live.outcome == 'success'
+        env:
+          TZ: Asia/Shanghai
+        run: python scripts/collect_research_modules.py
+      - name: Run point-in-time industry momentum backtest
+        if: steps.live.outcome == 'success'
+        run: python scripts/backtest_industry.py
+      - name: Build evidence-labelled research modules and 12-section report
+        if: steps.live.outcome == 'success'
+        run: python scripts/enrich_research_snapshot.py
       - name: Validate privacy boundary and static data
         run: |
           python - <<'PY'
@@ -68,6 +79,10 @@ jobs:
           assert latest["coverage"]["valid_stock_count"] >= 2500
           assert latest["data_status"] in {"validated", "stale"}
           assert not any(k in research["sections"] for k in ("portfolio", "evidence", "personal_accounts"))
+          if "reports" in research["sections"] and research["sections"]["reports"].get("items"):
+              report = research["sections"]["reports"]["items"][0]["markdown"]
+              assert all(f"## {i}." in report for i in range(1, 13))
+          assert "backtest" in research["sections"] or latest["data_status"] == "stale"
           print("Validated public snapshot:", latest["trade_date"], latest["coverage"]["valid_stock_count"])
           PY
       - name: Commit public market data and reports
