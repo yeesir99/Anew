@@ -90,7 +90,8 @@ def main():
         # windows exist; missing history must not be silently treated as 0%.
         proxy = (round(50 + r5 * 1.2 + r10 * 0.5 + r20 * 0.2, 2)
                  if None not in (r5, r10, r20) else None)
-        rotation.append({"industry": name, "sector_code": name, "display_name": name,
+        display_name = str(row.get("industry_name") or name).strip()
+        rotation.append({"industry": name, "sector_code": name, "display_name": display_name, "industry_name": display_name,
             "trade_date": industry_snapshot_day, "latest_change": row["change_pct"],
             "change_pct": row["change_pct"], "turnover_cny": row["turnover_cny"],
             "return_5d_pct": r5, "return_10d_pct": r10, "return_20d_pct": r20,
@@ -101,7 +102,7 @@ def main():
     rotation.sort(key=lambda x: x["latest_change"], reverse=True)
     themes = []
     for row in rotation[:20]:
-        themes.append({"industry": row["display_name"], "sector_code": row["sector_code"],
+        themes.append({"industry": row["display_name"], "industry_name": row["display_name"], "sector_code": row["sector_code"],
             "trade_date": row["trade_date"], "change_pct": row["latest_change"], "turnover_cny": row["turnover_cny"],
             "proxy_score": row["rotation_strength_score"],
             "model": {"coverage": sum(v is not None for v in
