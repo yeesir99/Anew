@@ -96,7 +96,7 @@ def main() -> None:
                 "rotation_strength_score": proxy, "history_sessions": len(values),
                 "history_ready": len(values) >= 20})
         rotation.sort(key=lambda x: x["latest_change"], reverse=True)
-        industry_rank = rotation
+        industry_rank = rotation[:20]
         flow_rows = []
         for row in today_rows:
             net = pd.to_numeric(row.get("main_net_inflow_cny"), errors="coerce")

@@ -147,7 +147,7 @@ def main():
     industry_note = "行业数据日：" + str(industry_snapshot_day)
     if industry_snapshot_day != day:
         industry_note += "（滞后于全市场行情日；仅作历史观察）"
-    sections["industries"] = {"items": sorted(rotation, key=lambda x: x.get("latest_change") or -999, reverse=True),
+    sections["industries"] = {"items": sorted(rotation, key=lambda x: x["latest_change"], reverse=True)[:20],
         "note": industry_note}
     sections["themes"] = {"items": themes}
     sections["rotation"] = {"items": rotation, "note": industry_note}
