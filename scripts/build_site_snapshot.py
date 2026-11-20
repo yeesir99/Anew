@@ -12,6 +12,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "data" / "latest_market.csv"
 OUT = ROOT / "site" / "data"
+FALLBACK = ROOT / ".cache" / "public-fallback" / "latest.json"
 CN = ZoneInfo("Asia/Shanghai")
 
 
@@ -33,6 +34,33 @@ def weekday_gap(start: date, end: date) -> int:
 
 
 def main() -> None:
+    if FALLBACK.exists():
+        snapshot = json.loads(FALLBACK.read_text(encoding="utf-8"))
+        count = int(snapshot.get("coverage", {}).get("valid_stock_count", 0))
+        if count < 2500:
+            raise RuntimeError(f"Fallback market coverage too low: {count}")
+        snapshot["data_status"] = "stale" if snapshot.get("freshness", {}).get("weekday_gap", 0) > 2 else snapshot.get("data_status", "validated")
+        OUT.mkdir(parents=True, exist_ok=True)
+        (OUT / "latest.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        breadth = snapshot["market_breadth"]
+        sections = {
+            "overview": {"count": count, "up": breadth["up"], "down": breadth["down"]},
+            "market-breadth": {"item": {"trade_date": snapshot["trade_date"], "payload": breadth}},
+            "industries": {"items": []}, "themes": {"items": []}, "rotation": {"items": []},
+            "capital-flows": {"items": []}, "etf-shares": {"items": []},
+            "external-market-data": {"leaders": []},
+            "data-sources": {"items": [{"source": "modi-hu/stock-data archive",
+                "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"}]}
+        }
+        research = {"privacy": "public_research_only", "generated_at": snapshot["generated_at"],
+                    "market_status": snapshot["data_status"], "sections": sections,
+                    "jobs": [{"name": "archive_fallback", "status": snapshot["data_status"]}],
+                    "notes": ["本公开快照不包含个人持仓、成本、账户、私人笔记或证据台账。",
+                              "备用行情来自第三方历史归档；如标记滞后，只能作为历史参考。"]}
+        (OUT / "research.json").write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        print(json.dumps({"source": "archive_fallback", "trade_date": snapshot["trade_date"],
+                          "stocks": count, "status": snapshot["data_status"]}, ensure_ascii=False))
+        return
     if not SOURCE.exists():
         raise FileNotFoundError(f"Missing close snapshot: {SOURCE}")
     frame = pd.read_csv(SOURCE, encoding="utf-8-sig")
