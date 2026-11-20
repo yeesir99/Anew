@@ -46,8 +46,8 @@ def norm_code(value):
     raw = clean(value)
     if raw is None:
         return None
-    raw = re.sub(r"\\.0$", "", raw)
-    digits = re.sub(r"\\D", "", raw)
+    raw = re.sub(r"\.0$", "", raw)
+    digits = re.sub(r"\D", "", raw)
     return digits.zfill(6) if 1 <= len(digits) <= 6 else None
 
 
@@ -127,7 +127,7 @@ def main():
         name_col = find_col(rows[0].keys(), ("名称", "股票简称", "证券简称")) if rows else None
         members = []
         for row in rows:
-            code = re.sub(r"\D", "", str(row.get(code_col) or ""))
+            code = norm_code(row.get(code_col))
             if len(code) != 6:
                 continue
             members.append({"code": code, "name": row.get(name_col)})
@@ -210,7 +210,7 @@ def main():
         if not col:
             return result
         for row in rows:
-            code = re.sub(r"\D", "", str(row.get(col) or ""))
+            code = norm_code(row.get(col))
             if len(code) == 6:
                 result.setdefault(code, []).append(row)
         return result
@@ -245,7 +245,7 @@ def main():
             "constituent_count": len(members),
             "constituent_codes": sorted(codes),
             "financials": {"report_date": report_date, "records": financial,
-                "coverage": len({re.sub(r"\\D", "", str(r.get("股票代码") or r.get("证券代码") or "")) for r in financial})},
+                "coverage": len({re.sub(r"\D", "", str(r.get("股票代码") or r.get("证券代码") or "")) for r in financial})},
             "earnings_forecasts": {"records": forecasts, "coverage": len(forecasts)},
             "institutional_holdings": {"report_date": report_date, "records": institutions,
                 "coverage": len(institutions), "source": "Sina stock_institute_hold"},
