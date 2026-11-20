@@ -42,8 +42,8 @@ jobs:
         id: live
         continue-on-error: true
         env:
-          MAX_HISTORY_STOCKS: "300"
-          HISTORY_WORKERS: "4"
+          MAX_HISTORY_STOCKS: "60"
+          HISTORY_WORKERS: "2"
           TZ: Asia/Shanghai
         run: python -m src.main close
       - name: Collect validated archive fallback if live API is unavailable
