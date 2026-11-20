@@ -36,6 +36,8 @@ jobs:
           cache: pip
       - name: Install public research dependencies
         run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Compile Python sources
+        run: python -m compileall -q src scripts
       - name: Collect latest public A-share market data
         id: live
         continue-on-error: true
@@ -52,6 +54,9 @@ jobs:
           RADAR_MAX_WEEKDAY_GAP: "5"
           TZ: Asia/Shanghai
         run: python scripts/collect_public.py
+      - name: Run industry momentum backtest (or mark warming up)
+        if: always() && !cancelled()
+        run: python scripts/backtest_industry.py
       - name: Build validated static dashboard data
         env:
           TZ: Asia/Shanghai
@@ -82,7 +87,8 @@ jobs:
           if "reports" in research["sections"] and research["sections"]["reports"].get("items"):
               report = research["sections"]["reports"]["items"][0]["markdown"]
               assert all(f"## {i}." in report for i in range(1, 13))
-          assert "backtest" in research["sections"] or latest["data_status"] == "stale"
+          assert "backtest" in research["sections"]
+          assert research["sections"].get("reports", {}).get("items")
           print("Validated public snapshot:", latest["trade_date"], latest["coverage"]["valid_stock_count"])
           PY
       - name: Commit public market data and reports
