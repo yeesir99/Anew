@@ -102,7 +102,7 @@ def main():
     themes = []
     for row in rotation[:20]:
         themes.append({"industry": row["display_name"], "sector_code": row["sector_code"],
-            "change_pct": row["latest_change"], "turnover_cny": row["turnover_cny"],
+            "trade_date": row["trade_date"], "change_pct": row["latest_change"], "turnover_cny": row["turnover_cny"],
             "proxy_score": row["rotation_strength_score"],
             "model": {"coverage": sum(v is not None for v in
                         (row["latest_change"], row["turnover_cny"], row["return_5d_pct"],
