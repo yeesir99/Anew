@@ -60,7 +60,8 @@ def load_sector_names():
             req = urllib.request.Request(url, headers={
                 "User-Agent": "Mozilla/5.0 A-Share-Alpha-Radar/2.0",
                 "Referer": "https://quote.eastmoney.com/center/boardlist.html",
-                "Accept": "application/json,text/plain,*/*",\n                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+                "Accept": "application/json,text/plain,*/*",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
             })
             with urllib.request.urlopen(req, timeout=15) as response:
                 payload = json.loads(response.read().decode("utf-8"))
