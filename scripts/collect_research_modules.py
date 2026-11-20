@@ -1,0 +1,197 @@
+#!/usr/bin/env python3
+"""Collect public industry, sector-flow and exchange ETF-share snapshots.
+
+This script only runs after the live market collector has validated today's
+full-market close. It never reads private holdings, accounts or notes.
+"""
+from __future__ import annotations
+
+import csv
+import json
+import logging
+import os
+from datetime import date, datetime, timedelta
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "data"
+TZ = ZoneInfo("Asia/Shanghai")
+LOG = logging.getLogger("research-collect")
+DATA.mkdir(exist_ok=True)
+
+
+def number(value):
+    try:
+        value = pd.to_numeric(str(value).replace(",", "").replace("%", "").strip(), errors="coerce")
+        return None if pd.isna(value) else float(value)
+    except Exception:
+        return None
+
+
+def append_rows(path: Path, rows: list[dict], keys: tuple[str, ...]):
+    if not rows:
+        return 0
+    old = []
+    if path.exists():
+        with path.open(encoding="utf-8-sig", newline="") as f:
+            old = list(csv.DictReader(f))
+    merged = {tuple(str(x.get(k, "")) for k in keys): x for x in old}
+    for row in rows:
+        merged[tuple(str(row.get(k, "")) for k in keys)] = row
+    all_rows = list(merged.values())
+    fields = list(dict.fromkeys(k for x in all_rows for k in x))
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(all_rows)
+    tmp.replace(path)
+    return len(rows)
+
+
+def load_validated_trade_day() -> date:
+    path = DATA / "latest_market.csv"
+    if not path.exists():
+        raise RuntimeError("缺少经过校验的 latest_market.csv")
+    frame = pd.read_csv(path, encoding="utf-8-sig")
+    if "trade_date" not in frame or len(frame) < 2500:
+        raise RuntimeError("行情日期或覆盖率不满足研究采集条件")
+    day = pd.to_datetime(frame["trade_date"], errors="coerce").dropna().max()
+    if pd.isna(day):
+        raise RuntimeError("无法识别行情交易日")
+    trade_day = day.date()
+    today = datetime.now(TZ).date()
+    gap = sum(1 for i in range(1, max(0, (today - trade_day).days) + 1)
+              if (trade_day + timedelta(days=i)).weekday() < 5)
+    if trade_day > today or gap > 1:
+        raise RuntimeError(f"行情日期 {trade_day} 非最新有效交易日（工作日差 {gap}），跳过行业/资金采集")
+    return trade_day
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    trade_day = load_validated_trade_day()
+    import akshare as ak
+
+    checked = datetime.now(TZ).isoformat(timespec="seconds")
+    statuses = []
+    # Industry snapshot: the source is an EastMoney-backed public ranking.
+    try:
+        frame = ak.stock_board_industry_name_em()
+        if frame is None or frame.empty:
+            raise RuntimeError("行业接口返回空数据")
+        name_col = next((x for x in ("板块名称", "行业名称", "名称") if x in frame.columns), None)
+        change_col = next((x for x in ("涨跌幅", "涨跌幅(%)") if x in frame.columns), None)
+        amount_col = next((x for x in ("总成交额", "成交额") if x in frame.columns), None)
+        if not name_col or not change_col:
+            raise RuntimeError("行业字段不匹配：" + str(list(frame.columns)))
+        rows = []
+        for _, item in frame.iterrows():
+            name = str(item.get(name_col, "")).strip()
+            change = number(item.get(change_col))
+            if not name or name == "nan" or change is None:
+                continue
+            amount = number(item.get(amount_col)) if amount_col else None
+            rows.append({"trade_date": trade_day.isoformat(), "industry": name,
+                         "change_pct": change, "turnover_cny": amount,
+                         "source": "AKShare/EastMoney public industry ranking",
+                         "captured_at": checked})
+        count = append_rows(DATA / "industry_history.csv", rows, ("trade_date", "industry"))
+        statuses.append({"source": "industry_snapshot", "status": "success", "records": len(rows),
+                         "detail": "行业涨跌幅及成交额快照；代理分不等同产业基本面评分"})
+    except Exception as exc:
+        LOG.exception("行业快照采集失败")
+        statuses.append({"source": "industry_snapshot", "status": "failed", "detail": str(exc)[:500]})
+
+    # Sector capital-flow estimates. They are not institution-specific account flows.
+    flow_rows = []
+    try:
+        fn = getattr(ak, "stock_fund_flow_sector_rank_em", None)
+        if fn is None:
+            raise RuntimeError("当前 AkShare 不含 stock_fund_flow_sector_rank_em")
+        for indicator in ("今日", "5日", "10日"):
+            try:
+                frame = fn(indicator=indicator, sector_type="行业资金流")
+                if frame is None or frame.empty:
+                    raise RuntimeError("接口返回空数据")
+                name_col = next((x for x in ("名称", "板块名称", "行业", "板块") if x in frame.columns), None)
+                flow_col = next((x for x in (indicator + "主力净流入-净额", "主力净流入-净额") if x in frame.columns), None)
+                ratio_col = next((x for x in (indicator + "主力净流入-净占比", "主力净流入-净占比") if x in frame.columns), None)
+                change_col = next((x for x in (indicator + "涨跌幅", "涨跌幅") if x in frame.columns), None)
+                if not name_col or not flow_col:
+                    raise RuntimeError("资金流字段不匹配：" + str(list(frame.columns)))
+                for _, item in frame.iterrows():
+                    name = str(item.get(name_col, "")).strip()
+                    if name and name != "nan":
+                        flow_rows.append({"trade_date": trade_day.isoformat(), "indicator": indicator,
+                            "industry": name, "change_pct": number(item.get(change_col)) if change_col else None,
+                            "main_net_inflow_cny": number(item.get(flow_col)),
+                            "main_net_ratio_pct": number(item.get(ratio_col)) if ratio_col else None,
+                            "source": "AKShare/EastMoney public estimate", "captured_at": checked})
+            except Exception as exc:
+                statuses.append({"source": "sector_flow_" + indicator, "status": "failed", "detail": str(exc)[:400]})
+        if flow_rows:
+            append_rows(DATA / "capital_flows.csv", flow_rows, ("trade_date", "indicator", "industry"))
+        for indicator in ("今日", "5日", "10日"):
+            n = sum(x["indicator"] == indicator for x in flow_rows)
+            if not any(x.get("source") == "sector_flow_" + indicator for x in statuses):
+                statuses.append({"source": "sector_flow_" + indicator,
+                                 "status": "success" if n else "unavailable", "records": n,
+                                 "detail": "公开市场主力资金估算，不代表机构专属账户"})
+    except Exception as exc:
+        LOG.exception("行业资金流采集失败")
+        statuses.append({"source": "sector_flows", "status": "failed", "detail": str(exc)[:500]})
+
+    # Exchange-published ETF share snapshots. Share units remain exactly as supplied.
+    etf_rows = []
+    for exchange, fn_name in (("SSE", "fund_etf_scale_sse"), ("SZSE", "fund_etf_scale_szse")):
+        try:
+            fn = getattr(ak, fn_name, None)
+            if fn is None:
+                raise RuntimeError(fn_name + " unavailable in installed AkShare")
+            frame = fn(date=trade_day.strftime("%Y%m%d")) if exchange == "SSE" else fn()
+            if frame is None or frame.empty:
+                raise RuntimeError("交易所ETF份额接口返回空数据")
+            code_col = next((x for x in ("基金代码", "代码", "证券代码", "基金证券代码") if x in frame.columns), None)
+            name_col = next((x for x in ("基金简称", "名称", "证券简称", "基金名称") if x in frame.columns), None)
+            shares_col = next((x for x in ("基金份额", "份额", "总份额", "基金总份额", "期末基金份额", "上市份额") if x in frame.columns), None)
+            nav_col = next((x for x in ("净值", "基金净值", "单位净值", "最新净值") if x in frame.columns), None)
+            if not code_col or not shares_col:
+                raise RuntimeError("ETF份额字段不匹配：" + str(list(frame.columns)))
+            for _, item in frame.iterrows():
+                code = str(item.get(code_col, "")).strip()
+                if code and code != "nan":
+                    etf_rows.append({"trade_date": trade_day.isoformat(), "exchange": exchange,
+                        "code": code, "name": str(item.get(name_col, "")) if name_col else "",
+                        "shares": number(item.get(shares_col)), "nav": number(item.get(nav_col)) if nav_col else None,
+                        "source": "SSE/SZSE public ETF share snapshot", "captured_at": checked})
+            statuses.append({"source": "etf_shares_" + exchange.lower(), "status": "success",
+                             "records": len(frame), "detail": "交易所公开份额数据；份额变化不等于机构净买入"})
+        except Exception as exc:
+            LOG.warning("%s ETF份额采集失败：%s", exchange, exc)
+            statuses.append({"source": "etf_shares_" + exchange.lower(), "status": "failed", "detail": str(exc)[:400]})
+    if etf_rows:
+        append_rows(DATA / "etf_shares.csv", etf_rows, ("trade_date", "exchange", "code"))
+
+    status_path = DATA / "research_sources.json"
+    previous = {}
+    if status_path.exists():
+        try:
+            previous = json.loads(status_path.read_text(encoding="utf-8"))
+        except Exception:
+            previous = {}
+    by_key = {x["source"]: x for x in previous.get("sources", [])}
+    by_key.update({x["source"]: x for x in statuses})
+    status_path.write_text(json.dumps({"trade_date": trade_day.isoformat(), "checked_at": checked,
+        "sources": list(by_key.values())}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"trade_date": trade_day.isoformat(), "industry_rows": len(rows) if "rows" in locals() else 0,
+        "capital_flow_rows": len(flow_rows), "etf_rows": len(etf_rows),
+        "source_statuses": statuses}, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
