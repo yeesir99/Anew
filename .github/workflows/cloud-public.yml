@@ -88,6 +88,10 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: python scripts/collect_theme_evidence.py
+      - name: Validate theme evidence joins and coverage
+        if: always() && !cancelled()
+        continue-on-error: true
+        run: python scripts/validate_theme_evidence.py
       - name: Validate final industry data contract
         if: always() && !cancelled()
         run: python scripts/validate_industry_data.py
