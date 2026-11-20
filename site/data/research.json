@@ -1,0 +1,66 @@
+{
+  "privacy": "public_research_only",
+  "generated_at": "2026-11-20T11:55:02+00:00",
+  "market_status": "stale",
+  "sections": {
+    "overview": {
+      "count": 5576,
+      "up": 1326,
+      "down": 4119
+    },
+    "market-breadth": {
+      "item": {
+        "trade_date": "2026-11-17",
+        "payload": {
+          "advance_ratio_pct": 23.78,
+          "decline_ratio_pct": 73.87,
+          "median_change_pct": -1.31,
+          "aggregate_turnover_cny": 1467532912382.0,
+          "advance_decline_ratio": 0.322,
+          "up": 1326,
+          "down": 4119,
+          "flat": 131,
+          "total": 5576,
+          "turnover": 1467532912382.0
+        }
+      }
+    },
+    "industries": {
+      "items": []
+    },
+    "themes": {
+      "items": []
+    },
+    "rotation": {
+      "items": []
+    },
+    "capital-flows": {
+      "items": []
+    },
+    "etf-shares": {
+      "items": []
+    },
+    "external-market-data": {
+      "leaders": []
+    },
+    "data-sources": {
+      "items": [
+        {
+          "source": "modi-hu/stock-data archive",
+          "status": "stale",
+          "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"
+        }
+      ]
+    }
+  },
+  "jobs": [
+    {
+      "name": "archive_fallback",
+      "status": "stale"
+    }
+  ],
+  "notes": [
+    "本公开快照不包含个人持仓、成本、账户、私人笔记或证据台账。",
+    "备用行情来自第三方历史归档；如标记滞后，只能作为历史参考。"
+  ]
+}
