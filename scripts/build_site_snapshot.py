@@ -41,7 +41,7 @@ def main() -> None:
             raise RuntimeError(f"Fallback market coverage too low: {count}")
         snapshot["data_status"] = "stale" if snapshot.get("freshness", {}).get("weekday_gap", 0) > 2 else snapshot.get("data_status", "validated")
         OUT.mkdir(parents=True, exist_ok=True)
-        (OUT / "latest.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        (OUT / "latest.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         breadth = snapshot["market_breadth"]
         sections = {
             "overview": {"count": count, "up": breadth["up"], "down": breadth["down"]},
@@ -57,7 +57,7 @@ def main() -> None:
                     "jobs": [{"name": "archive_fallback", "status": snapshot["data_status"]}],
                     "notes": ["本公开快照不包含个人持仓、成本、账户、私人笔记或证据台账。",
                               "备用行情来自第三方历史归档；如标记滞后，只能作为历史参考。"]}
-        (OUT / "research.json").write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        (OUT / "research.json").write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({"source": "archive_fallback", "trade_date": snapshot["trade_date"],
                           "stocks": count, "status": snapshot["data_status"]}, ensure_ascii=False))
         return
