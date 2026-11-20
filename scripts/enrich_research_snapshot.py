@@ -48,45 +48,65 @@ def main():
     except Exception:
         pass
     day = market.get("trade_date")
+    # Do not mix live Chinese industry labels with archived BK codes.
+    archive_rows = [x for x in industries if "sector_daily_quotes" in str(x.get("source", ""))]
+    source_industries = archive_rows if archive_rows else industries
     history_by_name = {}
-    for row in industries:
-        if row.get("trade_date") and row.get("industry"):
-            history_by_name.setdefault(row["industry"], []).append(row)
     rotation = []
-    current = [x for x in industries if x.get("trade_date") == day]
-    industry_snapshot_day = day
-    if not current:
-        available_days = sorted({x.get("trade_date", "") for x in industries if x.get("trade_date", "") <= day})
-        if available_days:
-            industry_snapshot_day = available_days[-1]
-            current = [x for x in industries if x.get("trade_date") == industry_snapshot_day]
+    # Only use a single, internally consistent sector universe and a single
+    # latest available sector date not later than the market snapshot date.
+    valid_industry_rows = []
+    for row in source_industries:
+        row_day = str(row.get("trade_date", ""))[:10]
+        code = str(row.get("industry") or row.get("sector_code") or "").strip()
+        change = num(row.get("change_pct"))
+        turnover = num(row.get("turnover_cny"))
+        if (row_day and row_day <= str(day) and code and change is not None
+                and turnover is not None and turnover > 0):
+            valid_industry_rows.append({**row, "trade_date": row_day, "industry": code,
+                                        "change_pct": change, "turnover_cny": turnover})
+    available_days = sorted({x["trade_date"] for x in valid_industry_rows})
+    industry_snapshot_day = available_days[-1] if available_days else None
+    current = [x for x in valid_industry_rows if x["trade_date"] == industry_snapshot_day]
+    # Keep the latest record for each code; never synthesize zero turnover or score.
+    current_by_code = {x["industry"]: x for x in current}
+    current = list(current_by_code.values())
+    history_by_name = {}
+    for row in valid_industry_rows:
+        history_by_name.setdefault(row["industry"], []).append(row)
+    def cumulative(values, n):
+        if len(values) < n:
+            return None
+        result = 1.0
+        for value in values[-n:]:
+            result *= 1.0 + value / 100.0
+        return round((result - 1.0) * 100.0, 3)
     for row in current:
         name = row["industry"]
         seq = sorted(history_by_name.get(name, []), key=lambda x: x["trade_date"])
-        vals = [num(x.get("change_pct")) for x in seq]
-        vals = [x for x in vals if x is not None]
-        def cumulative(n):
-            if len(vals) < n:
-                return None
-            r = 1.0
-            for v in vals[-n:]:
-                r *= 1.0 + v / 100.0
-            return round((r - 1.0) * 100.0, 3)
-        r5, r10, r20 = cumulative(5), cumulative(10), cumulative(20)
-        rotation.append({"industry": name, "trade_date": industry_snapshot_day,
-            "latest_change": num(row.get("change_pct")),
-            "turnover_cny": num(row.get("turnover_cny")), "return_5d_pct": r5,
-            "return_10d_pct": r10, "return_20d_pct": r20,
-            "rotation_strength_score": round(50 + (r5 or 0)*1.2 + (r10 or 0)*0.5 + (r20 or 0)*0.2, 2),
-            "history_sessions": len(vals), "history_ready": len(vals) >= 20})
-    rotation.sort(key=lambda x: x["rotation_strength_score"], reverse=True)
-    amounts = [x["turnover_cny"] for x in rotation if x["turnover_cny"] is not None]
-    amount_rank = {x: i for i, x in enumerate(sorted(amounts))}
+        vals = [x["change_pct"] for x in seq]
+        r5, r10, r20 = cumulative(vals, 5), cumulative(vals, 10), cumulative(vals, 20)
+        # Momentum score is deliberately unavailable until all configured
+        # windows exist; missing history must not be silently treated as 0%.
+        proxy = (round(50 + r5 * 1.2 + r10 * 0.5 + r20 * 0.2, 2)
+                 if None not in (r5, r10, r20) else None)
+        rotation.append({"industry": name, "sector_code": name, "display_name": name,
+            "trade_date": industry_snapshot_day, "latest_change": row["change_pct"],
+            "change_pct": row["change_pct"], "turnover_cny": row["turnover_cny"],
+            "return_5d_pct": r5, "return_10d_pct": r10, "return_20d_pct": r20,
+            "rotation_strength_score": proxy, "history_sessions": len(vals),
+            "history_ready": len(vals) >= 20})
+    # Industry ranking is by observed daily return, not a synthetic momentum
+    # score whose windows may be incomplete.
+    rotation.sort(key=lambda x: x["latest_change"], reverse=True)
     themes = []
-    for i, row in enumerate(rotation[:20]):
-        themes.append({"industry": row["industry"], "change_pct": row["latest_change"],
-            "turnover_cny": row["turnover_cny"], "proxy_score": row["rotation_strength_score"],
-            "model": {"coverage": 20 if row["latest_change"] is not None else 0,
+    for row in rotation[:20]:
+        themes.append({"industry": row["display_name"], "sector_code": row["sector_code"],
+            "trade_date": row["trade_date"], "change_pct": row["latest_change"], "turnover_cny": row["turnover_cny"],
+            "proxy_score": row["rotation_strength_score"],
+            "model": {"coverage": sum(v is not None for v in
+                        (row["latest_change"], row["turnover_cny"], row["return_5d_pct"],
+                         row["return_10d_pct"], row["return_20d_pct"])),
                       "stage": "量价观察候选，非产业主线结论",
                       "health": {"score": None, "coverage": 0,
                                  "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"}},

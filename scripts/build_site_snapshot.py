@@ -53,65 +53,85 @@ def main() -> None:
         if industry_history.exists():
             with industry_history.open(encoding="utf-8-sig", newline="") as f:
                 industry_rows = list(csv.DictReader(f))
-        sector_day = snapshot["trade_date"]
-        today_rows = [x for x in industry_rows if x.get("trade_date", "")[:10] == sector_day]
+        market_day = snapshot["trade_date"]
+        # Prefer the archived BK-code universe when available. The live
+        # collector uses Chinese labels and must not be mixed with BK codes.
+        archive_rows = [x for x in industry_rows if "sector_daily_quotes" in str(x.get("source", ""))]
+        source_rows = archive_rows if archive_rows else industry_rows
+        valid_rows = []
+        for row in source_rows:
+            row_day = str(row.get("trade_date", ""))[:10]
+            code = str(row.get("sector_code") or row.get("industry") or "").strip()
+            change = pd.to_numeric(row.get("change_pct"), errors="coerce")
+            turnover = pd.to_numeric(row.get("turnover_cny"), errors="coerce")
+            if (row_day and row_day <= market_day and code and pd.notna(change)
+                    and pd.notna(turnover) and float(turnover) > 0):
+                valid_rows.append({**row, "trade_date": row_day, "industry": code,
+                                   "change_pct": float(change), "turnover_cny": float(turnover)})
+        available_days = sorted({x["trade_date"] for x in valid_rows})
+        sector_day = available_days[-1] if available_days else None
+        today_rows = [x for x in valid_rows if x["trade_date"] == sector_day]
         by_sector = {}
-        for row in industry_rows:
-            by_sector.setdefault(row.get("industry", ""), []).append(row)
+        for row in valid_rows:
+            by_sector.setdefault(row["industry"], []).append(row)
         rotation = []
         for row in today_rows:
-            code = row.get("industry", "")
-            seq = sorted(by_sector.get(code, []), key=lambda x: x.get("trade_date", ""))
-            values = []
-            for item in seq:
-                try: values.append(float(item.get("change_pct", "")))
-                except (TypeError, ValueError): continue
+            code = row["industry"]
+            seq = sorted(by_sector.get(code, []), key=lambda x: x["trade_date"])
+            values = [float(x["change_pct"]) for x in seq]
             def compound(n):
-                if len(values) < n: return None
+                if len(values) < n:
+                    return None
                 result = 1.0
-                for value in values[-n:]: result *= 1.0 + value / 100.0
+                for value in values[-n:]:
+                    result *= 1.0 + value / 100.0
                 return round((result - 1.0) * 100.0, 3)
-            try: change = float(row.get("change_pct", ""))
-            except (TypeError, ValueError): change = None
-            try: turnover = float(row.get("turnover_cny", ""))
-            except (TypeError, ValueError): turnover = None
             r5, r10, r20 = compound(5), compound(10), compound(20)
-            rotation.append({"industry": code, "sector_code": code, "latest_change": change,
-                "change_pct": change, "turnover_cny": turnover, "return_5d_pct": r5,
-                "return_10d_pct": r10, "return_20d_pct": r20,
-                "rotation_strength_score": round(50 + (r5 or 0)*1.2 + (r10 or 0)*0.5 + (r20 or 0)*0.2, 2),
-                "history_sessions": len(values), "history_ready": len(values) >= 20})
-        rotation.sort(key=lambda x: x["rotation_strength_score"], reverse=True)
-        industry_rank = sorted(rotation, key=lambda x: x.get("latest_change") if x.get("latest_change") is not None else -999, reverse=True)
+            proxy = (round(50 + r5 * 1.2 + r10 * 0.5 + r20 * 0.2, 2)
+                     if None not in (r5, r10, r20) else None)
+            rotation.append({"industry": code, "display_name": code, "sector_code": code,
+                "trade_date": sector_day, "latest_change": row["change_pct"],
+                "change_pct": row["change_pct"], "turnover_cny": row["turnover_cny"],
+                "return_5d_pct": r5, "return_10d_pct": r10, "return_20d_pct": r20,
+                "rotation_strength_score": proxy, "history_sessions": len(values),
+                "history_ready": len(values) >= 20})
+        rotation.sort(key=lambda x: x["latest_change"], reverse=True)
+        industry_rank = rotation
         flow_rows = []
         for row in today_rows:
-            try: net = float(row.get("main_net_inflow_cny", ""))
-            except (TypeError, ValueError): net = None
-            try: ratio = float(row.get("main_net_ratio_pct", ""))
-            except (TypeError, ValueError): ratio = None
-            if net is not None:
+            net = pd.to_numeric(row.get("main_net_inflow_cny"), errors="coerce")
+            ratio = pd.to_numeric(row.get("main_net_ratio_pct"), errors="coerce")
+            if pd.notna(net):
                 flow_rows.append({"trade_date": sector_day, "indicator": "今日",
-                    "industry": row.get("industry"), "main_net_inflow": net,
-                    "main_net_ratio": ratio, "change_pct": next((x.get("change_pct") for x in rotation if x["industry"] == row.get("industry")), None),
+                    "industry": row["industry"], "main_net_inflow": float(net),
+                    "main_net_ratio": float(ratio) if pd.notna(ratio) else None,
+                    "change_pct": row["change_pct"],
                     "source": "EastMoney-derived third-party sector archive"})
-        flow_rows.sort(key=lambda x: x.get("main_net_inflow") if x.get("main_net_inflow") is not None else -1e30, reverse=True)
-        themes = [{"industry": x["industry"], "change_pct": x.get("latest_change"),
-            "turnover_cny": x.get("turnover_cny"), "proxy_score": x.get("rotation_strength_score"),
-            "model": {"coverage": 20, "stage": "量价观察候选；行业代码未映射名称",
-                      "health": {"score": None, "coverage": 0, "note": "缺少独立产业、政策、盈利与机构持仓证据"}},
+        flow_rows.sort(key=lambda x: x["main_net_inflow"], reverse=True)
+        themes = [{"industry": x["display_name"], "sector_code": x["sector_code"],
+            "trade_date": sector_day, "change_pct": x["latest_change"],
+            "turnover_cny": x["turnover_cny"], "proxy_score": x["rotation_strength_score"],
+            "model": {"coverage": sum(v is not None for v in
+                (x["latest_change"], x["turnover_cny"], x["return_5d_pct"],
+                 x["return_10d_pct"], x["return_20d_pct"])),
+                "stage": "量价观察候选；行业代码尚未映射中文名称",
+                "health": {"score": None, "coverage": 0,
+                           "note": "缺少独立产业、政策、盈利与机构持仓证据"}},
             "evidence": ["公开行业板块日线涨跌幅", "公开行业板块成交额"]} for x in rotation[:20]]
         sections = {
             "overview": {"count": count, "up": coverage["up"], "down": coverage["down"]},
-            "market-breadth": {"item": {"trade_date": snapshot["trade_date"], "payload": ui_breadth}},
-            "industries": {"items": industry_rank}, "themes": {"items": themes}, "rotation": {"items": rotation},
+            "market-breadth": {"item": {"trade_date": market_day, "payload": ui_breadth}},
+            "industries": {"items": industry_rank, "note": f"行业数据日 {sector_day or '不可用'}；市场行情日 {market_day}"},
+            "themes": {"items": themes, "note": "量价观察候选，不代表产业主线"},
+            "rotation": {"items": rotation, "note": f"行业数据日 {sector_day or '不可用'}"},
             "capital-flows": {"items": flow_rows, "note": "历史公开主力资金估算；不是机构专属账户流向。"},
             "etf-shares": {"items": [], "note": "备用归档未提供交易所ETF份额历史。"},
             "external-market-data": {"leaders": []},
             "data-sources": {"items": [{"source": "modi-hu/stock-data archive",
                 "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"},
                 {"source": "modi-hu/stock-data sector_daily_quotes",
-                "status": "stale" if today_rows else "unavailable",
-                "detail": "行业代码BK未映射为可读名称；资金流为EastMoney估算。"}]}
+                "status": ("success" if sector_day == market_day else "stale") if today_rows else "unavailable",
+                "detail": f"行业数据日={sector_day or 'none'}；{len(today_rows)}条有效行业记录；BK代码暂未映射中文名称。"}]}
         }
         backtest_path = OUT / "backtest.json"
         backtest = json.loads(backtest_path.read_text(encoding="utf-8")) if backtest_path.exists() else {
