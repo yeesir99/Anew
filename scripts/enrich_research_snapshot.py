@@ -7,6 +7,7 @@ import json
 import math
 from datetime import datetime, timezone
 from pathlib import Path
+from import_sector_archive import SECTOR_NAMES, is_concept_code
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -59,12 +60,14 @@ def main():
     for row in source_industries:
         row_day = str(row.get("trade_date", ""))[:10]
         code = str(row.get("industry") or row.get("sector_code") or "").strip()
+        if is_concept_code(code):
+            continue
         change = num(row.get("change_pct"))
         turnover = num(row.get("turnover_cny"))
         if (row_day and row_day <= str(day) and code and change is not None
                 and turnover is not None and turnover > 0):
             valid_industry_rows.append({**row, "trade_date": row_day, "industry": code,
-                                        "change_pct": change, "turnover_cny": turnover})
+                                        "industry_name": row.get("industry_name") or SECTOR_NAMES.get(code), "change_pct": change, "turnover_cny": turnover})
     available_days = sorted({x["trade_date"] for x in valid_industry_rows})
     industry_snapshot_day = available_days[-1] if available_days else None
     current = [x for x in valid_industry_rows if x["trade_date"] == industry_snapshot_day]
