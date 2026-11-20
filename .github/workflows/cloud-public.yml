@@ -37,11 +37,21 @@ jobs:
       - name: Install public research dependencies
         run: pip install --disable-pip-version-check -r requirements.txt
       - name: Collect latest public A-share market data
+        id: live
+        continue-on-error: true
         env:
           MAX_HISTORY_STOCKS: "300"
           HISTORY_WORKERS: "4"
           TZ: Asia/Shanghai
         run: python -m src.main close
+      - name: Collect validated archive fallback if live API is unavailable
+        if: steps.live.outcome == 'failure'
+        env:
+          RADAR_OUTPUT_DIR: .cache/public-fallback
+          RADAR_MAX_DATA_AGE_DAYS: "7"
+          RADAR_MAX_WEEKDAY_GAP: "5"
+          TZ: Asia/Shanghai
+        run: python scripts/collect_public.py
       - name: Build validated static dashboard data
         env:
           TZ: Asia/Shanghai
