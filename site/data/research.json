@@ -1,6 +1,6 @@
 {
   "privacy": "public_research_only",
-  "generated_at": "2026-11-20T22:35:37+00:00",
+  "generated_at": "2026-11-20T23:00:11+00:00",
   "market_status": "validated",
   "sections": {
     "overview": {
@@ -14104,172 +14104,171 @@
           "source": "constituents:集成电路制造",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:15+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:橡胶助剂",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:16+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:厨房小家电",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:17+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:半导体材料",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:18+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:钼",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:19+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:医疗器械",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:19+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:辅助生殖",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:20+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:商业服务",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:21+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:烟草与大麻",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:22+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:个护用品Ⅲ",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:22+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:白酒概念",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:23+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:养老概念",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:24+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:港口航运",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:25+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:20+00:00"
         },
         {
           "source": "constituents:第三代半导体",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:25+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "constituents:机器人概念",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:26+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "constituents:乳业",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:27+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "constituents:可选消费经销Ⅲ",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:28+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "constituents:参股民营银行",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:29+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "constituents:粤港澳大湾区",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:29+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "constituents:科创次新股",
           "status": "failed",
           "records": 0,
-          "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
-          "checked_at": "2026-11-20T22:33:30+00:00"
+          "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "stock_yjbb_em:20260930",
           "status": "success",
           "records": 5813,
-          "checked_at": "2026-11-20T22:33:31+00:00"
+          "checked_at": "2026-11-20T22:58:21+00:00"
         },
         {
           "source": "stock_yjyg_em:20260930",
           "status": "success",
           "records": 543,
-          "checked_at": "2026-11-20T22:33:53+00:00"
+          "checked_at": "2026-11-20T22:58:42+00:00"
         },
         {
-          "source": "stock_institute_hold:20263",
-          "status": "failed",
-          "records": 0,
-          "detail": "stock_institute_hold() got an unexpected keyword argument 'quarter'",
-          "checked_at": "2026-11-20T22:34:01+00:00"
+          "source": "stock_institute_hold:2026Q3",
+          "status": "success",
+          "records": 3295,
+          "checked_at": "2026-11-20T22:58:44+00:00"
         },
         {
           "source": "fund_report_stock_cninfo:20260930",
           "status": "success",
           "records": 3088,
-          "checked_at": "2026-11-20T22:34:01+00:00"
+          "checked_at": "2026-11-20T22:58:47+00:00"
         },
         {
           "source": "stock_zdhtmx_em",
           "status": "success",
           "records": 504,
-          "checked_at": "2026-11-20T22:34:05+00:00"
+          "checked_at": "2026-11-20T22:58:50+00:00"
         },
         {
           "source": "MIIT_official_release_index",
@@ -14281,31 +14280,31 @@
           "source": "stock_notice_report:20261120",
           "status": "success",
           "records": 1223,
-          "checked_at": "2026-11-20T22:34:13+00:00"
+          "checked_at": "2026-11-20T22:58:55+00:00"
         },
         {
           "source": "stock_notice_report:20261119",
           "status": "success",
           "records": 1342,
-          "checked_at": "2026-11-20T22:34:29+00:00"
+          "checked_at": "2026-11-20T22:59:11+00:00"
         },
         {
           "source": "stock_notice_report:20261118",
           "status": "success",
           "records": 1420,
-          "checked_at": "2026-11-20T22:34:50+00:00"
+          "checked_at": "2026-11-20T22:59:26+00:00"
         },
         {
           "source": "stock_notice_report:20261117",
           "status": "success",
           "records": 1787,
-          "checked_at": "2026-11-20T22:35:07+00:00"
+          "checked_at": "2026-11-20T22:59:43+00:00"
         },
         {
           "source": "stock_notice_report:20261116",
           "status": "success",
           "records": 535,
-          "checked_at": "2026-11-20T22:35:29+00:00"
+          "checked_at": "2026-11-20T23:00:03+00:00"
         }
       ]
     },
@@ -14315,14 +14314,14 @@
       "minimum_sessions": 10,
       "sessions": 7,
       "industry_count": 1053,
-      "generated_at": "2026-11-20T22:33:15+00:00"
+      "generated_at": "2026-11-20T22:58:20+00:00"
     },
     "reports": {
       "items": [
         {
           "trade_date": "2026-11-20",
           "title": "12栏目公开研究日报",
-          "markdown": "# A-Share Alpha Radar｜12栏目公开研究日报\n\n> 交易日：2026-11-20；生成时间：2026-11-20T22:33:15+00:00；状态：validated\n\n## 1. 市场广度与风险偏好\n交易日 2026-11-20；覆盖 5576 只；上涨 313、下跌 5235；涨跌幅中位数 -5.0755%。\n\n## 2. 行业强弱排名\n行业数据日 2026-11-17；集成电路制造 5.82%；橡胶助剂 3.32%；厨房小家电 3.2%；半导体材料 2.67%；钼 2.38%；医疗器械 1.86%；辅助生殖 1.84%；商业服务 0.7%；烟草与大麻 0.3%；个护用品Ⅲ 0.17%\n\n## 3. 主线候选与证据覆盖\n仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。\n\n## 4. 行业轮动（5/10/20日）\n5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。\n\n## 5. 公开资金流估算\n本日记录 84 条；仅为公开主力资金估算，非机构账户数据。\n\n## 6. ETF份额变化\n本日份额快照 927 条；只有存在上一交易日同口径记录时才计算变化率。\n\n## 7. 宽基指数与宏观环境\n当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。\n\n## 8. 个股活跃度与异动\n有效成交活跃榜 20 只，按全市场成交额排序；成交额表示交易活动，不表示净流入。\n\n## 9. 技术结构与趋势\n当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。\n\n## 10. 公告、政策与事件\n公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。\n\n## 11. 盈利、估值与基本面\n尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。\n\n## 12. 风险、数据质量与行动清单\n数据状态：validated；数据日：2026-11-20；行情上游可能延迟或限流。该报告仅作研究辅助，不构成投资建议。\n\n## 数据口径与限制\n- 行业历史从本次云端持久化启用后逐日累积；NAS 已退役，不存在可恢复的 NAS 历史库。\n- 主力资金为公开市场估算，ETF份额变化不是机构净买入；成交额不是净流入。\n- 主线、机构持仓、订单簿、授权一致预期等缺失数据不会用推断值填充。\n- 公开站点只包含公开市场数据，不读取个人持仓、成本、账户或私人证据。\n",
+          "markdown": "# A-Share Alpha Radar｜12栏目公开研究日报\n\n> 交易日：2026-11-20；生成时间：2026-11-20T22:58:20+00:00；状态：validated\n\n## 1. 市场广度与风险偏好\n交易日 2026-11-20；覆盖 5576 只；上涨 313、下跌 5235；涨跌幅中位数 -5.0755%。\n\n## 2. 行业强弱排名\n行业数据日 2026-11-17；集成电路制造 5.82%；橡胶助剂 3.32%；厨房小家电 3.2%；半导体材料 2.67%；钼 2.38%；医疗器械 1.86%；辅助生殖 1.84%；商业服务 0.7%；烟草与大麻 0.3%；个护用品Ⅲ 0.17%\n\n## 3. 主线候选与证据覆盖\n仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。\n\n## 4. 行业轮动（5/10/20日）\n5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。\n\n## 5. 公开资金流估算\n本日记录 84 条；仅为公开主力资金估算，非机构账户数据。\n\n## 6. ETF份额变化\n本日份额快照 927 条；只有存在上一交易日同口径记录时才计算变化率。\n\n## 7. 宽基指数与宏观环境\n当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。\n\n## 8. 个股活跃度与异动\n有效成交活跃榜 20 只，按全市场成交额排序；成交额表示交易活动，不表示净流入。\n\n## 9. 技术结构与趋势\n当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。\n\n## 10. 公告、政策与事件\n公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。\n\n## 11. 盈利、估值与基本面\n尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。\n\n## 12. 风险、数据质量与行动清单\n数据状态：validated；数据日：2026-11-20；行情上游可能延迟或限流。该报告仅作研究辅助，不构成投资建议。\n\n## 数据口径与限制\n- 行业历史从本次云端持久化启用后逐日累积；NAS 已退役，不存在可恢复的 NAS 历史库。\n- 主力资金为公开市场估算，ETF份额变化不是机构净买入；成交额不是净流入。\n- 主线、机构持仓、订单簿、授权一致预期等缺失数据不会用推断值填充。\n- 公开站点只包含公开市场数据，不读取个人持仓、成本、账户或私人证据。\n",
           "data_status": "validated"
         }
       ],
@@ -14340,5 +14339,14 @@
     "行业主线、行业轮动、机构资金和完整12栏目报告尚未通过独立数据源及隐私审查，故不伪造结果。",
     "行业/资金/ETF模块仅在来源、日期和字段校验通过后更新；实时接口失败时保留明确的历史/缺失状态。",
     "行业轮动和回测需要持续积累的同口径历史数据；新云端历史从迁移后开始。"
-  ]
+  ],
+  "evidence_quality": {
+    "status": "degraded",
+    "themes_total": 20,
+    "themes_with_constituents": 0,
+    "unique_constituents": 0,
+    "failed_sources": 20,
+    "empty_sources": 0,
+    "note": "degraded 表示证据采集不完整；不改变完整主线评分门槛，也不将缺失值补零。"
+  }
 }
