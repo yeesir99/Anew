@@ -458,7 +458,9 @@ def main():
         "notice_records": len(notice_rows), "source_statuses": source_status}
     print(json.dumps({**summary, "quality_status": evidence["quality_status"],
         "quality_summary": evidence["quality_summary"]}, ensure_ascii=False))
-    return 0
+    # Non-zero exit is intentional: the workflow may continue publishing market
+    # data, but Actions must visibly record incomplete research-evidence collection.
+    return 0 if evidence["quality_status"] == "validated" else 2
 
 
 if __name__ == "__main__":
