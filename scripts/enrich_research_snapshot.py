@@ -167,6 +167,9 @@ def main():
     sections["etf-shares"] = {"items": etf_items,
         "note": "份额变化按相同代码、交易所和来源口径比较；份额变化不等于机构净买入。"}
     sections["data-sources"] = {"items": source_doc.get("sources", [])}
+    # Reuse the already validated full-market turnover ranking. Do not depend on a second
+    # external endpoint for the public active-stock table.
+    sections["external-market-data"] = {"leaders": market.get("most_active", [])}
     sections["backtest"] = json.loads((SITE / "backtest.json").read_text(encoding="utf-8")) if (SITE / "backtest.json").exists() else {"status": "unavailable"}
     # Twelve sections; unavailable fields are explicitly labelled rather than filled with synthetic values.
     sections_report = [

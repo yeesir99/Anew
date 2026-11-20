@@ -77,7 +77,7 @@ jobs:
         if: steps.live.outcome == 'success'
         run: python scripts/backtest_industry.py
       - name: Build evidence-labelled research modules and 12-section report
-        if: steps.live.outcome == 'success'
+        if: always() && !cancelled()
         run: python scripts/enrich_research_snapshot.py
       - name: Validate final industry data contract
         if: steps.live.outcome == 'success'
