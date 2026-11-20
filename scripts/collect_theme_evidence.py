@@ -300,6 +300,11 @@ def main():
         theme["model"]["missing_evidence"] = missing
     research.setdefault("sections", {})["themes"] = {"items": themes,
         "note": "完整主线评分沿用原有证据门槛；新增财报、业绩预告、机构/公募持仓、重大合同和公司公告证据，缺失政府政策原文单独标注。"}
+    sections = research.setdefault("sections", {})
+    old_sources = sections.get("data-sources", {}).get("items", [])
+    merged_sources = {x.get("source"): x for x in old_sources if isinstance(x, dict) and x.get("source")}
+    merged_sources.update({x.get("source"): x for x in source_status if x.get("source")})
+    sections["data-sources"] = {"items": list(merged_sources.values())}
     research["generated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     research_path.write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
