@@ -104,7 +104,7 @@ def main() -> None:
             ratio = pd.to_numeric(row.get("main_net_ratio_pct"), errors="coerce")
             if pd.notna(net):
                 flow_rows.append({"trade_date": sector_day, "indicator": "今日",
-                    "industry": row["industry"], "main_net_inflow": float(net),
+                    "industry": row["industry"], "industry_name": row.get("industry_name"), "main_net_inflow": float(net),
                     "main_net_ratio": float(ratio) if pd.notna(ratio) else None,
                     "change_pct": row["change_pct"],
                     "source": "EastMoney-derived third-party sector archive"})
