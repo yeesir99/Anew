@@ -90,7 +90,9 @@ def _history_one(ak, code: str, day: date, start: str) -> pd.DataFrame:
             continue
         try:
             params = inspect.signature(fn).parameters
-            kwargs = {"symbol": code}
+            prefix = "sh" if code.startswith(("5", "6", "9")) else "sz"
+            provider_symbol = prefix + code if name in ("stock_zh_a_hist_sina", "stock_zh_a_hist_tx") else code
+            kwargs = {"symbol": provider_symbol}
             if "start_date" in params: kwargs["start_date"] = start
             if "end_date" in params: kwargs["end_date"] = day.strftime("%Y%m%d")
             if "period" in params: kwargs["period"] = "daily"
