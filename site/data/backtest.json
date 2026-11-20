@@ -1,0 +1,6 @@
+{
+  "status": "unavailable",
+  "reason": "行业日线历史尚未积累",
+  "minimum_sessions": 10,
+  "sessions": 0
+}

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "product": "A-Share Alpha Radar",
   "trade_date": "2026-11-17",
-  "generated_at": "2026-11-20T12:45:34+00:00",
+  "generated_at": "2026-11-20T12:49:47+00:00",
   "data_status": "stale",
   "freshness": {
     "calendar_age_days": 3,
