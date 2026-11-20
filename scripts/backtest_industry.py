@@ -28,6 +28,11 @@ def main():
         return result
     with SOURCE.open(encoding="utf-8-sig", newline="") as f:
         rows = list(csv.DictReader(f))
+    # Keep one consistent sector universe. When the BK archive is present,
+    # do not mix it with separately classified THS/AKShare industry names.
+    archive_rows = [x for x in rows if "sector_daily_quotes" in str(x.get("source", ""))]
+    if archive_rows:
+        rows = archive_rows
     daily = {}
     for row in rows:
         try:
