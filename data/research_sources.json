@@ -1,11 +1,11 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-20T22:13:14+08:00",
+  "checked_at": "2026-11-21T00:51:37+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
       "status": "success",
-      "detail": "EastMoney-derived third-party archive; latest trade date=2026-11-17; imported rows=7187; sector names mapped=0; unmapped codes remain explicit BK identifiers."
+      "detail": "EastMoney-derived third-party archive; latest trade date=2026-11-17; imported rows=7187; sector names mapped=883; unresolved codes=3657."
     },
     {
       "source": "industry_snapshot",
