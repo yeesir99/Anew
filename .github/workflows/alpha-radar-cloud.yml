@@ -35,6 +35,7 @@ jobs:
           RADAR_OUTPUT_DIR: site/data
           RADAR_MIN_VALID_ROWS: '2500'
           RADAR_MAX_DATA_AGE_DAYS: '7'
+          RADAR_MAX_WEEKDAY_GAP: '2'
         run: python scripts/collect_public.py
       - name: Validate generated public snapshot
         run: |
