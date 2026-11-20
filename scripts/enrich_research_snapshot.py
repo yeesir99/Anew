@@ -54,6 +54,12 @@ def main():
             history_by_name.setdefault(row["industry"], []).append(row)
     rotation = []
     current = [x for x in industries if x.get("trade_date") == day]
+    industry_snapshot_day = day
+    if not current:
+        available_days = sorted({x.get("trade_date", "") for x in industries if x.get("trade_date", "") <= day})
+        if available_days:
+            industry_snapshot_day = available_days[-1]
+            current = [x for x in industries if x.get("trade_date") == industry_snapshot_day]
     for row in current:
         name = row["industry"]
         seq = sorted(history_by_name.get(name, []), key=lambda x: x["trade_date"])
@@ -67,7 +73,8 @@ def main():
                 r *= 1.0 + v / 100.0
             return round((r - 1.0) * 100.0, 3)
         r5, r10, r20 = cumulative(5), cumulative(10), cumulative(20)
-        rotation.append({"industry": name, "latest_change": num(row.get("change_pct")),
+        rotation.append({"industry": name, "trade_date": industry_snapshot_day,
+            "latest_change": num(row.get("change_pct")),
             "turnover_cny": num(row.get("turnover_cny")), "return_5d_pct": r5,
             "return_10d_pct": r10, "return_20d_pct": r20,
             "rotation_strength_score": round(50 + (r5 or 0)*1.2 + (r10 or 0)*0.5 + (r20 or 0)*0.2, 2),
@@ -91,6 +98,14 @@ def main():
                 "industry": row.get("industry"), "change_pct": num(row.get("change_pct")),
                 "main_net_inflow": num(row.get("main_net_inflow_cny")),
                 "main_net_ratio": num(row.get("main_net_ratio_pct")), "source": row.get("source")})
+    if not flow_items:
+        for row in current:
+            net = num(row.get("main_net_inflow_cny"))
+            if net is not None:
+                flow_items.append({"trade_date": industry_snapshot_day, "indicator": "今日",
+                    "industry": row.get("industry"), "change_pct": num(row.get("change_pct")),
+                    "main_net_inflow": net, "main_net_ratio": num(row.get("main_net_ratio_pct")),
+                    "source": row.get("source", "public sector archive")})
     flow_items.sort(key=lambda x: (x.get("indicator") != "今日", -(x.get("main_net_inflow") or 0)))
     etf_items = []
     for row in etfs:
@@ -109,9 +124,13 @@ def main():
     sections["overview"] = {"count": market.get("coverage", {}).get("valid_stock_count", 0),
         "up": market.get("coverage", {}).get("up", 0), "down": market.get("coverage", {}).get("down", 0)}
     sections["market-breadth"] = {"item": {"trade_date": day, "payload": breadth}}
-    sections["industries"] = {"items": sorted(rotation, key=lambda x: x.get("latest_change") or -999, reverse=True)}
+    industry_note = "行业数据日：" + str(industry_snapshot_day)
+    if industry_snapshot_day != day:
+        industry_note += "（滞后于全市场行情日；仅作历史观察）"
+    sections["industries"] = {"items": sorted(rotation, key=lambda x: x.get("latest_change") or -999, reverse=True),
+        "note": industry_note}
     sections["themes"] = {"items": themes}
-    sections["rotation"] = {"items": rotation}
+    sections["rotation"] = {"items": rotation, "note": industry_note}
     sections["capital-flows"] = {"items": flow_items,
         "note": "东方财富公开主力资金估算，不是机构专属账户流向。"}
     sections["etf-shares"] = {"items": etf_items,
@@ -121,7 +140,7 @@ def main():
     # Twelve sections; unavailable fields are explicitly labelled rather than filled with synthetic values.
     sections_report = [
         ("1. 市场广度与风险偏好", f"交易日 {day}；覆盖 {market.get('coverage', {}).get('valid_stock_count', 0)} 只；上涨 {market.get('coverage', {}).get('up', 0)}、下跌 {market.get('coverage', {}).get('down', 0)}；涨跌幅中位数 {breadth.get('median_change_pct', '缺失')}%。"),
-        ("2. 行业强弱排名", "；".join(f"{x['industry']} {x.get('latest_change')}%" for x in sorted(rotation, key=lambda x: x.get("latest_change") or -999, reverse=True)[:10]) or "行业快照暂不可用。"),
+        ("2. 行业强弱排名", "行业数据日 " + str(industry_snapshot_day) + "；" + ("；".join(f"{x['industry']} {x.get('latest_change')}%" for x in sorted(rotation, key=lambda x: x.get("latest_change") or -999, reverse=True)[:10]) or "行业快照暂不可用。")),
         ("3. 主线候选与证据覆盖", "仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。"),
         ("4. 行业轮动（5/10/20日）", "5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。"),
         ("5. 公开资金流估算", f"本日记录 {sum(x.get('indicator') == '今日' for x in flow_items)} 条；仅为公开主力资金估算，非机构账户数据。"),
