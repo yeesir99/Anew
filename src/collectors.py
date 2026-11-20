@@ -71,7 +71,11 @@ def _normalise_spot(frame: pd.DataFrame, day: date) -> pd.DataFrame:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     df = df.dropna(subset=["close", "pre_close"])
     df = df[df["close"] > 0].copy()
-    df["ts_code"] = df["symbol"].astype(str).str.zfill(6).map(
+    # Sina may return exchange-prefixed codes (sh600000/sz000001); normalize to six digits.
+    df["symbol"] = df["symbol"].astype(str).str.extract(r"(\\d{6})", expand=False)
+    df = df.dropna(subset=["symbol"])
+    df["symbol"] = df["symbol"].astype(str).str.zfill(6)
+    df["ts_code"] = df["symbol"].map(
         lambda x: f"{x}.SH" if x.startswith(("5", "6", "9")) else
                   (f"{x}.BJ" if x.startswith(("4", "8")) else f"{x}.SZ"))
     df["trade_date"] = day.strftime("%Y%m%d")
@@ -90,7 +94,7 @@ def _history_one(ak, code: str, day: date, start: str) -> pd.DataFrame:
             continue
         try:
             params = inspect.signature(fn).parameters
-            prefix = "sh" if code.startswith(("5", "6", "9")) else "sz"
+            prefix = "sh" if code.startswith(("5", "6", "9")) else ("bj" if code.startswith(("4", "8")) else "sz")
             provider_symbol = prefix + code if name in ("stock_zh_a_hist_sina", "stock_zh_a_hist_tx") else code
             kwargs = {"symbol": provider_symbol}
             if "start_date" in params: kwargs["start_date"] = start
