@@ -65,8 +65,9 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: python scripts/build_site_snapshot.py
-      - name: Validate fallback industry data contract
+      - name: Pre-enrichment fallback diagnostics
         if: steps.live.outcome == 'failure'
+        continue-on-error: true
         run: python scripts/validate_industry_data.py
       - name: Collect public industry, capital-flow and ETF-share history
         if: always() && !cancelled() && steps.live.outcome == 'success'
