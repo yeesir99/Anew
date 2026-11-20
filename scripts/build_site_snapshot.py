@@ -118,7 +118,7 @@ def main() -> None:
         "disclaimer": "Descriptive public-market data only; not investment advice."
     }
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "latest.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    (OUT / "latest.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     sections = {
         "overview": {"count": int(len(frame)), "up": up, "down": down},
@@ -138,7 +138,7 @@ def main() -> None:
         "notes": ["本公开快照不包含个人持仓、成本、账户、私人笔记或证据台账。",
                   "行业主线、行业轮动、机构资金和完整12栏目报告尚未通过独立数据源及隐私审查，故不伪造结果。"]
     }
-    (OUT / "research.json").write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    (OUT / "research.json").write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"trade_date": trade_day.isoformat(), "stocks": len(frame),
                       "weekday_gap": gap, "status": status}, ensure_ascii=False))
 
