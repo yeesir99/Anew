@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-20T21:11:58+08:00",
+  "checked_at": "2026-11-20T21:58:49+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -30,7 +30,7 @@
     {
       "source": "etf_shares_sse",
       "status": "failed",
-      "detail": "HTTPSConnectionPool(host='query.sse.com.cn', port=443): Max retries exceeded with url: /commonQuery.do?isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1&pageHelp.beginPage=1&pageHelp.cacheSize=1&pageHelp.endPage=1&sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L&STAT_DATE=2026-11-20 (Caused by NewConnectionError(\"HTTPSConnection(host='query.sse.com.cn', port=443): Failed to establish a ne"
+      "detail": "\"None of [Index(['序号', '基金代码', '基金简称', 'ETF类型', '统计日期', '基金份额'], dtype='object')] are in the [columns]\""
     },
     {
       "source": "etf_shares_szse",
