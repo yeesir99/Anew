@@ -26,13 +26,19 @@ def _ak():
 
 def is_open_day(day: date) -> bool:
     """Use the China SSE trading calendar exposed by AKShare."""
-    try:
-        frame = _ak().tool_trade_date_hist_sina()
-        dates = pd.to_datetime(frame.iloc[:, 0], errors="coerce").dt.date
-        return day in set(dates.dropna())
-    except Exception as exc:
-        LOG.warning("交易日历接口暂不可用，将按行情快照是否有数据判断：%s", exc)
-        return True
+    ak = _ak()
+    for name in ("calendar_trade_date_hist_sina", "tool_trade_date_hist_sina"):
+        fn = getattr(ak, name, None)
+        if fn is None:
+            continue
+        try:
+            frame = fn()
+            dates = pd.to_datetime(frame.iloc[:, 0], errors="coerce").dt.date
+            return day in set(dates.dropna())
+        except Exception as exc:
+            LOG.warning("交易日历接口 %s 不可用：%s", name, exc)
+    LOG.warning("所有公开交易日历接口均不可用，将按行情快照日期校验。")
+    return True
 
 
 def _normalise_spot(frame: pd.DataFrame, day: date) -> pd.DataFrame:
@@ -43,7 +49,18 @@ def _normalise_spot(frame: pd.DataFrame, day: date) -> pd.DataFrame:
         "换手率": "turnover_rate", "量比": "volume_ratio",
         "市盈率-动态": "pe", "市净率": "pb",
     }
-    df = frame.rename(columns=mapping).copy()
+    aliases = {"代码": "symbol", "证券代码": "symbol", "symbol": "symbol",
+               "名称": "name", "证券简称": "name", "name": "name",
+               "最新价": "close", "现价": "close", "close": "close",
+               "今开": "open", "open": "open", "最高": "high", "high": "high",
+               "最低": "low", "low": "low", "昨收": "pre_close", "pre_close": "pre_close",
+               "成交量": "vol", "volume": "vol", "vol": "vol",
+               "成交额": "amount", "amount": "amount",
+               "涨跌幅": "pct_chg", "涨跌幅(%)": "pct_chg", "change_percent": "pct_chg",
+               "换手率": "turnover_rate", "turnover": "turnover_rate",
+               "量比": "volume_ratio", "volume_ratio": "volume_ratio",
+               "市盈率-动态": "pe", "pe": "pe", "市净率": "pb", "pb": "pb"}
+    df = frame.rename(columns={**aliases, **mapping}).copy()
     required = ["symbol", "name", "close", "open", "high", "low", "pre_close", "vol", "amount"]
     missing = [c for c in required if c not in df.columns]
     if missing:
@@ -62,20 +79,48 @@ def _normalise_spot(frame: pd.DataFrame, day: date) -> pd.DataFrame:
 
 
 def _history_one(ak, code: str, day: date, start: str) -> pd.DataFrame:
-    raw = ak.stock_zh_a_hist(symbol=code, period="daily", start_date=start,
-                             end_date=day.strftime("%Y%m%d"), adjust="qfq")
-    if raw is None or raw.empty:
-        return pd.DataFrame()
-    mapping = {"日期": "trade_date", "开盘": "open", "收盘": "close",
-               "最高": "high", "最低": "low", "成交量": "vol",
-               "成交额": "amount", "涨跌幅": "pct_chg"}
-    hist = raw.rename(columns=mapping)
-    hist["trade_date"] = pd.to_datetime(hist["trade_date"]).dt.strftime("%Y%m%d")
-    hist["ts_code"] = f"{code}.SH" if code.startswith(("5", "6", "9")) else (
-        f"{code}.BJ" if code.startswith(("4", "8")) else f"{code}.SZ")
-    for col in ["close", "open", "high", "low", "vol", "amount"]:
-        hist[col] = pd.to_numeric(hist[col], errors="coerce")
-    return hist
+    """Try Sina/Tencent daily bars before EastMoney to avoid push2 IP bans."""
+    import inspect
+    errors = []
+    candidates = ("stock_zh_a_hist_sina", "stock_zh_a_hist_tx",
+                  "stock_zh_a_hist_em", "stock_zh_a_hist")
+    for name in candidates:
+        fn = getattr(ak, name, None)
+        if fn is None:
+            continue
+        try:
+            params = inspect.signature(fn).parameters
+            kwargs = {"symbol": code}
+            if "start_date" in params: kwargs["start_date"] = start
+            if "end_date" in params: kwargs["end_date"] = day.strftime("%Y%m%d")
+            if "period" in params: kwargs["period"] = "daily"
+            if "adjust" in params: kwargs["adjust"] = "qfq"
+            if "adjustflag" in params: kwargs["adjustflag"] = "2"
+            raw = fn(**kwargs)
+            if raw is None or raw.empty:
+                raise RuntimeError("接口返回空数据")
+            mapping = {"日期": "trade_date", "date": "trade_date",
+                       "开盘": "open", "收盘": "close", "最高": "high",
+                       "最低": "low", "成交量": "vol", "volume": "vol",
+                       "成交额": "amount", "amount": "amount",
+                       "涨跌幅": "pct_chg", "change_percent": "pct_chg"}
+            hist = raw.rename(columns=mapping).copy()
+            if "trade_date" not in hist:
+                raise RuntimeError("历史行情缺少交易日期列")
+            hist["trade_date"] = pd.to_datetime(hist["trade_date"], errors="coerce").dt.strftime("%Y%m%d")
+            hist = hist.dropna(subset=["trade_date"])
+            hist["ts_code"] = f"{code}.SH" if code.startswith(("5", "6", "9")) else (
+                f"{code}.BJ" if code.startswith(("4", "8")) else f"{code}.SZ")
+            for col in ("close", "open", "high", "low", "vol", "amount"):
+                if col in hist:
+                    hist[col] = pd.to_numeric(hist[col], errors="coerce")
+            if "close" not in hist or "vol" not in hist:
+                raise RuntimeError("历史行情缺少收盘价/成交量")
+            LOG.info("历史K线来源：%s（%s）", name, code)
+            return hist
+        except Exception as exc:
+            errors.append(f"{name}: {str(exc)[:160]}")
+    raise RuntimeError("所有历史行情来源均失败：" + "；".join(errors))
 
 
 def _technical_history(history: pd.DataFrame, trade_date: str) -> pd.DataFrame:
@@ -115,7 +160,26 @@ def collect_market(day: date) -> pd.DataFrame:
     practical runtime. Set it to 0 to attempt every listed stock (slow/rate-limit prone).
     """
     ak = _ak()
-    spot = ak.stock_zh_a_spot_em()
+    spot = None
+    errors = []
+    spot_source = None
+    # Prefer Sina/Tencent-compatible non-Push2 sources. EastMoney is last resort.
+    for name in ("stock_zh_a_spot_sina", "stock_zh_a_spot", "stock_zh_a_spot_em"):
+        fn = getattr(ak, name, None)
+        if fn is None:
+            continue
+        try:
+            candidate = fn()
+            if candidate is None or candidate.empty:
+                raise RuntimeError("接口返回空数据")
+            spot, spot_source = candidate, name
+            break
+        except Exception as exc:
+            errors.append(f"{name}: {str(exc)[:180]}")
+            LOG.warning("全市场行情源 %s 不可用：%s", name, exc)
+    if spot is None:
+        raise RuntimeError("全市场行情源全部失败：" + "；".join(errors))
+    LOG.info("全市场行情来源：%s", spot_source)
     latest = _normalise_spot(spot, day)
     # The Eastmoney spot endpoint may show the latest session, not the requested day.
     # Refuse to silently label a stale trading-day snapshot as today's close.
