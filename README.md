@@ -1,24 +1,25 @@
-# Anew — A股公开行情数据与 A-Share Alpha Radar 公共展示
+# Anew — A股公开研究数据与 A-Share Alpha Radar 公共展示
 
-This repository includes the public market-data companion and Pages site for A-Share Alpha Radar.
+This repository hosts the public static dashboard for A-Share Alpha Radar.
 
-## Cloud public data pipeline
+## Publishing pipeline
 
-- GitHub Actions runs manually and at 17:35 China time on weekdays.
-- `scripts/collect_public.py` downloads the current monthly CSV from `modi-hu/stock-data`.
-- The collector validates mandatory columns, A-share ticker format, latest trade date, freshness (maximum 7 calendar days and no more than 2 missed weekdays), and at least 2,500 valid securities before producing a JSON snapshot.
-- Only the static dashboard and sanitized market JSON are published to the `gh-pages` branch. The collector workflow uses the repository's built-in GitHub token; no cross-repository PAT is required.
-- Enable GitHub Pages once: **Settings → Pages → Deploy from a branch → gh-pages → /(root)**.
-- Site content: daily market breadth, advance/decline counts, median change, aggregate turnover, leaders and most-active names.
+- The private source repository `yeesir99/a-share-alpha-radar` runs the GitHub Actions cloud batch at 17:35 China time on weekdays and on demand.
+- The private workflow publishes only an explicitly allow-listed public JSON snapshot and static HTML to this repository's `gh-pages` branch.
+- The former duplicate public collector workflow has been disabled so it cannot overwrite the private workflow's newer research snapshot.
+- GitHub Pages: **Settings → Pages → Deploy from a branch → gh-pages → /(root)**.
+- Dashboard: https://yeesir99.github.io/Anew/
 
 ## Privacy boundary
 
-This is a public repository. Do not store personal holdings, cost basis, share counts, account details, personal research notes, private tokens, or secrets here. The public collector does not read the private A-Share Alpha Radar database or any portfolio data. Private source code and personal data remain in the private `yeesir99/a-share-alpha-radar` repository.
+This repository and its Pages website are public. Personal holdings, costs, quantities, market values, account details, private notes, manual evidence records, portfolio-derived reports, and secrets must never be committed here. The publisher excludes portfolio and evidence endpoints and withholds legacy Markdown reports pending a separate public/private review.
 
 ## Data-source limitations
 
-The upstream provider README states that the CSV archive is sourced from EastMoney and collected by `tr1v3r/skr`. This is a cached third-party feed, not an independent market-data source. The collector fails closed on stale or incomplete data. A green Actions result means that the checks passed for this snapshot; it is not a guarantee of an independent or uninterrupted market-data feed.
+The cloud batch uses public industry/market snapshots, sampled stock technicals, public sector-flow estimates, ETF share snapshots, public announcements/RSS, industry valuation snapshots, and a third-party monthly stock archive when each source is available. Providers can fail independently; the generated JSON includes per-job outcomes and source status.
 
-Turnover is trading activity, not net capital inflow. Public main-flow estimates are not institutional account-level flows. The public dashboard does not claim to provide verified institutional flows, industry/theme scores, the full 12-section research report, or transaction-level backtests until those data and methods are implemented and validated.
+The `modi-hu/stock-data` archive declares EastMoney as its upstream. It is a third-party cache, not an independent market-data source. Turnover is trading activity, not net capital inflow. Public main-flow estimates are not institution-specific account flows. ETF share changes are not institutional net purchases.
+
+The dashboard is not yet the complete legacy product: private portfolio functions, private evidence records, and the fully reviewed 12-section report are not published. Historical signal observations are not a transaction-level backtest.
 
 Research support only; not investment advice.
