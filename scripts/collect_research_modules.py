@@ -62,7 +62,7 @@ def load_validated_trade_day() -> date:
     # The live collector stores dates as YYYYMMDD integers/strings.
     # pandas otherwise interprets values such as 20261120 as nanoseconds
     # after the Unix epoch and silently turns them into 1970-01-01.
-    raw_dates = frame["trade_date"].astype(str).str.strip().str.replace(r"\\.0$", "", regex=True)
+    raw_dates = frame["trade_date"].astype(str).str.strip().str.replace(r"\.0$", "", regex=True)
     parsed = pd.to_datetime(raw_dates, format="%Y%m%d", errors="coerce")
     missing = parsed.isna()
     if missing.any():
