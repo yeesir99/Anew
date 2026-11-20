@@ -64,10 +64,15 @@ def main():
             continue
         change = num(row.get("change_pct"))
         turnover = num(row.get("turnover_cny"))
+        industry_name = str(row.get("industry_name") or SECTOR_NAMES.get(code) or "").strip()
+        # A code without a verified Chinese label must never enter a public
+        # industry ranking. Keep the raw archive row for future remapping.
+        if not industry_name or industry_name.startswith("BK"):
+            continue
         if (row_day and row_day <= str(day) and code and change is not None
                 and turnover is not None and turnover > 0):
             valid_industry_rows.append({**row, "trade_date": row_day, "industry": code,
-                                        "industry_name": row.get("industry_name") or SECTOR_NAMES.get(code), "change_pct": change, "turnover_cny": turnover})
+                                        "industry_name": industry_name, "change_pct": change, "turnover_cny": turnover})
     available_days = sorted({x["trade_date"] for x in valid_industry_rows})
     industry_snapshot_day = available_days[-1] if available_days else None
     current = [x for x in valid_industry_rows if x["trade_date"] == industry_snapshot_day]
@@ -121,7 +126,7 @@ def main():
     for row in flows:
         if row.get("trade_date") == day:
             flow_items.append({"trade_date": row.get("trade_date"), "indicator": row.get("indicator"),
-                "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or row.get("industry_name"), "change_pct": num(row.get("change_pct")),
+                "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or SECTOR_NAMES.get(str(row.get("industry") or "")), "change_pct": num(row.get("change_pct")),
                 "main_net_inflow": num(row.get("main_net_inflow_cny")),
                 "main_net_ratio": num(row.get("main_net_ratio_pct")), "source": row.get("source")})
     if not flow_items:
