@@ -33,7 +33,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
 </script><script>
 (async function loadResearchModules(){
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
- const fmt=v=>v==null?"—":Number(v).toFixed(2);
+ const fmt=(v,d=2)=>v==null?"—":Number(v).toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
  const pct=v=>v==null?"—":fmt(v)+"%";
  const table=(items,cols)=>!items?.length?'<div class="empty">暂无已验证数据</div>':'<div style="overflow:auto"><table><thead><tr>'+cols.map(x=>'<th>'+x[0]+'</th>').join("")+'</tr></thead><tbody>'+items.map(x=>'<tr>'+cols.map(c=>'<td>'+c[1](x)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';
  try{
