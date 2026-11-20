@@ -142,11 +142,11 @@ def main() -> None:
             "status": "unavailable", "reason": "尚未积累可用行业历史样本"}
         sections["backtest"] = backtest
         industry_text = "；".join(f"{x['display_name']} {x.get('latest_change')}%" for x in industry_rank[:10]) or "无可用行业快照"
-        rotation_text = "；".join(f"{x['industry']} 5日{x.get('return_5d_pct')}%/10日{x.get('return_10d_pct')}%/20日{x.get('return_20d_pct')}%" for x in rotation[:10]) or "历史窗口不足"
-        flow_text = "；".join(f"{x['industry']} 净流入估算{x.get('main_net_inflow')}" for x in flow_rows[:10]) or "无可用资金流估算"
+        rotation_text = "；".join(f"{x['display_name']} 5日{x.get('return_5d_pct')}%/10日{x.get('return_10d_pct')}%/20日{x.get('return_20d_pct')}%" for x in rotation[:10]) or "历史窗口不足"
+        flow_text = "；".join(f"{x.get('industry_name') or x['industry']} 净流入估算{x.get('main_net_inflow')}" for x in flow_rows[:10]) or "无可用资金流估算"
         stale_sections = [
             ("1. 市场广度与风险偏好", "当前快照交易日为 " + str(snapshot["trade_date"]) + "，数据已滞后；不作当前市场判断。"),
-            ("2. 行业强弱排名", "历史行业板块排名（代码BK，非行业名称）：" + industry_text),
+            ("2. 行业强弱排名", "历史行业板块排名（中文名称）：" + industry_text),
             ("3. 主线候选与证据覆盖", "仅提供量价候选，不等于产业主线；政策、订单、盈利证据未验证。"),
             ("4. 行业轮动（5/10/20日）", "基于归档历史日线计算：" + rotation_text),
             ("5. 公开资金流估算", "历史公开主力资金估算（非机构专属账户）：" + flow_text),
