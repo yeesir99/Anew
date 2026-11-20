@@ -163,7 +163,7 @@ def main():
     # Twelve sections; unavailable fields are explicitly labelled rather than filled with synthetic values.
     sections_report = [
         ("1. 市场广度与风险偏好", f"交易日 {day}；覆盖 {market.get('coverage', {}).get('valid_stock_count', 0)} 只；上涨 {market.get('coverage', {}).get('up', 0)}、下跌 {market.get('coverage', {}).get('down', 0)}；涨跌幅中位数 {breadth.get('median_change_pct', '缺失')}%。"),
-        ("2. 行业强弱排名", "行业数据日 " + str(industry_snapshot_day) + "；" + ("；".join(f"{x['industry']} {x.get('latest_change')}%" for x in sorted(rotation, key=lambda x: x.get("latest_change") or -999, reverse=True)[:10]) or "行业快照暂不可用。")),
+        ("2. 行业强弱排名", "行业数据日 " + str(industry_snapshot_day) + "；" + ("；".join(f"{x['display_name']} {x.get('latest_change')}%" for x in sorted(rotation, key=lambda x: x.get("latest_change") or -999, reverse=True)[:10]) or "行业快照暂不可用。")),
         ("3. 主线候选与证据覆盖", "仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。"),
         ("4. 行业轮动（5/10/20日）", "5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。"),
         ("5. 公开资金流估算", f"本日记录 {sum(x.get('indicator') == '今日' for x in flow_items)} 条；仅为公开主力资金估算，非机构账户数据。"),
