@@ -169,7 +169,12 @@ def main():
     sections["data-sources"] = {"items": source_doc.get("sources", [])}
     # Reuse the already validated full-market turnover ranking. Do not depend on a second
     # external endpoint for the public active-stock table.
-    sections["external-market-data"] = {"leaders": market.get("most_active", [])}
+    sections["external-market-data"] = {"leaders": [{
+        "ticker": x.get("symbol"), "name": x.get("name"),
+        "change_pct": x.get("change_pct"), "amount": x.get("amount_cny"),
+        "main_net_inflow": None,
+        "source": "validated full-market snapshot; turnover ranking, not capital-flow ranking"
+    } for x in market.get("most_active", [])]}
     sections["backtest"] = json.loads((SITE / "backtest.json").read_text(encoding="utf-8")) if (SITE / "backtest.json").exists() else {"status": "unavailable"}
     # Twelve sections; unavailable fields are explicitly labelled rather than filled with synthetic values.
     sections_report = [
