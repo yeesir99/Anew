@@ -1,0 +1,1078 @@
+{
+  "generated_at": "2026-11-20T22:35:37+00:00",
+  "market_trade_date": "2026-11-20T22:33:15+00:00",
+  "financial_report_date": "20260930",
+  "themes": {
+    "集成电路制造": {
+      "sector_code": "BK1329",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [
+          {
+            "title": "关于公开征求《半导体集成电路 融合视觉传感器测试方法》等46项推荐性国家标准计划项目意见的公示",
+            "url": "https://www.miit.gov.cn/gzcy/yjzj/art/2026/art_4e61c7d0c9b540ef9d129e0c71d2fa80.html",
+            "source": "工业和信息化部官网文件发布索引",
+            "published_date": null,
+            "document_type": "official_ministry_notice"
+          }
+        ],
+        "coverage": 1,
+        "status": "success",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "橡胶助剂": {
+      "sector_code": "BK1443",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "厨房小家电": {
+      "sector_code": "BK1457",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "半导体材料": {
+      "sector_code": "BK1325",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [
+          {
+            "title": "关于公开征求《半导体集成电路 融合视觉传感器测试方法》等46项推荐性国家标准计划项目意见的公示",
+            "url": "https://www.miit.gov.cn/gzcy/yjzj/art/2026/art_4e61c7d0c9b540ef9d129e0c71d2fa80.html",
+            "source": "工业和信息化部官网文件发布索引",
+            "published_date": null,
+            "document_type": "official_ministry_notice"
+          }
+        ],
+        "coverage": 1,
+        "status": "success",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "钼": {
+      "sector_code": "BK1623",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "医疗器械": {
+      "sector_code": "BK1039",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "辅助生殖": {
+      "sector_code": "BK0732",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "商业服务": {
+      "sector_code": "BK1015",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "烟草与大麻": {
+      "sector_code": "BK1036",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "个护用品Ⅲ": {
+      "sector_code": "BK1038",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "白酒概念": {
+      "sector_code": "BK0475",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "养老概念": {
+      "sector_code": "BK0474",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "港口航运": {
+      "sector_code": "BK1019",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "第三代半导体": {
+      "sector_code": "BK0731",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "机器人概念": {
+      "sector_code": "BK0471",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "乳业": {
+      "sector_code": "BK0450",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "可选消费经销Ⅲ": {
+      "sector_code": "BK1029",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "参股民营银行": {
+      "sector_code": "BK0456",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "粤港澳大湾区": {
+      "sector_code": "BK0473",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    },
+    "科创次新股": {
+      "sector_code": "BK0730",
+      "constituent_count": 0,
+      "constituent_codes": [],
+      "financials": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0
+      },
+      "earnings_forecasts": {
+        "records": [],
+        "coverage": 0
+      },
+      "institutional_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "Sina stock_institute_hold"
+      },
+      "public_fund_holdings": {
+        "report_date": "20260930",
+        "records": [],
+        "coverage": 0,
+        "source": "CNINFO fund_report_stock_cninfo"
+      },
+      "contracts": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare/EastMoney stock_zdhtmx_em"
+      },
+      "company_events": {
+        "records": [],
+        "coverage": 0,
+        "source": "AKShare stock_notice_report"
+      },
+      "government_policy": {
+        "records": [],
+        "coverage": 0,
+        "status": "no_matching_official_document",
+        "source": "工业和信息化部官网文件发布索引"
+      }
+    }
+  },
+  "sources": [
+    {
+      "source": "constituents:集成电路制造",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:15+00:00"
+    },
+    {
+      "source": "constituents:橡胶助剂",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:16+00:00"
+    },
+    {
+      "source": "constituents:厨房小家电",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:17+00:00"
+    },
+    {
+      "source": "constituents:半导体材料",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:18+00:00"
+    },
+    {
+      "source": "constituents:钼",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:19+00:00"
+    },
+    {
+      "source": "constituents:医疗器械",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:19+00:00"
+    },
+    {
+      "source": "constituents:辅助生殖",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:20+00:00"
+    },
+    {
+      "source": "constituents:商业服务",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:21+00:00"
+    },
+    {
+      "source": "constituents:烟草与大麻",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:22+00:00"
+    },
+    {
+      "source": "constituents:个护用品Ⅲ",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:22+00:00"
+    },
+    {
+      "source": "constituents:白酒概念",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:23+00:00"
+    },
+    {
+      "source": "constituents:养老概念",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:24+00:00"
+    },
+    {
+      "source": "constituents:港口航运",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:25+00:00"
+    },
+    {
+      "source": "constituents:第三代半导体",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:25+00:00"
+    },
+    {
+      "source": "constituents:机器人概念",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:26+00:00"
+    },
+    {
+      "source": "constituents:乳业",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:27+00:00"
+    },
+    {
+      "source": "constituents:可选消费经销Ⅲ",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:28+00:00"
+    },
+    {
+      "source": "constituents:参股民营银行",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:29+00:00"
+    },
+    {
+      "source": "constituents:粤港澳大湾区",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:29+00:00"
+    },
+    {
+      "source": "constituents:科创次新股",
+      "status": "failed",
+      "records": 0,
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-20T22:33:30+00:00"
+    },
+    {
+      "source": "stock_yjbb_em:20260930",
+      "status": "success",
+      "records": 5813,
+      "checked_at": "2026-11-20T22:33:31+00:00"
+    },
+    {
+      "source": "stock_yjyg_em:20260930",
+      "status": "success",
+      "records": 543,
+      "checked_at": "2026-11-20T22:33:53+00:00"
+    },
+    {
+      "source": "stock_institute_hold:20263",
+      "status": "failed",
+      "records": 0,
+      "detail": "stock_institute_hold() got an unexpected keyword argument 'quarter'",
+      "checked_at": "2026-11-20T22:34:01+00:00"
+    },
+    {
+      "source": "fund_report_stock_cninfo:20260930",
+      "status": "success",
+      "records": 3088,
+      "checked_at": "2026-11-20T22:34:01+00:00"
+    },
+    {
+      "source": "stock_zdhtmx_em",
+      "status": "success",
+      "records": 504,
+      "checked_at": "2026-11-20T22:34:05+00:00"
+    },
+    {
+      "source": "MIIT_official_release_index",
+      "status": "success",
+      "records": 12,
+      "url": "https://www.miit.gov.cn/RRSdy/index.html"
+    },
+    {
+      "source": "stock_notice_report:20261120",
+      "status": "success",
+      "records": 1223,
+      "checked_at": "2026-11-20T22:34:13+00:00"
+    },
+    {
+      "source": "stock_notice_report:20261119",
+      "status": "success",
+      "records": 1342,
+      "checked_at": "2026-11-20T22:34:29+00:00"
+    },
+    {
+      "source": "stock_notice_report:20261118",
+      "status": "success",
+      "records": 1420,
+      "checked_at": "2026-11-20T22:34:50+00:00"
+    },
+    {
+      "source": "stock_notice_report:20261117",
+      "status": "success",
+      "records": 1787,
+      "checked_at": "2026-11-20T22:35:07+00:00"
+    },
+    {
+      "source": "stock_notice_report:20261116",
+      "status": "success",
+      "records": 535,
+      "checked_at": "2026-11-20T22:35:29+00:00"
+    }
+  ],
+  "limitations": [
+    "业绩、预告和持仓按公开报告期披露，存在季度滞后；必须显示报告期。",
+    "合同和公告是上市公司披露，不等于已确认收入或全行业订单总量。",
+    "机构持仓与公募基金持仓分别统计，不等同实时机构净买入。",
+    "政府政策原文尚未接入，不从公司公告推断政策出台。"
+  ]
+}
