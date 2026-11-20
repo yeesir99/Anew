@@ -48,15 +48,15 @@ def main():
     except Exception:
         pass
     day = market.get("trade_date")
+    # Do not mix live Chinese industry labels with archived BK codes.
+    archive_rows = [x for x in industries if "sector_daily_quotes" in str(x.get("source", ""))]
+    source_industries = archive_rows if archive_rows else industries
     history_by_name = {}
-    for row in industries:
-        if row.get("trade_date") and row.get("industry"):
-            history_by_name.setdefault(row["industry"], []).append(row)
     rotation = []
     # Only use a single, internally consistent sector universe and a single
     # latest available sector date not later than the market snapshot date.
     valid_industry_rows = []
-    for row in industries:
+    for row in source_industries:
         row_day = str(row.get("trade_date", ""))[:10]
         code = str(row.get("industry") or row.get("sector_code") or "").strip()
         change = num(row.get("change_pct"))
