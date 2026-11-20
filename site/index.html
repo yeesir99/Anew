@@ -54,7 +54,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
 
   const panels=document.querySelectorAll('.page');
   const themes=document.querySelector('#themes .empty');
-  if(themes)themes.outerHTML='<div class="card"><div class="section">行业候选与评分证据</div>'+table(items('themes'),[['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['代理分',x=>fmt(x.proxy_score)],['覆盖度',x=>fmt(x.model?.coverage)+'%'],['阶段',x=>esc(x.model?.stage)],['健康度',x=>fmt(x.model?.health?.score)]])+'</div><div class="note">评分仅展示已观测维度；缺失政策、产业、机构资金与盈利证据不补值。</div>';
+  if(themes)themes.outerHTML='<div class="card"><div class="section">行业候选与评分证据</div>'+table(items('themes'),[['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['量价观察分',x=>x.proxy_score==null?'—':fmt(x.proxy_score)],['数据覆盖',x=>(x.model?.coverage??0)+'/'+(x.model?.coverage_total??5)],['5日收益',x=>pct(x.return_5d_pct)],['10日收益',x=>pct(x.return_10d_pct)],['20日收益',x=>pct(x.return_20d_pct)],['阶段',x=>esc(x.model?.stage)],['完整主线健康分',x=>x.model?.health?.score==null?'证据不足':fmt(x.model.health.score)]])+'</div><div class="note">量价观察分按5日收益（70%）与最新单日收益（30%）计算，并映射至0–100；缺失窗口不补零。此分不是完整产业主线评分。政策、订单、盈利、机构持仓证据未接入时，完整主线健康分保持“证据不足”。</div>';
   const rot=document.querySelector('#rotation .empty');
   const rotData=items('rotation');
   if(rot)rot.outerHTML='<div class="card"><div class="section">行业轮动观察</div>'+table(rotData,[['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['轮动强度',x=>fmt(x.rotation_strength_score)],['最新涨幅',x=>pct(x.latest_change)],['5日复合',x=>pct(x.return_5d_pct)],['10日复合',x=>pct(x.return_10d_pct)],['20日复合',x=>pct(x.return_20d_pct)],['历史交易日',x=>x.history_sessions??0]])+'</div>';

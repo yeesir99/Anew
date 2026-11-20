@@ -94,10 +94,16 @@ def main():
         seq = sorted(history_by_name.get(name, []), key=lambda x: x["trade_date"])
         vals = [x["change_pct"] for x in seq]
         r5, r10, r20 = cumulative(vals, 5), cumulative(vals, 10), cumulative(vals, 20)
-        # Momentum score is deliberately unavailable until all configured
-        # windows exist; missing history must not be silently treated as 0%.
-        proxy = (round(50 + r5 * 1.2 + r10 * 0.5 + r20 * 0.2, 2)
-                 if None not in (r5, r10, r20) else None)
+        # Provisional price/volume observation score: use only observed windows.
+        # It is NOT a full thematic/industry fundamental score. Missing 10d/20d
+        # history is excluded and exposed in coverage instead of forcing null.
+        def return_score(value):
+            return max(0.0, min(100.0, 50.0 + value * 3.0)) if value is not None else None
+        daily_score, five_day_score = return_score(row["change_pct"]), return_score(r5)
+        observed = [(five_day_score, 0.7), (daily_score, 0.3)]
+        observed = [(value, weight) for value, weight in observed if value is not None]
+        weight_sum = sum(weight for _, weight in observed)
+        proxy = round(sum(value * weight for value, weight in observed) / weight_sum, 2) if weight_sum else None
         display_name = str(row.get("industry_name") or name).strip()
         rotation.append({"industry": name, "sector_code": name, "display_name": display_name, "industry_name": display_name,
             "trade_date": industry_snapshot_day, "latest_change": row["change_pct"],
@@ -113,13 +119,18 @@ def main():
         themes.append({"industry": row["display_name"], "industry_name": row["display_name"], "sector_code": row["sector_code"],
             "trade_date": row["trade_date"], "change_pct": row["latest_change"], "turnover_cny": row["turnover_cny"],
             "proxy_score": row["rotation_strength_score"],
+            "score_type": "price_volume_observation_0_100",
+            "score_components": {"latest_day_score": round(max(0.0, min(100.0, 50.0 + row["latest_change"] * 3.0)), 2) if row["latest_change"] is not None else None,
+                                 "return_5d_score": round(max(0.0, min(100.0, 50.0 + row["return_5d_pct"] * 3.0)), 2) if row["return_5d_pct"] is not None else None},
             "model": {"coverage": sum(v is not None for v in
                         (row["latest_change"], row["turnover_cny"], row["return_5d_pct"],
                          row["return_10d_pct"], row["return_20d_pct"])),
-                      "stage": "量价观察候选，非产业主线结论",
+                      "coverage_total": 5,
+                      "stage": "量价观察分（非完整产业主线评分）",
+                      "missing": [label for label, value in (("10日收益", row["return_10d_pct"]), ("20日收益", row["return_20d_pct"]), ("政策与事件", None), ("订单与盈利", None), ("机构持仓", None)) if value is None],
                       "health": {"score": None, "coverage": 0,
-                                 "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"}},
-            "evidence": ["行业当日涨跌幅", "行业成交额"]})
+                                 "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"}},
+            "evidence": ["行业当日涨跌幅", "行业5日复合收益" if row["return_5d_pct"] is not None else "行业当日涨跌幅", "行业成交额"]})
     industry_names = {str(x.get("sector_code") or x.get("industry") or ""):
                       str(x.get("industry_name") or x.get("display_name") or "") for x in current}
     flow_items = []
