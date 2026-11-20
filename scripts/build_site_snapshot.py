@@ -2,6 +2,7 @@
 """Build privacy-safe static JSON for the public Pages dashboard."""
 from __future__ import annotations
 
+import csv
 import json
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -47,25 +48,84 @@ def main() -> None:
         ui_breadth = {**breadth, "up": coverage["up"], "down": coverage["down"],
                       "flat": coverage["unchanged"], "total": count,
                       "turnover": breadth.get("aggregate_turnover_cny")}
+        industry_rows = []
+        industry_history = ROOT / "data" / "industry_history.csv"
+        if industry_history.exists():
+            with industry_history.open(encoding="utf-8-sig", newline="") as f:
+                industry_rows = list(csv.DictReader(f))
+        sector_day = snapshot["trade_date"]
+        today_rows = [x for x in industry_rows if x.get("trade_date", "")[:10] == sector_day]
+        by_sector = {}
+        for row in industry_rows:
+            by_sector.setdefault(row.get("industry", ""), []).append(row)
+        rotation = []
+        for row in today_rows:
+            code = row.get("industry", "")
+            seq = sorted(by_sector.get(code, []), key=lambda x: x.get("trade_date", ""))
+            values = []
+            for item in seq:
+                try: values.append(float(item.get("change_pct", "")))
+                except (TypeError, ValueError): continue
+            def compound(n):
+                if len(values) < n: return None
+                result = 1.0
+                for value in values[-n:]: result *= 1.0 + value / 100.0
+                return round((result - 1.0) * 100.0, 3)
+            try: change = float(row.get("change_pct", ""))
+            except (TypeError, ValueError): change = None
+            try: turnover = float(row.get("turnover_cny", ""))
+            except (TypeError, ValueError): turnover = None
+            r5, r10, r20 = compound(5), compound(10), compound(20)
+            rotation.append({"industry": code, "sector_code": code, "latest_change": change,
+                "change_pct": change, "turnover_cny": turnover, "return_5d_pct": r5,
+                "return_10d_pct": r10, "return_20d_pct": r20,
+                "rotation_strength_score": round(50 + (r5 or 0)*1.2 + (r10 or 0)*0.5 + (r20 or 0)*0.2, 2),
+                "history_sessions": len(values), "history_ready": len(values) >= 20})
+        rotation.sort(key=lambda x: x["rotation_strength_score"], reverse=True)
+        industry_rank = sorted(rotation, key=lambda x: x.get("latest_change") if x.get("latest_change") is not None else -999, reverse=True)
+        flow_rows = []
+        for row in today_rows:
+            try: net = float(row.get("main_net_inflow_cny", ""))
+            except (TypeError, ValueError): net = None
+            try: ratio = float(row.get("main_net_ratio_pct", ""))
+            except (TypeError, ValueError): ratio = None
+            if net is not None:
+                flow_rows.append({"trade_date": sector_day, "indicator": "今日",
+                    "industry": row.get("industry"), "main_net_inflow": net,
+                    "main_net_ratio": ratio, "change_pct": next((x.get("change_pct") for x in rotation if x["industry"] == row.get("industry")), None),
+                    "source": "EastMoney-derived third-party sector archive"})
+        flow_rows.sort(key=lambda x: x.get("main_net_inflow") if x.get("main_net_inflow") is not None else -1e30, reverse=True)
+        themes = [{"industry": x["industry"], "change_pct": x.get("latest_change"),
+            "turnover_cny": x.get("turnover_cny"), "proxy_score": x.get("rotation_strength_score"),
+            "model": {"coverage": 20, "stage": "量价观察候选；行业代码未映射名称",
+                      "health": {"score": None, "coverage": 0, "note": "缺少独立产业、政策、盈利与机构持仓证据"}},
+            "evidence": ["公开行业板块日线涨跌幅", "公开行业板块成交额"]} for x in rotation[:20]]
         sections = {
             "overview": {"count": count, "up": coverage["up"], "down": coverage["down"]},
             "market-breadth": {"item": {"trade_date": snapshot["trade_date"], "payload": ui_breadth}},
-            "industries": {"items": []}, "themes": {"items": []}, "rotation": {"items": []},
-            "capital-flows": {"items": []}, "etf-shares": {"items": []},
+            "industries": {"items": industry_rank}, "themes": {"items": themes}, "rotation": {"items": rotation},
+            "capital-flows": {"items": flow_rows, "note": "历史公开主力资金估算；不是机构专属账户流向。"},
+            "etf-shares": {"items": [], "note": "备用归档未提供交易所ETF份额历史。"},
             "external-market-data": {"leaders": []},
             "data-sources": {"items": [{"source": "modi-hu/stock-data archive",
-                "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"}]}
+                "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"},
+                {"source": "modi-hu/stock-data sector_daily_quotes",
+                "status": "stale" if today_rows else "unavailable",
+                "detail": "行业代码BK未映射为可读名称；资金流为EastMoney估算。"}]}
         }
         backtest_path = OUT / "backtest.json"
         backtest = json.loads(backtest_path.read_text(encoding="utf-8")) if backtest_path.exists() else {
             "status": "unavailable", "reason": "尚未积累可用行业历史样本"}
         sections["backtest"] = backtest
+        industry_text = "；".join(f"{x['industry']} {x.get('latest_change')}%" for x in industry_rank[:10]) or "无可用行业快照"
+        rotation_text = "；".join(f"{x['industry']} 5日{x.get('return_5d_pct')}%/10日{x.get('return_10d_pct')}%/20日{x.get('return_20d_pct')}%" for x in rotation[:10]) or "历史窗口不足"
+        flow_text = "；".join(f"{x['industry']} 净流入估算{x.get('main_net_inflow')}" for x in flow_rows[:10]) or "无可用资金流估算"
         stale_sections = [
             ("1. 市场广度与风险偏好", "当前快照交易日为 " + str(snapshot["trade_date"]) + "，数据已滞后；不作当前市场判断。"),
-            ("2. 行业强弱排名", "行业日线未更新；等待新鲜行情验证后再生成。"),
-            ("3. 主线候选与证据覆盖", "政策、产业、订单和盈利证据未在本次更新，主线结论暂停。"),
-            ("4. 行业轮动（5/10/20日）", "行业历史快照尚未持续积累；轮动数据暂不可用。"),
-            ("5. 公开资金流估算", "本次未更新资金流；不以成交额替代净流入。"),
+            ("2. 行业强弱排名", "历史行业板块排名（代码BK，非行业名称）：" + industry_text),
+            ("3. 主线候选与证据覆盖", "仅提供量价候选，不等于产业主线；政策、订单、盈利证据未验证。"),
+            ("4. 行业轮动（5/10/20日）", "基于归档历史日线计算：" + rotation_text),
+            ("5. 公开资金流估算", "历史公开主力资金估算（非机构专属账户）：" + flow_text),
             ("6. ETF份额变化", "本次未更新交易所ETF份额快照。"),
             ("7. 宽基指数与宏观环境", "本次未更新指数与宏观数据。"),
             ("8. 个股活跃度与异动", "以下只保留历史快照，不代表当前活跃榜。"),
@@ -91,7 +151,7 @@ def main() -> None:
                     "jobs": [{"name": "archive_fallback", "status": snapshot["data_status"]}],
                     "notes": ["本公开快照不包含个人持仓、成本、账户、私人笔记或证据台账。",
                               "备用行情来自第三方历史归档；如标记滞后，只能作为历史参考。",
-                              "行业、资金流、ETF与轮动模块等待新鲜行情验证后更新。"]}
+                              "行业、资金流和轮动使用公开历史归档，交易日滞后时只作历史观察；ETF份额等待独立数据源。"]}
         (OUT / "research.json").write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({"source": "archive_fallback", "trade_date": snapshot["trade_date"],
                           "stocks": count, "status": snapshot["data_status"]}, ensure_ascii=False))
