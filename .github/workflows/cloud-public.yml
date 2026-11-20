@@ -69,18 +69,19 @@ jobs:
         if: steps.live.outcome == 'failure'
         run: python scripts/validate_industry_data.py
       - name: Collect public industry, capital-flow and ETF-share history
-        if: steps.live.outcome == 'success'
+        if: always() && !cancelled() && steps.live.outcome == 'success'
+        continue-on-error: true
         env:
           TZ: Asia/Shanghai
         run: python scripts/collect_research_modules.py
       - name: Run point-in-time industry momentum backtest
-        if: steps.live.outcome == 'success'
+        if: always() && !cancelled()
         run: python scripts/backtest_industry.py
       - name: Build evidence-labelled research modules and 12-section report
-        if: steps.live.outcome == 'success'
+        if: always() && !cancelled()
         run: python scripts/enrich_research_snapshot.py
       - name: Validate final industry data contract
-        if: steps.live.outcome == 'success'
+        if: always() && !cancelled()
         run: python scripts/validate_industry_data.py
       - name: Validate privacy boundary and static data
         run: |
