@@ -56,11 +56,42 @@ def main() -> None:
             "data-sources": {"items": [{"source": "modi-hu/stock-data archive",
                 "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"}]}
         }
+        backtest_path = OUT / "backtest.json"
+        backtest = json.loads(backtest_path.read_text(encoding="utf-8")) if backtest_path.exists() else {
+            "status": "unavailable", "reason": "尚未积累可用行业历史样本"}
+        sections["backtest"] = backtest
+        stale_sections = [
+            ("1. 市场广度与风险偏好", "当前快照交易日为 " + str(snapshot["trade_date"]) + "，数据已滞后；不作当前市场判断。"),
+            ("2. 行业强弱排名", "行业日线未更新；等待新鲜行情验证后再生成。"),
+            ("3. 主线候选与证据覆盖", "政策、产业、订单和盈利证据未在本次更新，主线结论暂停。"),
+            ("4. 行业轮动（5/10/20日）", "行业历史快照尚未持续积累；轮动数据暂不可用。"),
+            ("5. 公开资金流估算", "本次未更新资金流；不以成交额替代净流入。"),
+            ("6. ETF份额变化", "本次未更新交易所ETF份额快照。"),
+            ("7. 宽基指数与宏观环境", "本次未更新指数与宏观数据。"),
+            ("8. 个股活跃度与异动", "以下只保留历史快照，不代表当前活跃榜。"),
+            ("9. 技术结构与趋势", "未取得本次新鲜技术指标，不外推旧数据。"),
+            ("10. 公告、政策与事件", "未验证本次公告与新闻原文。"),
+            ("11. 盈利、估值与基本面", "未取得本次有效的一致预期及估值更新。"),
+            ("12. 风险、数据质量与行动清单", "行情状态为滞后；在新鲜数据恢复前，不输出方向性行动建议。")
+        ]
+        report_lines = ["# A-Share Alpha Radar｜12栏目公开研究日报",
+                        "", "> 历史快照，不是最新交易日研究结论。",
+                        "", "交易日：" + str(snapshot["trade_date"]),
+                        "", "数据状态：STALE（滞后）", ""]
+        for heading, body in stale_sections:
+            report_lines.extend(["## " + heading, body, ""])
+        report_lines.extend(["## 数据口径与隐私", "本报告只使用公开市场数据，不包含个人持仓、成本、账户、私人笔记或证据台账。",
+                             "第三方历史归档最终上游为东方财富；数据滞后时仅供历史参考。"])
+        stale_markdown = "\n".join(report_lines) + "\n"
+        sections["reports"] = {"items": [{"trade_date": snapshot["trade_date"],
+            "title": "12栏目公开研究日报（历史数据滞后）", "markdown": stale_markdown,
+            "data_status": "stale"}], "note": "行情滞后；暂停当前市场判断。"}
         research = {"privacy": "public_research_only", "generated_at": snapshot["generated_at"],
                     "market_status": snapshot["data_status"], "sections": sections,
                     "jobs": [{"name": "archive_fallback", "status": snapshot["data_status"]}],
                     "notes": ["本公开快照不包含个人持仓、成本、账户、私人笔记或证据台账。",
-                              "备用行情来自第三方历史归档；如标记滞后，只能作为历史参考。"]}
+                              "备用行情来自第三方历史归档；如标记滞后，只能作为历史参考。",
+                              "行业、资金流、ETF与轮动模块等待新鲜行情验证后更新。"]}
         (OUT / "research.json").write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({"source": "archive_fallback", "trade_date": snapshot["trade_date"],
                           "stocks": count, "status": snapshot["data_status"]}, ensure_ascii=False))
