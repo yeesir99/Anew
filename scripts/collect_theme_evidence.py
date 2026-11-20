@@ -42,6 +42,24 @@ def number(value):
         return None
 
 
+def norm_code(value):
+    raw = clean(value)
+    if raw is None:
+        return None
+    raw = re.sub(r"\\.0$", "", raw)
+    digits = re.sub(r"\\D", "", raw)
+    return digits.zfill(6) if 1 <= len(digits) <= 6 else None
+
+
+def source_function(name):
+    fn = getattr(ak, name, None)
+    if fn is not None:
+        return fn
+    def missing(*args, **kwargs):
+        raise RuntimeError(name + " unavailable in installed AkShare")
+    return missing
+
+
 def records(frame):
     if frame is None or not isinstance(frame, pd.DataFrame) or frame.empty:
         return []
@@ -103,7 +121,7 @@ def main():
         name = clean(theme.get("industry_name") or theme.get("industry"))
         if not name:
             continue
-        rows, status = call_source("constituents:" + name, getattr(ak, "stock_board_industry_cons_em"), symbol=name)
+        rows, status = call_source("constituents:" + name, source_function("stock_board_industry_cons_em"), symbol=name)
         source_status.append(status)
         code_col = find_col(rows[0].keys(), ("代码", "股票代码", "证券代码")) if rows else None
         name_col = find_col(rows[0].keys(), ("名称", "股票简称", "证券简称")) if rows else None
@@ -124,7 +142,7 @@ def main():
     report_date = None
     for quarter in latest_quarter_dates():
         key = quarter.strftime("%Y%m%d")
-        candidate, status = call_source("stock_yjbb_em:" + key, getattr(ak, "stock_yjbb_em"), date=key)
+        candidate, status = call_source("stock_yjbb_em:" + key, source_function("stock_yjbb_em"), date=key)
         source_status.append(status)
         if candidate:
             financial_rows, financial_status, report_date = candidate, status, key
@@ -132,7 +150,7 @@ def main():
         time.sleep(0.3)
     for quarter in latest_quarter_dates():
         key = quarter.strftime("%Y%m%d")
-        candidate, status = call_source("stock_yjyg_em:" + key, getattr(ak, "stock_yjyg_em"), date=key)
+        candidate, status = call_source("stock_yjyg_em:" + key, source_function("stock_yjyg_em"), date=key)
         source_status.append(status)
         if candidate:
             forecast_rows, forecast_status = candidate, status
@@ -161,7 +179,7 @@ def main():
     end_day = date.today()
     start_day = end_day - timedelta(days=180)
     contract_rows, contract_status = call_source(
-        "stock_zdhtmx_em", getattr(ak, "stock_zdhtmx_em"),
+        "stock_zdhtmx_em", source_function("stock_zdhtmx_em"),
         start_date=start_day.strftime("%Y%m%d"), end_date=end_day.strftime("%Y%m%d"))
     source_status.append(contract_status)
 
@@ -176,7 +194,7 @@ def main():
         if cursor.weekday() < 5:
             day_key = cursor.strftime("%Y%m%d")
             rows, status = call_source("stock_notice_report:" + day_key,
-                getattr(ak, "stock_notice_report"), date=day_key, notice_category="全部")
+                source_function("stock_notice_report"), date=day_key, notice_category="全部")
             notice_rows.extend(rows)
             notice_statuses.append(status)
             business_days += 1
