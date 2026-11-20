@@ -1,8 +1,6 @@
-name: A-share daily close collection
+name: Legacy manual A-share close collection (schedule retired)
 
 on:
-  schedule:
-    - cron: "30 11 * * 1-5" # 19:30 Asia/Shanghai
   workflow_dispatch:
 
 permissions:
