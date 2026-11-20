@@ -81,6 +81,13 @@ jobs:
       - name: Build evidence-labelled research modules and 12-section report
         if: always() && !cancelled()
         run: python scripts/enrich_research_snapshot.py
+      - name: Collect auditable theme evidence (financials, forecasts, holdings, contracts, announcements)
+        if: always() && !cancelled()
+        continue-on-error: true
+        timeout-minutes: 20
+        env:
+          TZ: Asia/Shanghai
+        run: python scripts/collect_theme_evidence.py
       - name: Validate final industry data contract
         if: always() && !cancelled()
         run: python scripts/validate_industry_data.py
