@@ -130,7 +130,7 @@ def main() -> None:
             "data-sources": {"items": [{"source": "modi-hu/stock-data archive",
                 "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"},
                 {"source": "modi-hu/stock-data sector_daily_quotes",
-                "status": "success" if today_rows else "unavailable",
+                "status": ("success" if sector_day == market_day else "stale") if today_rows else "unavailable",
                 "detail": f"行业数据日={sector_day or 'none'}；{len(today_rows)}条有效行业记录；BK代码暂未映射中文名称。"}]}
         }
         backtest_path = OUT / "backtest.json"
