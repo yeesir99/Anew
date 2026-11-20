@@ -72,7 +72,7 @@ def _normalise_spot(frame: pd.DataFrame, day: date) -> pd.DataFrame:
     df = df.dropna(subset=["close", "pre_close"])
     df = df[df["close"] > 0].copy()
     # Sina may return exchange-prefixed codes (sh600000/sz000001); normalize to six digits.
-    df["symbol"] = df["symbol"].astype(str).str.extract(r"(\\d{6})", expand=False)
+    df["symbol"] = df["symbol"].astype(str).str.extract(r"(\d{6})", expand=False)
     df = df.dropna(subset=["symbol"])
     df["symbol"] = df["symbol"].astype(str).str.zfill(6)
     df["ts_code"] = df["symbol"].map(
