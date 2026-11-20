@@ -65,6 +65,8 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: python scripts/build_site_snapshot.py
+      - name: Validate fallback/live industry data contract
+        run: python scripts/validate_industry_data.py
       - name: Collect public industry, capital-flow and ETF-share history
         if: steps.live.outcome == 'success'
         env:
@@ -76,6 +78,9 @@ jobs:
       - name: Build evidence-labelled research modules and 12-section report
         if: steps.live.outcome == 'success'
         run: python scripts/enrich_research_snapshot.py
+      - name: Validate final industry data contract
+        if: steps.live.outcome == 'success'
+        run: python scripts/validate_industry_data.py
       - name: Validate privacy boundary and static data
         run: |
           python - <<'PY'
