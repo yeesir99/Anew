@@ -1020,7 +1020,8 @@ def main():
         "source": "modi-hu/stock-data sector_daily_quotes",
         "status": status,
         "detail": f"EastMoney-derived third-party archive; latest trade date={latest}; imported rows={imported}; sector names mapped={len(sector_names)}; unresolved codes={sum(1 for x in merged.values() if not x.get('industry_name'))}."
-                    + ((" Mapping errors: " + " | ".join(name_errors)) if name_errors else "")\n                    + ((" Archive errors: " + " | ".join(errors)) if errors else ""),
+                    + ((" Mapping errors: " + " | ".join(name_errors)) if name_errors else "")
+                    + ((" Archive errors: " + " | ".join(errors)) if errors else ""),
     }
     doc.update({"trade_date": latest, "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "sources": list(sources.values())})
