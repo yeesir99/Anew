@@ -7,6 +7,7 @@ import json
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from import_sector_archive import SECTOR_NAMES, is_concept_code
 
 import pandas as pd
 
@@ -62,6 +63,8 @@ def main() -> None:
         for row in source_rows:
             row_day = str(row.get("trade_date", ""))[:10]
             code = str(row.get("sector_code") or row.get("industry") or "").strip()
+            if is_concept_code(code):
+                continue
             change = pd.to_numeric(row.get("change_pct"), errors="coerce")
             turnover = pd.to_numeric(row.get("turnover_cny"), errors="coerce")
             if (row_day and row_day <= market_day and code and pd.notna(change)
@@ -89,8 +92,8 @@ def main() -> None:
             r5, r10, r20 = compound(5), compound(10), compound(20)
             proxy = (round(50 + r5 * 1.2 + r10 * 0.5 + r20 * 0.2, 2)
                      if None not in (r5, r10, r20) else None)
-            display_name = str(row.get("industry_name") or code).strip()
-            rotation.append({"industry": code, "display_name": display_name, "industry_name": display_name, "sector_code": code,
+            display_name = str(row.get("industry_name") or SECTOR_NAMES.get(code) or code).strip()
+            rotation.append({"industry": code, "display_name": display_name, "industry_name": display_name, "sector_code": code, "sector_type": "industry",
                 "trade_date": sector_day, "latest_change": row["change_pct"],
                 "change_pct": row["change_pct"], "turnover_cny": row["turnover_cny"],
                 "return_5d_pct": r5, "return_10d_pct": r10, "return_20d_pct": r20,
