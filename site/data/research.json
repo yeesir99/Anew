@@ -1,6 +1,6 @@
 {
   "privacy": "public_research_only",
-  "generated_at": "2026-11-20T17:05:20+00:00",
+  "generated_at": "2026-11-20T22:25:49+00:00",
   "market_status": "validated",
   "sections": {
     "overview": {
@@ -38,7 +38,7 @@
           "return_5d_pct": 4.931,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 65.59,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -54,7 +54,7 @@
           "return_5d_pct": 6.315,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 66.25,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -70,7 +70,7 @@
           "return_5d_pct": 6.549,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 66.63,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -86,7 +86,7 @@
           "return_5d_pct": 5.874,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 64.74,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -102,7 +102,7 @@
           "return_5d_pct": 1.781,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 55.88,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -118,7 +118,7 @@
           "return_5d_pct": 3.365,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 58.74,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -134,7 +134,7 @@
           "return_5d_pct": 8.431,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 69.36,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -150,7 +150,7 @@
           "return_5d_pct": 1.022,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 52.78,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -166,7 +166,7 @@
           "return_5d_pct": 3.087,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 56.75,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -182,7 +182,7 @@
           "return_5d_pct": 4.376,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 59.34,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -198,7 +198,7 @@
           "return_5d_pct": 1.539,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 53.36,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -214,7 +214,7 @@
           "return_5d_pct": -0.752,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 48.51,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -230,7 +230,7 @@
           "return_5d_pct": 0.02,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.02,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -246,7 +246,7 @@
           "return_5d_pct": 0.419,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.83,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -262,7 +262,7 @@
           "return_5d_pct": 2.337,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 54.76,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -278,7 +278,7 @@
           "return_5d_pct": -3.163,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 43.19,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -294,7 +294,7 @@
           "return_5d_pct": -0.864,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.99,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -310,7 +310,7 @@
           "return_5d_pct": 3.922,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 58.03,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -326,7 +326,7 @@
           "return_5d_pct": -2.115,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 45.27,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -342,7 +342,7 @@
           "return_5d_pct": 0.396,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.48,
           "history_sessions": 7,
           "history_ready": false
         }
@@ -358,18 +358,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 5.82,
           "turnover_cny": 22166834746.0,
-          "proxy_score": null,
+          "proxy_score": 65.59,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 67.46,
+            "return_5d_score": 64.79
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -380,18 +394,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 3.32,
           "turnover_cny": 1128286906.0,
-          "proxy_score": null,
+          "proxy_score": 66.25,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 59.96,
+            "return_5d_score": 68.94
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -402,18 +430,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 3.2,
           "turnover_cny": 5294618254.0,
-          "proxy_score": null,
+          "proxy_score": 66.63,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 59.6,
+            "return_5d_score": 69.65
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -424,18 +466,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 2.67,
           "turnover_cny": 28878744121.0,
-          "proxy_score": null,
+          "proxy_score": 64.74,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 58.01,
+            "return_5d_score": 67.62
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -446,18 +502,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 2.38,
           "turnover_cny": 881635287.0,
-          "proxy_score": null,
+          "proxy_score": 55.88,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 57.14,
+            "return_5d_score": 55.34
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -468,18 +538,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 1.86,
           "turnover_cny": 18738295394.0,
-          "proxy_score": null,
+          "proxy_score": 58.74,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 55.58,
+            "return_5d_score": 60.09
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -490,18 +574,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 1.84,
           "turnover_cny": 11874699746.0,
-          "proxy_score": null,
+          "proxy_score": 69.36,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 55.52,
+            "return_5d_score": 75.29
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -512,18 +610,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.7,
           "turnover_cny": 5575903526.0,
-          "proxy_score": null,
+          "proxy_score": 52.78,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 52.1,
+            "return_5d_score": 53.07
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -534,18 +646,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.3,
           "turnover_cny": 220837345282.0,
-          "proxy_score": null,
+          "proxy_score": 56.75,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 50.9,
+            "return_5d_score": 59.26
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -556,18 +682,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.17,
           "turnover_cny": 32198526851.0,
-          "proxy_score": null,
+          "proxy_score": 59.34,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 50.51,
+            "return_5d_score": 63.13
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -578,18 +718,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.14,
           "turnover_cny": 36185284795.0,
-          "proxy_score": null,
+          "proxy_score": 53.36,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 50.42,
+            "return_5d_score": 54.62
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -600,18 +754,32 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.1,
           "turnover_cny": 5163792808.0,
-          "proxy_score": null,
+          "proxy_score": 48.51,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 50.3,
+            "return_5d_score": 47.74
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -622,18 +790,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.03,
           "turnover_cny": 7894795454.0,
-          "proxy_score": null,
+          "proxy_score": 50.02,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 49.91,
+            "return_5d_score": 50.06
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -644,18 +826,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.05,
           "turnover_cny": 7162023863.0,
-          "proxy_score": null,
+          "proxy_score": 50.83,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 49.85,
+            "return_5d_score": 51.26
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -666,18 +862,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.16,
           "turnover_cny": 2415131194.0,
-          "proxy_score": null,
+          "proxy_score": 54.76,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 49.52,
+            "return_5d_score": 57.01
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -688,18 +898,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.19,
           "turnover_cny": 7045036675.0,
-          "proxy_score": null,
+          "proxy_score": 43.19,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 49.43,
+            "return_5d_score": 40.51
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -710,18 +934,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.22,
           "turnover_cny": 6740891098.0,
-          "proxy_score": null,
+          "proxy_score": 47.99,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 49.34,
+            "return_5d_score": 47.41
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -732,18 +970,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.23,
           "turnover_cny": 31340258874.0,
-          "proxy_score": null,
+          "proxy_score": 58.03,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 49.31,
+            "return_5d_score": 61.77
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -754,18 +1006,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.32,
           "turnover_cny": 15921587475.0,
-          "proxy_score": null,
+          "proxy_score": 45.27,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 49.04,
+            "return_5d_score": 43.66
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         },
@@ -776,18 +1042,32 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.39,
           "turnover_cny": 3000442429.0,
-          "proxy_score": null,
+          "proxy_score": 50.48,
+          "score_type": "price_volume_observation_0_100",
+          "score_components": {
+            "latest_day_score": 48.83,
+            "return_5d_score": 51.19
+          },
           "model": {
             "coverage": 3,
-            "stage": "量价观察候选，非产业主线结论",
+            "coverage_total": 5,
+            "stage": "量价观察分（非完整产业主线评分）",
+            "missing": [
+              "10日收益",
+              "20日收益",
+              "政策与事件",
+              "订单与盈利",
+              "机构持仓"
+            ],
             "health": {
               "score": null,
               "coverage": 0,
-              "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"
+              "note": "缺少独立产业、政策、订单、盈利与机构持仓证据，不计算完整主线健康分"
             }
           },
           "evidence": [
             "行业当日涨跌幅",
+            "行业5日复合收益",
             "行业成交额"
           ]
         }
@@ -807,7 +1087,7 @@
           "return_5d_pct": 4.931,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 65.59,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -823,7 +1103,7 @@
           "return_5d_pct": 6.315,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 66.25,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -839,7 +1119,7 @@
           "return_5d_pct": 6.549,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 66.63,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -855,7 +1135,7 @@
           "return_5d_pct": 5.874,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 64.74,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -871,7 +1151,7 @@
           "return_5d_pct": 1.781,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 55.88,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -887,7 +1167,7 @@
           "return_5d_pct": 3.365,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 58.74,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -903,7 +1183,7 @@
           "return_5d_pct": 8.431,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 69.36,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -919,7 +1199,7 @@
           "return_5d_pct": 1.022,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 52.78,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -935,7 +1215,7 @@
           "return_5d_pct": 3.087,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 56.75,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -951,7 +1231,7 @@
           "return_5d_pct": 4.376,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 59.34,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -967,7 +1247,7 @@
           "return_5d_pct": 1.539,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 53.36,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -983,7 +1263,7 @@
           "return_5d_pct": -0.752,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 48.51,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -999,7 +1279,7 @@
           "return_5d_pct": 0.02,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.02,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1015,7 +1295,7 @@
           "return_5d_pct": 0.419,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.83,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1031,7 +1311,7 @@
           "return_5d_pct": 2.337,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 54.76,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1047,7 +1327,7 @@
           "return_5d_pct": -3.163,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 43.19,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1063,7 +1343,7 @@
           "return_5d_pct": -0.864,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.99,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1079,7 +1359,7 @@
           "return_5d_pct": 3.922,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 58.03,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1095,7 +1375,7 @@
           "return_5d_pct": -2.115,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 45.27,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1111,7 +1391,7 @@
           "return_5d_pct": 0.396,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.48,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1127,7 +1407,7 @@
           "return_5d_pct": 1.054,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.8,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1143,7 +1423,7 @@
           "return_5d_pct": 1.383,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 52.45,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1159,7 +1439,7 @@
           "return_5d_pct": -0.266,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 48.98,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1175,7 +1455,7 @@
           "return_5d_pct": 1.348,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 52.34,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1191,7 +1471,7 @@
           "return_5d_pct": 0.862,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.24,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1207,7 +1487,7 @@
           "return_5d_pct": 5.457,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 60.88,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1223,7 +1503,7 @@
           "return_5d_pct": -1.649,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 45.92,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1239,7 +1519,7 @@
           "return_5d_pct": 1.623,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 52.71,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1255,7 +1535,7 @@
           "return_5d_pct": -0.213,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 48.81,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1271,7 +1551,7 @@
           "return_5d_pct": 0.856,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.99,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1287,7 +1567,7 @@
           "return_5d_pct": 1.57,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 52.48,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1303,7 +1583,7 @@
           "return_5d_pct": -1.389,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 46.2,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1319,7 +1599,7 @@
           "return_5d_pct": 1.232,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.69,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1335,7 +1615,7 @@
           "return_5d_pct": 1.099,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.36,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1351,7 +1631,7 @@
           "return_5d_pct": 0.068,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.2,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1367,7 +1647,7 @@
           "return_5d_pct": -0.697,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.51,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1383,7 +1663,7 @@
           "return_5d_pct": 0.003,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 48.92,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1399,7 +1679,7 @@
           "return_5d_pct": 1.102,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.22,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1415,7 +1695,7 @@
           "return_5d_pct": 0.609,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.15,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1431,7 +1711,7 @@
           "return_5d_pct": -4.789,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 38.73,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1447,7 +1727,7 @@
           "return_5d_pct": 2.485,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 53.99,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1463,7 +1743,7 @@
           "return_5d_pct": -0.224,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 48.24,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1479,7 +1759,7 @@
           "return_5d_pct": 1.483,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.8,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1495,7 +1775,7 @@
           "return_5d_pct": -0.794,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.01,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1511,7 +1791,7 @@
           "return_5d_pct": 1.019,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.8,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1527,7 +1807,7 @@
           "return_5d_pct": 0.314,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.3,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1543,7 +1823,7 @@
           "return_5d_pct": 1.034,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.79,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1559,7 +1839,7 @@
           "return_5d_pct": -0.804,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 46.93,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1575,7 +1855,7 @@
           "return_5d_pct": -1.429,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 45.61,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1591,7 +1871,7 @@
           "return_5d_pct": 1.248,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.22,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1607,7 +1887,7 @@
           "return_5d_pct": -0.252,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 48.04,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1623,7 +1903,7 @@
           "return_5d_pct": 1.133,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.95,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1639,7 +1919,7 @@
           "return_5d_pct": -2.083,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 44.19,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1655,7 +1935,7 @@
           "return_5d_pct": 0.301,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.17,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1671,7 +1951,7 @@
           "return_5d_pct": 2.047,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 52.81,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1687,7 +1967,7 @@
           "return_5d_pct": -1.767,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 44.8,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1703,7 +1983,7 @@
           "return_5d_pct": -1.799,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 44.72,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1719,7 +1999,7 @@
           "return_5d_pct": 0.709,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.97,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1735,7 +2015,7 @@
           "return_5d_pct": 0.839,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.21,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1751,7 +2031,7 @@
           "return_5d_pct": 0.319,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.09,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1767,7 +2047,7 @@
           "return_5d_pct": -0.543,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.26,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1783,7 +2063,7 @@
           "return_5d_pct": -3.693,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 40.63,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1799,7 +2079,7 @@
           "return_5d_pct": -0.948,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 46.39,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1815,7 +2095,7 @@
           "return_5d_pct": -0.734,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 46.83,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1831,7 +2111,7 @@
           "return_5d_pct": 0.377,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.1,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1847,7 +2127,7 @@
           "return_5d_pct": -1.321,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 45.53,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1863,7 +2143,7 @@
           "return_5d_pct": -1.066,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 46.04,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1879,7 +2159,7 @@
           "return_5d_pct": -0.429,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.36,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1895,7 +2175,7 @@
           "return_5d_pct": 1.616,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 51.65,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1911,7 +2191,7 @@
           "return_5d_pct": -0.343,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.48,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1927,7 +2207,7 @@
           "return_5d_pct": 0.756,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.64,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1943,7 +2223,7 @@
           "return_5d_pct": 0.553,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 49.14,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1959,7 +2239,7 @@
           "return_5d_pct": 1.132,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.33,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1975,7 +2255,7 @@
           "return_5d_pct": -0.235,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.15,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -1991,7 +2271,7 @@
           "return_5d_pct": -3.051,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 41.22,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2007,7 +2287,7 @@
           "return_5d_pct": 1.261,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 50.23,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2023,7 +2303,7 @@
           "return_5d_pct": -0.237,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.02,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2039,7 +2319,7 @@
           "return_5d_pct": -2.76,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 41.69,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2055,7 +2335,7 @@
           "return_5d_pct": 4.095,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 55.99,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2071,7 +2351,7 @@
           "return_5d_pct": 0.052,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 47.48,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2087,7 +2367,7 @@
           "return_5d_pct": -0.47,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 45.98,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2103,7 +2383,7 @@
           "return_5d_pct": -0.238,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 46.41,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2119,7 +2399,7 @@
           "return_5d_pct": -1.707,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 42.52,
           "history_sessions": 7,
           "history_ready": false
         },
@@ -2135,7 +2415,7 @@
           "return_5d_pct": -0.258,
           "return_10d_pct": null,
           "return_20d_pct": null,
-          "rotation_strength_score": null,
+          "rotation_strength_score": 43.84,
           "history_sessions": 7,
           "history_ready": false
         }
@@ -12476,8 +12756,9 @@
         },
         {
           "source": "etf_shares_sse",
-          "status": "failed",
-          "detail": "Expecting value: line 1 column 1 (char 0)"
+          "status": "success",
+          "records": 927,
+          "detail": "交易所公开份额数据；份额变化不等于机构净买入"
         },
         {
           "source": "etf_shares_szse",
@@ -12492,14 +12773,14 @@
       "minimum_sessions": 10,
       "sessions": 7,
       "industry_count": 1053,
-      "generated_at": "2026-11-20T17:05:20+00:00"
+      "generated_at": "2026-11-20T22:25:49+00:00"
     },
     "reports": {
       "items": [
         {
           "trade_date": "2026-11-20",
           "title": "12栏目公开研究日报",
-          "markdown": "# A-Share Alpha Radar｜12栏目公开研究日报\n\n> 交易日：2026-11-20；生成时间：2026-11-20T17:05:20+00:00；状态：validated\n\n## 1. 市场广度与风险偏好\n交易日 2026-11-20；覆盖 5576 只；上涨 313、下跌 5235；涨跌幅中位数 -5.0755%。\n\n## 2. 行业强弱排名\n行业数据日 2026-11-17；集成电路制造 5.82%；橡胶助剂 3.32%；厨房小家电 3.2%；半导体材料 2.67%；钼 2.38%；医疗器械 1.86%；辅助生殖 1.84%；商业服务 0.7%；烟草与大麻 0.3%；个护用品Ⅲ 0.17%\n\n## 3. 主线候选与证据覆盖\n仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。\n\n## 4. 行业轮动（5/10/20日）\n5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。\n\n## 5. 公开资金流估算\n本日记录 84 条；仅为公开主力资金估算，非机构账户数据。\n\n## 6. ETF份额变化\n本日份额快照 927 条；只有存在上一交易日同口径记录时才计算变化率。\n\n## 7. 宽基指数与宏观环境\n当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。\n\n## 8. 个股活跃度与异动\n有效成交活跃榜 20 只，按全市场成交额排序；成交额表示交易活动，不表示净流入。\n\n## 9. 技术结构与趋势\n当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。\n\n## 10. 公告、政策与事件\n公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。\n\n## 11. 盈利、估值与基本面\n尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。\n\n## 12. 风险、数据质量与行动清单\n数据状态：validated；数据日：2026-11-20；行情上游可能延迟或限流。该报告仅作研究辅助，不构成投资建议。\n\n## 数据口径与限制\n- 行业历史从本次云端持久化启用后逐日累积；NAS 已退役，不存在可恢复的 NAS 历史库。\n- 主力资金为公开市场估算，ETF份额变化不是机构净买入；成交额不是净流入。\n- 主线、机构持仓、订单簿、授权一致预期等缺失数据不会用推断值填充。\n- 公开站点只包含公开市场数据，不读取个人持仓、成本、账户或私人证据。\n",
+          "markdown": "# A-Share Alpha Radar｜12栏目公开研究日报\n\n> 交易日：2026-11-20；生成时间：2026-11-20T22:25:49+00:00；状态：validated\n\n## 1. 市场广度与风险偏好\n交易日 2026-11-20；覆盖 5576 只；上涨 313、下跌 5235；涨跌幅中位数 -5.0755%。\n\n## 2. 行业强弱排名\n行业数据日 2026-11-17；集成电路制造 5.82%；橡胶助剂 3.32%；厨房小家电 3.2%；半导体材料 2.67%；钼 2.38%；医疗器械 1.86%；辅助生殖 1.84%；商业服务 0.7%；烟草与大麻 0.3%；个护用品Ⅲ 0.17%\n\n## 3. 主线候选与证据覆盖\n仅列出量价观察候选；行业涨幅不等同产业主线，政策/订单/盈利验证未接入，不给出确定性主线结论。\n\n## 4. 行业轮动（5/10/20日）\n5/10/20日复合收益按已持久化交易日快照计算；未满窗口的行业显示缺失，不用短样本补齐。\n\n## 5. 公开资金流估算\n本日记录 84 条；仅为公开主力资金估算，非机构账户数据。\n\n## 6. ETF份额变化\n本日份额快照 927 条；只有存在上一交易日同口径记录时才计算变化率。\n\n## 7. 宽基指数与宏观环境\n当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。\n\n## 8. 个股活跃度与异动\n有效成交活跃榜 20 只，按全市场成交额排序；成交额表示交易活动，不表示净流入。\n\n## 9. 技术结构与趋势\n当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。\n\n## 10. 公告、政策与事件\n公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。\n\n## 11. 盈利、估值与基本面\n尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。\n\n## 12. 风险、数据质量与行动清单\n数据状态：validated；数据日：2026-11-20；行情上游可能延迟或限流。该报告仅作研究辅助，不构成投资建议。\n\n## 数据口径与限制\n- 行业历史从本次云端持久化启用后逐日累积；NAS 已退役，不存在可恢复的 NAS 历史库。\n- 主力资金为公开市场估算，ETF份额变化不是机构净买入；成交额不是净流入。\n- 主线、机构持仓、订单簿、授权一致预期等缺失数据不会用推断值填充。\n- 公开站点只包含公开市场数据，不读取个人持仓、成本、账户或私人证据。\n",
           "data_status": "validated"
         }
       ],

@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-21T01:05:02+08:00",
+  "checked_at": "2026-11-21T06:25:27+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -29,8 +29,9 @@
     },
     {
       "source": "etf_shares_sse",
-      "status": "failed",
-      "detail": "Expecting value: line 1 column 1 (char 0)"
+      "status": "success",
+      "records": 927,
+      "detail": "交易所公开份额数据；份额变化不等于机构净买入"
     },
     {
       "source": "etf_shares_szse",
