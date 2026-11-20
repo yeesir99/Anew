@@ -46,7 +46,35 @@ def fetch_month(month):
     return payload.decode("utf-8-sig", errors="replace")
 
 
+def load_sector_names():
+    """Return EastMoney BK-code -> Chinese board-name mapping."""
+    names = {}
+    try:
+        import akshare as ak
+        for fn_name in ("stock_board_industry_name_em", "stock_board_concept_name_em"):
+            fn = getattr(ak, fn_name, None)
+            if fn is None:
+                continue
+            frame = fn()
+            if frame is None or frame.empty:
+                continue
+            code_col = next((x for x in ("板块代码", "代码", "板块编码") if x in frame.columns), None)
+            name_col = next((x for x in ("板块名称", "行业名称", "名称") if x in frame.columns), None)
+            if not code_col or not name_col:
+                continue
+            for _, row in frame.iterrows():
+                code = str(row.get(code_col, "")).strip()
+                name = str(row.get(name_col, "")).strip()
+                if code.startswith("BK") and name and name.lower() != "nan":
+                    names[code] = name
+    except Exception:
+        # Name enrichment is optional; never discard numeric archive data.
+        pass
+    return names
+
+
 def main():
+    sector_names = load_sector_names()
     out = DATA / "industry_history.csv"
     existing = []
     if out.exists():
@@ -76,6 +104,7 @@ def main():
                     "trade_date": day,
                     "industry": code,
                     "sector_code": code,
+                    "industry_name": sector_names.get(code),
                     "change_pct": change,
                     "turnover_cny": amount,
                     "main_net_inflow_cny": net,
@@ -90,7 +119,7 @@ def main():
             errors.append(f"{month}: {str(exc)[:300]}")
     if merged:
         fields = ["trade_date", "industry", "sector_code", "change_pct", "turnover_cny",
-                  "main_net_inflow_cny", "main_net_ratio_pct", "source", "captured_at"]
+                  "main_net_inflow_cny", "main_net_ratio_pct", "industry_name", "source", "captured_at"]
         tmp = out.with_suffix(".csv.tmp")
         with tmp.open("w", encoding="utf-8-sig", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fields)
@@ -108,7 +137,7 @@ def main():
     sources["sector_archive_history"] = {
         "source": "modi-hu/stock-data sector_daily_quotes",
         "status": status,
-        "detail": f"EastMoney-derived third-party archive; latest trade date={latest}; imported rows={imported}; sector labels are BK codes, not mapped industry names."
+        "detail": f"EastMoney-derived third-party archive; latest trade date={latest}; imported rows={imported}; sector names mapped={len(sector_names)}; unmapped codes remain explicit BK identifiers."
                     + ((" Errors: " + " | ".join(errors)) if errors else ""),
     }
     doc.update({"trade_date": latest, "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
