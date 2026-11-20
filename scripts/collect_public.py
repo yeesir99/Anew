@@ -21,6 +21,7 @@ BASE = "https://raw.githubusercontent.com/modi-hu/stock-data/master/monthly/dail
 OUT = Path(os.getenv("RADAR_OUTPUT_DIR", "cloud/site/data"))
 MIN_ROWS = int(os.getenv("RADAR_MIN_VALID_ROWS", "2500"))
 MAX_AGE_DAYS = int(os.getenv("RADAR_MAX_DATA_AGE_DAYS", "7"))
+MAX_WEEKDAY_GAP = int(os.getenv("RADAR_MAX_WEEKDAY_GAP", "2"))
 
 
 def num(value: Any) -> float | None:
@@ -107,9 +108,13 @@ def build_snapshot(records: list[dict[str, Any]]) -> dict[str, Any]:
     latest = list(by_symbol.values())
     if len(latest) < MIN_ROWS:
         raise RuntimeError(f"有效股票数量不足：{len(latest)} < {MIN_ROWS}，拒绝发布不完整快照")
-    age = (datetime.now(TZ).date() - latest_day).days
+    today = datetime.now(TZ).date()
+    age = (today - latest_day).days
+    weekday_gap = sum(1 for offset in range(1, age + 1) if (latest_day + timedelta(days=offset)).weekday() < 5)
     if age < 0 or age > MAX_AGE_DAYS:
         raise RuntimeError(f"上游最新交易日过旧：{latest_day}，数据年龄{age}天，阈值{MAX_AGE_DAYS}天")
+    if weekday_gap > MAX_WEEKDAY_GAP:
+        raise RuntimeError(f"上游行情落后{weekday_gap}个工作日：最新交易日{latest_day}，阈值{MAX_WEEKDAY_GAP}个工作日；拒绝把旧快照标记为当前数据")
 
     changes = [x["change_pct"] for x in latest]
     up = sum(x > 0 for x in changes)
@@ -128,6 +133,7 @@ def build_snapshot(records: list[dict[str, Any]]) -> dict[str, Any]:
         "trade_date": latest_day.isoformat(),
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "data_status": "validated",
+        "freshness": {"calendar_age_days": age, "weekday_gap": weekday_gap, "max_allowed_weekday_gap": MAX_WEEKDAY_GAP},
         "coverage": {"valid_stock_count": len(latest), "up": up, "down": down, "unchanged": flat},
         "market_breadth": {
             "advance_ratio_pct": round(up / len(latest) * 100, 2),
