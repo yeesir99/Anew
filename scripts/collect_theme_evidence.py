@@ -25,6 +25,30 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SITE = ROOT / "site" / "data"
 LOG = logging.getLogger("theme-evidence")
+THEME_ALIASES = {
+    "集成电路制造": ("半导体", "集成电路", "芯片概念"),
+    "橡胶助剂": ("橡胶制品", "化工新材料"),
+    "厨房小家电": ("小家电", "厨卫电器"),
+    "半导体材料": ("半导体", "电子化学品", "新材料概念"),
+    "钼": ("小金属", "小金属概念"),
+    "医疗器械": ("医疗器械", "医疗器械概念"),
+    "辅助生殖": ("辅助生殖", "医疗服务"),
+    "商业服务": ("专业服务", "商业服务"),
+    "烟草与大麻": ("烟草与大麻",),
+    "个护用品Ⅲ": ("美容护理", "个护用品"),
+    "白酒概念": ("白酒", "白酒概念"),
+    "养老概念": ("养老概念", "养老金"),
+    "港口航运": ("港口航运", "航运概念"),
+    "第三代半导体": ("第三代半导体", "半导体"),
+    "机器人概念": ("机器人概念", "机器人"),
+    "乳业": ("乳业",),
+    "可选消费经销Ⅲ": ("可选消费经销Ⅲ", "贸易"),
+    "参股民营银行": ("参股民营银行", "银行"),
+    "粤港澳大湾区": ("粤港澳大湾区",),
+    "科创次新股": ("科创次新股", "次新股"),
+}
+
+
 POLICY_SYNONYMS = {
     "集成电路制造": ("集成电路", "半导体", "芯片"),
     "半导体材料": ("半导体", "集成电路", "电子材料"),
@@ -168,6 +192,7 @@ def main():
             ("stock_board_concept_cons_ths", "THS concept"),
         )
         errors = []
+        candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
         for fn_name, label in attempts:
             fn = getattr(ak, fn_name, None)
             if fn is None:
@@ -178,30 +203,34 @@ def main():
                 if "symbol" not in sig.parameters:
                     errors.append(fn_name + " has no symbol parameter")
                     continue
-                frame = fn(symbol=name)
-                rows = records(frame)
-                if not rows:
-                    errors.append(fn_name + " returned empty")
-                    continue
-                code_col = find_col(rows[0].keys(), ("代码", "股票代码", "证券代码", "成分股代码"))
-                name_col = find_col(rows[0].keys(), ("名称", "股票简称", "证券简称", "成分股名称"))
-                if not code_col:
-                    errors.append(fn_name + " missing security-code column")
-                    continue
-                members = []
-                for row in rows:
-                    code = norm_code(row.get(code_col))
-                    if code and len(code) == 6:
-                        members.append({"code": code, "name": row.get(name_col)})
-                # A non-empty frame without usable securities is not success.
-                members = list({x["code"]: x for x in members}.values())
-                if members:
-                    return members, {"source": "constituents:" + name, "status": "success",
-                        "records": len(members), "provider": label, "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
-                errors.append(fn_name + " returned no valid six-digit codes")
+                for candidate in candidates:
+                    try:
+                        frame = fn(symbol=candidate)
+                        rows = records(frame)
+                        if not rows:
+                            errors.append(fn_name + "(" + candidate + ") returned empty")
+                            continue
+                        code_col = find_col(rows[0].keys(), ("代码", "股票代码", "证券代码", "成分股代码"))
+                        name_col = find_col(rows[0].keys(), ("名称", "股票简称", "证券简称", "成分股名称"))
+                        if not code_col:
+                            errors.append(fn_name + "(" + candidate + ") missing security-code column")
+                            continue
+                        members = []
+                        for row in rows:
+                            code = norm_code(row.get(code_col))
+                            if code and len(code) == 6:
+                                members.append({"code": code, "name": row.get(name_col)})
+                        members = list({x["code"]: x for x in members}.values())
+                        if members:
+                            return members, {"source": "constituents:" + name, "status": "success",
+                                "records": len(members), "provider": label, "matched_symbol": candidate,
+                                "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+                        errors.append(fn_name + "(" + candidate + ") returned no valid six-digit codes")
+                    except Exception as exc:
+                        errors.append(fn_name + "(" + candidate + "): " + str(exc)[:140])
+                    time.sleep(0.6)
             except Exception as exc:
                 errors.append(fn_name + ": " + str(exc)[:180])
-            time.sleep(0.8)
         return [], {"source": "constituents:" + name, "status": "failed", "records": 0,
                     "detail": "; ".join(errors)[:400],
                     "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
