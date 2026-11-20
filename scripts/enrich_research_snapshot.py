@@ -7,6 +7,7 @@ import json
 import math
 from datetime import datetime, timezone
 from pathlib import Path
+from import_sector_archive import SECTOR_NAMES, is_concept_code
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
