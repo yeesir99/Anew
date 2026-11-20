@@ -358,7 +358,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 5.82,
           "turnover_cny": 22166834746,
-          "proxy_score": 67.46,
+          "proxy_score": 65.59,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -383,9 +383,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 67.46,
-            "return_5d_score": null
+            "return_5d_score": 64.79
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 4.931,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -396,7 +396,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 3.32,
           "turnover_cny": 1128286906,
-          "proxy_score": 59.96,
+          "proxy_score": 66.25,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -421,9 +421,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 59.96,
-            "return_5d_score": null
+            "return_5d_score": 68.94
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 6.315,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -434,7 +434,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 3.2,
           "turnover_cny": 5294618254,
-          "proxy_score": 59.6,
+          "proxy_score": 66.63,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -459,9 +459,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 59.6,
-            "return_5d_score": null
+            "return_5d_score": 69.65
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 6.549,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -472,7 +472,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 2.67,
           "turnover_cny": 28878744121,
-          "proxy_score": 58.01,
+          "proxy_score": 64.74,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -497,9 +497,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 58.01,
-            "return_5d_score": null
+            "return_5d_score": 67.62
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 5.874,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -510,7 +510,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 2.38,
           "turnover_cny": 881635287,
-          "proxy_score": 57.14,
+          "proxy_score": 55.88,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -535,9 +535,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 57.14,
-            "return_5d_score": null
+            "return_5d_score": 55.34
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 1.781,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -548,7 +548,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 1.86,
           "turnover_cny": 18738295394,
-          "proxy_score": 55.58,
+          "proxy_score": 58.74,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -573,9 +573,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 55.58,
-            "return_5d_score": null
+            "return_5d_score": 60.1
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 3.365,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -586,7 +586,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 1.84,
           "turnover_cny": 11874699746,
-          "proxy_score": 55.52,
+          "proxy_score": 69.36,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -611,9 +611,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 55.52,
-            "return_5d_score": null
+            "return_5d_score": 75.29
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 8.431,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -624,7 +624,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.7,
           "turnover_cny": 5575903526,
-          "proxy_score": 52.1,
+          "proxy_score": 52.78,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -649,9 +649,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 52.1,
-            "return_5d_score": null
+            "return_5d_score": 53.07
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 1.022,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -662,7 +662,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.3,
           "turnover_cny": 220837345282,
-          "proxy_score": 50.9,
+          "proxy_score": 56.75,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -687,9 +687,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 50.9,
-            "return_5d_score": null
+            "return_5d_score": 59.26
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 3.087,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -700,7 +700,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.17,
           "turnover_cny": 32198526851,
-          "proxy_score": 50.51,
+          "proxy_score": 59.34,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -725,9 +725,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 50.51,
-            "return_5d_score": null
+            "return_5d_score": 63.13
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 4.376,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -738,7 +738,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.14,
           "turnover_cny": 36185284795,
-          "proxy_score": 50.42,
+          "proxy_score": 53.36,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -763,9 +763,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 50.42,
-            "return_5d_score": null
+            "return_5d_score": 54.62
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 1.539,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -776,7 +776,7 @@
           "trade_date": "2026-11-17",
           "change_pct": 0.1,
           "turnover_cny": 5163792808,
-          "proxy_score": 50.3,
+          "proxy_score": 48.51,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -801,9 +801,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 50.3,
-            "return_5d_score": null
+            "return_5d_score": 47.74
           },
-          "return_5d_pct": null,
+          "return_5d_pct": -0.752,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -814,7 +814,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.03,
           "turnover_cny": 7894795454,
-          "proxy_score": 49.91,
+          "proxy_score": 50.02,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -839,9 +839,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 49.91,
-            "return_5d_score": null
+            "return_5d_score": 50.06
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 0.02,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -852,7 +852,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.05,
           "turnover_cny": 7162023863,
-          "proxy_score": 49.85,
+          "proxy_score": 50.83,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -877,9 +877,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 49.85,
-            "return_5d_score": null
+            "return_5d_score": 51.26
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 0.419,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -890,7 +890,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.16,
           "turnover_cny": 2415131194,
-          "proxy_score": 49.52,
+          "proxy_score": 54.76,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -915,9 +915,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 49.52,
-            "return_5d_score": null
+            "return_5d_score": 57.01
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 2.337,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -928,7 +928,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.19,
           "turnover_cny": 7045036675,
-          "proxy_score": 49.43,
+          "proxy_score": 43.19,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -953,9 +953,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 49.43,
-            "return_5d_score": null
+            "return_5d_score": 40.51
           },
-          "return_5d_pct": null,
+          "return_5d_pct": -3.163,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -966,7 +966,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.22,
           "turnover_cny": 6740891098,
-          "proxy_score": 49.34,
+          "proxy_score": 47.99,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -991,9 +991,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 49.34,
-            "return_5d_score": null
+            "return_5d_score": 47.41
           },
-          "return_5d_pct": null,
+          "return_5d_pct": -0.864,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -1004,7 +1004,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.23,
           "turnover_cny": 31340258874,
-          "proxy_score": 49.31,
+          "proxy_score": 58.03,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -1029,9 +1029,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 49.31,
-            "return_5d_score": null
+            "return_5d_score": 61.77
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 3.922,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -1042,7 +1042,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.32,
           "turnover_cny": 15921587475,
-          "proxy_score": 49.04,
+          "proxy_score": 45.27,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -1067,9 +1067,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 49.04,
-            "return_5d_score": null
+            "return_5d_score": 43.66
           },
-          "return_5d_pct": null,
+          "return_5d_pct": -2.115,
           "return_10d_pct": null,
           "return_20d_pct": null
         },
@@ -1080,7 +1080,7 @@
           "trade_date": "2026-11-17",
           "change_pct": -0.39,
           "turnover_cny": 3000442429,
-          "proxy_score": 48.83,
+          "proxy_score": 50.48,
           "model": {
             "coverage": 3,
             "stage": "量价观察分（非完整产业主线评分）",
@@ -1105,9 +1105,9 @@
           "score_type": "price_volume_observation_0_100",
           "score_components": {
             "latest_day_score": 48.83,
-            "return_5d_score": null
+            "return_5d_score": 51.19
           },
-          "return_5d_pct": null,
+          "return_5d_pct": 0.396,
           "return_10d_pct": null,
           "return_20d_pct": null
         }
