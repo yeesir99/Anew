@@ -10,6 +10,10 @@ import json
 import logging
 import re
 import time
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlparse
+
+import requests
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -20,6 +24,44 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SITE = ROOT / "site" / "data"
 LOG = logging.getLogger("theme-evidence")
+POLICY_SYNONYMS = {
+    "集成电路制造": ("集成电路", "半导体", "芯片"),
+    "半导体材料": ("半导体", "集成电路", "电子材料"),
+    "光伏设备": ("光伏", "太阳能", "新能源"),
+    "电池": ("电池", "储能", "新能源"),
+    "汽车整车": ("汽车", "新能源汽车", "智能网联"),
+    "工业互联网": ("工业互联网", "工业软件", "智能制造"),
+    "机器人": ("机器人", "智能制造", "人工智能"),
+    "通信设备": ("通信", "5G", "6G", "算力网络"),
+    "软件开发": ("软件", "人工智能", "工业软件", "数据"),
+}
+
+
+class OfficialPolicyLinkParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.links = []
+        self.href = None
+        self.parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "a":
+            self.href = dict(attrs).get("href")
+            self.parts = []
+
+    def handle_data(self, data):
+        if self.href is not None:
+            self.parts.append(data)
+
+    def handle_endtag(self, tag):
+        if tag.lower() == "a" and self.href is not None:
+            title = " ".join("".join(self.parts).split())
+            if title:
+                self.links.append((self.href, title))
+            self.href = None
+            self.parts = []
+
+
 KEYWORDS = (
     "中标", "重大合同", "销售合同", "采购合同", "订单", "框架协议", "项目建设",
     "产能", "投产", "扩产", "批复", "核准", "备案", "产品获批", "注册证",
@@ -183,6 +225,32 @@ def main():
         start_date=start_day.strftime("%Y%m%d"), end_date=end_day.strftime("%Y%m%d"))
     source_status.append(contract_status)
 
+    # Official government policy/notice feed. Kept separate from listed-company announcements.
+    policy_rows = []
+    policy_status = {"source": "MIIT_official_release_index", "status": "unavailable", "records": 0}
+    policy_url = "https://www.miit.gov.cn/RRSdy/index.html"
+    try:
+        response = requests.get(policy_url, timeout=20, headers={"User-Agent": "Mozilla/5.0 A-Share-Alpha-Radar"})
+        response.raise_for_status()
+        parser = OfficialPolicyLinkParser()
+        parser.feed(response.text)
+        for href, title in parser.links:
+            url = urljoin(policy_url, href)
+            host = urlparse(url).netloc.lower()
+            if not host.endswith("miit.gov.cn"):
+                continue
+            if not any(token in title for token in ("通知", "公告", "方案", "规划", "办法", "意见", "标准", "目录", "通告")):
+                continue
+            policy_rows.append({"title": title, "url": url, "source": "工业和信息化部官网文件发布索引",
+                                "published_date": None, "document_type": "official_ministry_notice"})
+        policy_status = {"source": "MIIT_official_release_index",
+                         "status": "success" if policy_rows else "empty",
+                         "records": len(policy_rows), "url": policy_url}
+    except Exception as exc:
+        policy_status = {"source": "MIIT_official_release_index", "status": "failed",
+                         "records": 0, "detail": str(exc)[:400], "url": policy_url}
+    source_status.append(policy_status)
+
     # Recent company announcements are retained as event evidence, not asserted
     # to be government policy. A separate official policy source is not yet
     # integrated and therefore remains explicitly missing.
@@ -253,8 +321,12 @@ def main():
                 "coverage": len(funds), "source": "CNINFO fund_report_stock_cninfo"},
             "contracts": {"records": contracts, "coverage": len(contracts), "source": "AKShare/EastMoney stock_zdhtmx_em"},
             "company_events": {"records": event_rows, "coverage": len(event_rows), "source": "AKShare stock_notice_report"},
-            "government_policy": {"records": [], "coverage": 0,
-                "status": "not_integrated", "note": "尚未接入部委/地方政府原文政策库；公司公告不能冒充政府政策。"},
+            "government_policy": {"records": [r for r in policy_rows
+                if any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,)))],
+                "coverage": sum(1 for r in policy_rows
+                if any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,)))),
+                "status": "success" if any(any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,))) for r in policy_rows) else "no_matching_official_document",
+                "source": "工业和信息化部官网文件发布索引"},
         }
 
     evidence = {
