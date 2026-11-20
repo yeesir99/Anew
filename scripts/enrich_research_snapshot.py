@@ -118,6 +118,7 @@ def main():
     for row in rotation[:20]:
         themes.append({"industry": row["display_name"], "industry_name": row["display_name"], "sector_code": row["sector_code"],
             "trade_date": row["trade_date"], "change_pct": row["latest_change"], "turnover_cny": row["turnover_cny"],
+            "return_5d_pct": row["return_5d_pct"], "return_10d_pct": row["return_10d_pct"], "return_20d_pct": row["return_20d_pct"],
             "proxy_score": row["rotation_strength_score"],
             "score_type": "price_volume_observation_0_100",
             "score_components": {"latest_day_score": round(max(0.0, min(100.0, 50.0 + row["latest_change"] * 3.0)), 2) if row["latest_change"] is not None else None,
