@@ -115,7 +115,7 @@ def main() -> None:
             "model": {"coverage": sum(v is not None for v in
                 (x["latest_change"], x["turnover_cny"], x["return_5d_pct"],
                  x["return_10d_pct"], x["return_20d_pct"])),
-                "stage": "量价观察候选；行业代码尚未映射中文名称",
+                "stage": "量价观察候选；行业名称来自板块名称映射",
                 "health": {"score": None, "coverage": 0,
                            "note": "缺少独立产业、政策、盈利与机构持仓证据"}},
             "evidence": ["公开行业板块日线涨跌幅", "公开行业板块成交额"]} for x in rotation[:20]]
@@ -132,13 +132,13 @@ def main() -> None:
                 "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"},
                 {"source": "modi-hu/stock-data sector_daily_quotes",
                 "status": ("success" if sector_day == market_day else "stale") if today_rows else "unavailable",
-                "detail": f"行业数据日={sector_day or 'none'}；{len(today_rows)}条有效行业记录；BK代码暂未映射中文名称。"}]}
+                "detail": f"行业数据日={sector_day or 'none'}；{len(today_rows)}条有效行业记录；中文名称映射={sum(1 for x in today_rows if x.get('industry_name'))}条。"}]}
         }
         backtest_path = OUT / "backtest.json"
         backtest = json.loads(backtest_path.read_text(encoding="utf-8")) if backtest_path.exists() else {
             "status": "unavailable", "reason": "尚未积累可用行业历史样本"}
         sections["backtest"] = backtest
-        industry_text = "；".join(f"{x['industry']} {x.get('latest_change')}%" for x in industry_rank[:10]) or "无可用行业快照"
+        industry_text = "；".join(f"{x['display_name']} {x.get('latest_change')}%" for x in industry_rank[:10]) or "无可用行业快照"
         rotation_text = "；".join(f"{x['industry']} 5日{x.get('return_5d_pct')}%/10日{x.get('return_10d_pct')}%/20日{x.get('return_20d_pct')}%" for x in rotation[:10]) or "历史窗口不足"
         flow_text = "；".join(f"{x['industry']} 净流入估算{x.get('main_net_inflow')}" for x in flow_rows[:10]) or "无可用资金流估算"
         stale_sections = [
