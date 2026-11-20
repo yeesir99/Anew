@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import inspect
 import re
 import time
 from html.parser import HTMLParser
@@ -24,6 +25,30 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SITE = ROOT / "site" / "data"
 LOG = logging.getLogger("theme-evidence")
+THEME_ALIASES = {
+    "集成电路制造": ("半导体", "集成电路", "芯片概念"),
+    "橡胶助剂": ("橡胶制品", "化工新材料"),
+    "厨房小家电": ("小家电", "厨卫电器"),
+    "半导体材料": ("半导体", "电子化学品", "新材料概念"),
+    "钼": ("小金属", "小金属概念"),
+    "医疗器械": ("医疗器械", "医疗器械概念"),
+    "辅助生殖": ("辅助生殖", "医疗服务"),
+    "商业服务": ("专业服务", "商业服务"),
+    "烟草与大麻": ("烟草与大麻",),
+    "个护用品Ⅲ": ("美容护理", "个护用品"),
+    "白酒概念": ("白酒", "白酒概念"),
+    "养老概念": ("养老概念", "养老金"),
+    "港口航运": ("港口航运", "航运概念"),
+    "第三代半导体": ("第三代半导体", "半导体"),
+    "机器人概念": ("机器人概念", "机器人"),
+    "乳业": ("乳业",),
+    "可选消费经销Ⅲ": ("可选消费经销Ⅲ", "贸易"),
+    "参股民营银行": ("参股民营银行", "银行"),
+    "粤港澳大湾区": ("粤港澳大湾区",),
+    "科创次新股": ("科创次新股", "次新股"),
+}
+
+
 POLICY_SYNONYMS = {
     "集成电路制造": ("集成电路", "半导体", "芯片"),
     "半导体材料": ("半导体", "集成电路", "电子材料"),
@@ -158,24 +183,66 @@ def main():
     source_status = []
     theme_members = {}
     all_codes = set()
-    # Constituents are fetched per theme; this is the join key for all evidence.
+    # Use the THS constituent endpoints first: the EastMoney Push2 endpoint was
+    # rate-limited for every theme in the previous run. Keep industry and concept
+    # taxonomies separate; only accept a source that returns a valid code column.
+    def fetch_members(name):
+        attempts = (
+            ("stock_board_industry_cons_ths", "THS industry"),
+            ("stock_board_concept_cons_ths", "THS concept"),
+        )
+        errors = []
+        candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
+        for fn_name, label in attempts:
+            fn = getattr(ak, fn_name, None)
+            if fn is None:
+                errors.append(fn_name + " unavailable")
+                continue
+            try:
+                sig = inspect.signature(fn)
+                if "symbol" not in sig.parameters:
+                    errors.append(fn_name + " has no symbol parameter")
+                    continue
+                for candidate in candidates:
+                    try:
+                        frame = fn(symbol=candidate)
+                        rows = records(frame)
+                        if not rows:
+                            errors.append(fn_name + "(" + candidate + ") returned empty")
+                            continue
+                        code_col = find_col(rows[0].keys(), ("代码", "股票代码", "证券代码", "成分股代码"))
+                        name_col = find_col(rows[0].keys(), ("名称", "股票简称", "证券简称", "成分股名称"))
+                        if not code_col:
+                            errors.append(fn_name + "(" + candidate + ") missing security-code column")
+                            continue
+                        members = []
+                        for row in rows:
+                            code = norm_code(row.get(code_col))
+                            if code and len(code) == 6:
+                                members.append({"code": code, "name": row.get(name_col)})
+                        members = list({x["code"]: x for x in members}.values())
+                        if members:
+                            return members, {"source": "constituents:" + name, "status": "success",
+                                "records": len(members), "provider": label, "matched_symbol": candidate,
+                                "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+                        errors.append(fn_name + "(" + candidate + ") returned no valid six-digit codes")
+                    except Exception as exc:
+                        errors.append(fn_name + "(" + candidate + "): " + str(exc)[:140])
+                    time.sleep(0.6)
+            except Exception as exc:
+                errors.append(fn_name + ": " + str(exc)[:180])
+        return [], {"source": "constituents:" + name, "status": "failed", "records": 0,
+                    "detail": "; ".join(errors)[:400],
+                    "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+
     for theme in themes:
         name = clean(theme.get("industry_name") or theme.get("industry"))
         if not name:
             continue
-        rows, status = call_source("constituents:" + name, source_function("stock_board_industry_cons_em"), symbol=name)
+        members, status = fetch_members(name)
         source_status.append(status)
-        code_col = find_col(rows[0].keys(), ("代码", "股票代码", "证券代码")) if rows else None
-        name_col = find_col(rows[0].keys(), ("名称", "股票简称", "证券简称")) if rows else None
-        members = []
-        for row in rows:
-            code = norm_code(row.get(code_col))
-            if len(code) != 6:
-                continue
-            members.append({"code": code, "name": row.get(name_col)})
-            all_codes.add(code)
         theme_members[name] = members
-        time.sleep(0.25)
+        all_codes.update(x["code"] for x in members)
 
     # Latest published quarterly financial report and forecast, each as a full-market
     # table. Keep the exact reporting period and source columns.
@@ -209,8 +276,24 @@ def main():
         quarter_num = 1 if month == 3 else 2 if month == 6 else 3 if month == 9 else 4
         fn = getattr(ak, "stock_institute_hold", None)
         if fn:
-            institution_rows, institution_status = call_source(
-                "stock_institute_hold:" + year + str(quarter_num), fn, quarter=year + str(quarter_num))
+            # AkShare has shipped incompatible signatures for this endpoint.
+            # Inspect the installed function instead of assuming a parameter.
+            try:
+                params = inspect.signature(fn).parameters
+                period = year + "Q" + str(quarter_num)
+                if "quarter" in params:
+                    institution_rows, institution_status = call_source(
+                        "stock_institute_hold:" + period, fn, quarter=year + str(quarter_num))
+                elif "symbol" in params:
+                    institution_rows, institution_status = call_source(
+                        "stock_institute_hold:" + period, fn, symbol=period)
+                else:
+                    institution_status = {"source": "stock_institute_hold:" + period,
+                        "status": "failed", "records": 0,
+                        "detail": "Unsupported installed signature: " + str(inspect.signature(fn))}
+            except Exception as exc:
+                institution_status = {"source": "stock_institute_hold", "status": "failed",
+                    "records": 0, "detail": str(exc)[:400]}
             source_status.append(institution_status)
         fn = getattr(ak, "fund_report_stock_cninfo", None)
         if fn:
@@ -335,6 +418,14 @@ def main():
         "financial_report_date": report_date,
         "themes": output,
         "sources": source_status,
+        "quality_status": "validated" if sum(1 for x in source_status if x.get("source","").startswith("constituents:") and x.get("status") == "success") == len(themes) and len(all_codes) > 0 else "degraded",
+        "quality_summary": {
+            "themes_total": len(themes),
+            "themes_with_constituents": sum(1 for x in theme_members.values() if x),
+            "unique_constituents": len(all_codes),
+            "failed_sources": sum(1 for x in source_status if x.get("status") == "failed"),
+            "empty_sources": sum(1 for x in source_status if x.get("status") == "empty"),
+        },
         "limitations": [
             "业绩、预告和持仓按公开报告期披露，存在季度滞后；必须显示报告期。",
             "合同和公告是上市公司披露，不等于已确认收入或全行业订单总量。",
@@ -377,6 +468,15 @@ def main():
     merged_sources = {x.get("source"): x for x in old_sources if isinstance(x, dict) and x.get("source")}
     merged_sources.update({x.get("source"): x for x in source_status if x.get("source")})
     sections["data-sources"] = {"items": list(merged_sources.values())}
+    research["evidence_quality"] = {
+        "status": evidence["quality_status"],
+        "themes_total": len(themes),
+        "themes_with_constituents": evidence["quality_summary"]["themes_with_constituents"],
+        "unique_constituents": len(all_codes),
+        "failed_sources": evidence["quality_summary"]["failed_sources"],
+        "empty_sources": evidence["quality_summary"]["empty_sources"],
+        "note": "degraded 表示证据采集不完整；不改变完整主线评分门槛，也不将缺失值补零。"
+    }
     research["generated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     research_path.write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -385,8 +485,11 @@ def main():
         "forecast_records": len(forecast_rows), "institution_records": len(institution_rows),
         "fund_records": len(fund_rows), "contract_records": len(contract_rows),
         "notice_records": len(notice_rows), "source_statuses": source_status}
-    print(json.dumps(summary, ensure_ascii=False))
-    return 0
+    print(json.dumps({**summary, "quality_status": evidence["quality_status"],
+        "quality_summary": evidence["quality_summary"]}, ensure_ascii=False))
+    # Non-zero exit is intentional: the workflow may continue publishing market
+    # data, but Actions must visibly record incomplete research-evidence collection.
+    return 0 if evidence["quality_status"] == "validated" else 2
 
 
 if __name__ == "__main__":
