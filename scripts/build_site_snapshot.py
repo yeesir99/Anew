@@ -89,7 +89,8 @@ def main() -> None:
             r5, r10, r20 = compound(5), compound(10), compound(20)
             proxy = (round(50 + r5 * 1.2 + r10 * 0.5 + r20 * 0.2, 2)
                      if None not in (r5, r10, r20) else None)
-            rotation.append({"industry": code, "display_name": code, "sector_code": code,
+            display_name = str(row.get("industry_name") or code).strip()
+            rotation.append({"industry": code, "display_name": display_name, "industry_name": display_name, "sector_code": code,
                 "trade_date": sector_day, "latest_change": row["change_pct"],
                 "change_pct": row["change_pct"], "turnover_cny": row["turnover_cny"],
                 "return_5d_pct": r5, "return_10d_pct": r10, "return_20d_pct": r20,
@@ -108,7 +109,7 @@ def main() -> None:
                     "change_pct": row["change_pct"],
                     "source": "EastMoney-derived third-party sector archive"})
         flow_rows.sort(key=lambda x: x["main_net_inflow"], reverse=True)
-        themes = [{"industry": x["display_name"], "sector_code": x["sector_code"],
+        themes = [{"industry": x["display_name"], "industry_name": x["display_name"], "sector_code": x["sector_code"],
             "trade_date": sector_day, "change_pct": x["latest_change"],
             "turnover_cny": x["turnover_cny"], "proxy_score": x["rotation_strength_score"],
             "model": {"coverage": sum(v is not None for v in
