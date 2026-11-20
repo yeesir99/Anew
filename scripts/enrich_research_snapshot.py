@@ -112,11 +112,13 @@ def main():
                       "health": {"score": None, "coverage": 0,
                                  "note": "缺少独立产业、政策、盈利与机构持仓证据，不计算综合健康分"}},
             "evidence": ["行业当日涨跌幅", "行业成交额"]})
+    industry_names = {str(x.get("sector_code") or x.get("industry") or ""):
+                      str(x.get("industry_name") or x.get("display_name") or "") for x in current}
     flow_items = []
     for row in flows:
         if row.get("trade_date") == day:
             flow_items.append({"trade_date": row.get("trade_date"), "indicator": row.get("indicator"),
-                "industry": row.get("industry"), "change_pct": num(row.get("change_pct")),
+                "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or row.get("industry_name"), "change_pct": num(row.get("change_pct")),
                 "main_net_inflow": num(row.get("main_net_inflow_cny")),
                 "main_net_ratio": num(row.get("main_net_ratio_pct")), "source": row.get("source")})
     if not flow_items:
@@ -124,7 +126,7 @@ def main():
             net = num(row.get("main_net_inflow_cny"))
             if net is not None:
                 flow_items.append({"trade_date": industry_snapshot_day, "indicator": "今日",
-                    "industry": row.get("industry"), "change_pct": num(row.get("change_pct")),
+                    "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or row.get("industry_name"), "change_pct": num(row.get("change_pct")),
                     "main_net_inflow": net, "main_net_ratio": num(row.get("main_net_ratio_pct")),
                     "source": row.get("source", "public sector archive")})
     flow_items.sort(key=lambda x: (x.get("indicator") != "今日", -(x.get("main_net_inflow") or 0)))
