@@ -92,7 +92,10 @@ def main() -> None:
             r5, r10, r20 = compound(5), compound(10), compound(20)
             proxy = (round(50 + r5 * 1.2 + r10 * 0.5 + r20 * 0.2, 2)
                      if None not in (r5, r10, r20) else None)
-            display_name = str(row.get("industry_name") or SECTOR_NAMES.get(code) or code).strip()
+            display_name = str(row.get("industry_name") or SECTOR_NAMES.get(code) or "").strip()
+            # Never publish unresolved BK identifiers as industry names.
+            if not display_name or display_name.startswith("BK"):
+                continue
             rotation.append({"industry": code, "display_name": display_name, "industry_name": display_name, "sector_code": code, "sector_type": "industry",
                 "trade_date": sector_day, "latest_change": row["change_pct"],
                 "change_pct": row["change_pct"], "turnover_cny": row["turnover_cny"],
@@ -129,14 +132,47 @@ def main() -> None:
             "themes": {"items": themes, "note": "量价观察候选，不代表产业主线"},
             "rotation": {"items": rotation, "note": f"行业数据日 {sector_day or '不可用'}"},
             "capital-flows": {"items": flow_rows, "note": "历史公开主力资金估算；不是机构专属账户流向。"},
-            "etf-shares": {"items": [], "note": "备用归档未提供交易所ETF份额历史。"},
-            "external-market-data": {"leaders": []},
+            "etf-shares": {"items": [], "note": "等待交易所份额快照；缺少前一交易日时仍展示份额，不伪造变化率。"},
+            "external-market-data": {"leaders": [
+                {"ticker": x.get("symbol"), "name": x.get("name"),
+                 "change_pct": x.get("change_pct"), "amount": x.get("amount_cny"),
+                 "main_net_inflow": None, "turnover_rate": x.get("turnover_rate"),
+                 "volume_ratio": x.get("volume_ratio")}
+                for x in snapshot.get("most_active", [])
+            ]},
             "data-sources": {"items": [{"source": "modi-hu/stock-data archive",
                 "status": snapshot["data_status"], "detail": "第三方缓存；最终上游为东方财富；成交额不代表资金净流入"},
                 {"source": "modi-hu/stock-data sector_daily_quotes",
                 "status": ("success" if sector_day == market_day else "stale") if today_rows else "unavailable",
                 "detail": f"行业数据日={sector_day or 'none'}；{len(today_rows)}条有效行业记录；中文名称映射={sum(1 for x in today_rows if x.get('industry_name'))}条。"}]}
         }
+        # Keep exchange-published ETF share snapshots visible even when no
+        # previous matching session exists to calculate a percentage change.
+        etf_path = ROOT / "data" / "etf_shares.csv"
+        etf_items = []
+        if etf_path.exists():
+            with etf_path.open(encoding="utf-8-sig", newline="") as f:
+                etf_rows = list(csv.DictReader(f))
+            for row in etf_rows:
+                if row.get("trade_date") != market_day:
+                    continue
+                prior = [x for x in etf_rows if x.get("exchange") == row.get("exchange")
+                         and x.get("code") == row.get("code") and x.get("trade_date", "") < market_day]
+                previous = max(prior, key=lambda x: x["trade_date"]) if prior else None
+                try:
+                    shares = float(row.get("shares")) if row.get("shares") else None
+                    old_shares = float(previous.get("shares")) if previous and previous.get("shares") else None
+                    change = (shares / old_shares - 1) * 100 if shares is not None and old_shares not in (None, 0) else None
+                except (TypeError, ValueError):
+                    shares, change = None, None
+                etf_items.append({"trade_date": market_day, "exchange": row.get("exchange"),
+                    "code": row.get("code"), "name": row.get("name"), "shares": shares,
+                    "change_pct": round(change, 4) if change is not None else None,
+                    "previous_date": previous.get("trade_date") if previous else None,
+                    "source": row.get("source")})
+        sections["etf-shares"] = {"items": etf_items,
+            "note": "交易所公开份额快照；没有同口径前日数据时变化率显示待积累，不隐藏份额。"}
+        sections["external-market-data"]["note"] = "按全市场成交额排序；成交额表示交易活跃度，不代表资金净流入。"
         backtest_path = OUT / "backtest.json"
         backtest = json.loads(backtest_path.read_text(encoding="utf-8")) if backtest_path.exists() else {
             "status": "unavailable", "reason": "尚未积累可用行业历史样本"}

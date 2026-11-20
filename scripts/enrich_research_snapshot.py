@@ -167,6 +167,19 @@ def main():
     sections["etf-shares"] = {"items": etf_items,
         "note": "份额变化按相同代码、交易所和来源口径比较；份额变化不等于机构净买入。"}
     sections["data-sources"] = {"items": source_doc.get("sources", [])}
+    # Build the active-stock list from the validated market snapshot. The market
+    # snapshot schema uses symbol/amount_cny; the dashboard uses ticker/amount.
+    leaders = []
+    for stock in market.get("most_active", []):
+        leaders.append({"ticker": stock.get("symbol"), "name": stock.get("name"),
+            "change_pct": num(stock.get("change_pct")),
+            "amount": num(stock.get("amount_cny")),
+            "main_net_inflow": None,
+            "turnover_rate": num(stock.get("turnover_rate")),
+            "volume_ratio": num(stock.get("volume_ratio"))})
+    sections["external-market-data"] = {"leaders": leaders,
+        "note": "按全市场成交额排序；成交额表示交易活跃度，不代表资金净流入。"}
+
     sections["backtest"] = json.loads((SITE / "backtest.json").read_text(encoding="utf-8")) if (SITE / "backtest.json").exists() else {"status": "unavailable"}
     # Twelve sections; unavailable fields are explicitly labelled rather than filled with synthetic values.
     sections_report = [
@@ -177,7 +190,7 @@ def main():
         ("5. 公开资金流估算", f"本日记录 {sum(x.get('indicator') == '今日' for x in flow_items)} 条；仅为公开主力资金估算，非机构账户数据。"),
         ("6. ETF份额变化", f"本日份额快照 {len(etf_items)} 条；只有存在上一交易日同口径记录时才计算变化率。"),
         ("7. 宽基指数与宏观环境", "当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。"),
-        ("8. 个股活跃度与异动", f"成交活跃榜按全市场成交额排序；成交额表示交易活动，不表示净流入。"),
+        ("8. 个股活跃度与异动", f"有效成交活跃榜 {len(leaders)} 只，按全市场成交额排序；成交额表示交易活动，不表示净流入。"),
         ("9. 技术结构与趋势", "当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。"),
         ("10. 公告、政策与事件", "公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。"),
         ("11. 盈利、估值与基本面", "尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。"),
@@ -200,7 +213,7 @@ def main():
     research["generated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     research["market_status"] = market.get("data_status", "unavailable")
     research["notes"] = list(research.get("notes", [])) + [
-        "行业/资金/ETF模块只有当日采集成功且通过日期检查时才更新。",
+        "行业/资金/ETF模块仅在来源、日期和字段校验通过后更新；实时接口失败时保留明确的历史/缺失状态。",
         "行业轮动和回测需要持续积累的同口径历史数据；新云端历史从迁移后开始。"]
     research_path.write_text(json.dumps(research, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"trade_date": day, "industries": len(rotation), "themes": len(themes),
