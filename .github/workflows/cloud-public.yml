@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: anew-public-cloud
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   collect-build-publish:
