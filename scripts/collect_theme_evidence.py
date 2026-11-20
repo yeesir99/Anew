@@ -262,7 +262,7 @@ def main():
         if cursor.weekday() < 5:
             day_key = cursor.strftime("%Y%m%d")
             rows, status = call_source("stock_notice_report:" + day_key,
-                source_function("stock_notice_report"), date=day_key, notice_category="全部")
+                source_function("stock_notice_report"), date=day_key, symbol="全部")
             notice_rows.extend(rows)
             notice_statuses.append(status)
             business_days += 1
