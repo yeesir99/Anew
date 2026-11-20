@@ -48,7 +48,7 @@ def main() -> None:
             frame[col] = pd.to_numeric(frame[col], errors="coerce")
     frame = frame.dropna(subset=["symbol", "close", "amount"])
     frame = frame[(frame["close"] > 0) & (frame["amount"] >= 0)]
-    frame["symbol"] = frame["symbol"].astype(str).str.replace(r"\\.0$", "", regex=True).str.zfill(6)
+    frame["symbol"] = frame["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
     frame = frame.drop_duplicates("symbol", keep="last")
     if len(frame) < 2500:
         raise RuntimeError(f"Market coverage too low: {len(frame)} rows; refusing to publish")
