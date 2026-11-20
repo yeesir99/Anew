@@ -21,7 +21,7 @@ BASE = "https://raw.githubusercontent.com/modi-hu/stock-data/master/monthly/dail
 OUT = Path(os.getenv("RADAR_OUTPUT_DIR", "cloud/site/data"))
 MIN_ROWS = int(os.getenv("RADAR_MIN_VALID_ROWS", "2500"))
 MAX_AGE_DAYS = int(os.getenv("RADAR_MAX_DATA_AGE_DAYS", "7"))
-MAX_WEEKDAY_GAP = int(os.getenv("RADAR_MAX_WEEKDAY_GAP", "2"))
+MAX_WEEKDAY_GAP = int(os.getenv("RADAR_MAX_WEEKDAY_GAP", "5"))
 
 
 def num(value: Any) -> float | None:
@@ -132,7 +132,7 @@ def build_snapshot(records: list[dict[str, Any]]) -> dict[str, Any]:
         "product": "A-Share Alpha Radar",
         "trade_date": latest_day.isoformat(),
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "data_status": "validated",
+        "data_status": "stale" if weekday_gap > 2 else "validated",
         "freshness": {"calendar_age_days": age, "weekday_gap": weekday_gap, "max_allowed_weekday_gap": MAX_WEEKDAY_GAP},
         "coverage": {"valid_stock_count": len(latest), "up": up, "down": down, "unchanged": flat},
         "market_breadth": {
