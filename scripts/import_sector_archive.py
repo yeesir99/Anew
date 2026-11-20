@@ -47,34 +47,76 @@ def fetch_month(month):
 
 
 def load_sector_names():
-    """Return EastMoney BK-code -> Chinese board-name mapping."""
+    """Resolve BK board codes to Chinese names with API, AKShare and cache fallbacks."""
     names = {}
-    try:
-        import akshare as ak
-        for fn_name in ("stock_board_industry_name_em", "stock_board_concept_name_em"):
-            fn = getattr(ak, fn_name, None)
-            if fn is None:
-                continue
-            frame = fn()
-            if frame is None or frame.empty:
-                continue
-            code_col = next((x for x in ("板块代码", "代码", "板块编码") if x in frame.columns), None)
-            name_col = next((x for x in ("板块名称", "行业名称", "名称") if x in frame.columns), None)
-            if not code_col or not name_col:
-                continue
-            for _, row in frame.iterrows():
-                code = str(row.get(code_col, "")).strip()
-                name = str(row.get(name_col, "")).strip()
-                if code.startswith("BK") and name and name.lower() != "nan":
+    errors = []
+    cache = DATA / "sector_names.csv"
+    # EastMoney's public board-list endpoint returns f12=BK code, f14=Chinese name.
+    for board_type in ("t:2", "t:3"):
+        url = ("https://push2.eastmoney.com/api/qt/clist/get?"
+               "pn=1&pz=1000&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+" +
+               board_type + "&fields=f12,f14")
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 A-Share-Alpha-Radar/2.0",
+                "Referer": "https://quote.eastmoney.com/",
+                "Accept": "application/json,text/plain,*/*",
+            })
+            with urllib.request.urlopen(req, timeout=15) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            rows = ((payload.get("data") or {}).get("diff") or [])
+            for row in rows:
+                code = str(row.get("f12") or "").strip()
+                name = str(row.get("f14") or "").strip()
+                if code.startswith("BK") and name and name not in ("-", "--"):
                     names[code] = name
-    except Exception:
-        # Name enrichment is optional; never discard numeric archive data.
-        pass
-    return names
+        except Exception as exc:
+            errors.append("EastMoney " + board_type + ": " + str(exc)[:180])
+    # AKShare is a secondary live source; accept its actual board-code/name columns.
+    if not names:
+        try:
+            import akshare as ak
+            for fn_name in ("stock_board_industry_name_em", "stock_board_concept_name_em"):
+                fn = getattr(ak, fn_name, None)
+                if fn is None:
+                    continue
+                frame = fn()
+                if frame is None or frame.empty:
+                    continue
+                code_col = next((x for x in ("板块代码", "板块编码", "代码", "f12") if x in frame.columns), None)
+                name_col = next((x for x in ("板块名称", "行业名称", "名称", "f14") if x in frame.columns), None)
+                if not code_col or not name_col:
+                    errors.append(fn_name + ": expected code/name columns absent")
+                    continue
+                for _, row in frame.iterrows():
+                    code = str(row.get(code_col, "")).strip()
+                    name = str(row.get(name_col, "")).strip()
+                    if code.startswith("BK") and name and name.lower() != "nan":
+                        names[code] = name
+        except Exception as exc:
+            errors.append("AKShare: " + str(exc)[:180])
+    # A previously validated cache survives temporary upstream rate limits.
+    if cache.exists():
+        try:
+            with cache.open(encoding="utf-8-sig", newline="") as stream:
+                for row in csv.DictReader(stream):
+                    code, name = row.get("sector_code", "").strip(), row.get("industry_name", "").strip()
+                    if code.startswith("BK") and name:
+                        names.setdefault(code, name)
+        except Exception as exc:
+            errors.append("cache: " + str(exc)[:180])
+    if names:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        with cache.open("w", encoding="utf-8-sig", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=["sector_code", "industry_name"])
+            writer.writeheader()
+            writer.writerows({"sector_code": code, "industry_name": name}
+                             for code, name in sorted(names.items()))
+    return names, errors
 
 
 def main():
-    sector_names = load_sector_names()
+    sector_names, name_errors = load_sector_names()
     out = DATA / "industry_history.csv"
     existing = []
     if out.exists():
@@ -117,6 +159,11 @@ def main():
                 imported += 1
         except Exception as exc:
             errors.append(f"{month}: {str(exc)[:300]}")
+    # Backfill names into all previously imported history, not just newly fetched rows.
+    for item in merged.values():
+        code = str(item.get("sector_code") or item.get("industry") or "").strip()
+        if code in sector_names:
+            item["industry_name"] = sector_names[code]
     if merged:
         fields = ["trade_date", "industry", "sector_code", "change_pct", "turnover_cny",
                   "main_net_inflow_cny", "main_net_ratio_pct", "industry_name", "source", "captured_at"]
@@ -137,14 +184,14 @@ def main():
     sources["sector_archive_history"] = {
         "source": "modi-hu/stock-data sector_daily_quotes",
         "status": status,
-        "detail": f"EastMoney-derived third-party archive; latest trade date={latest}; imported rows={imported}; sector names mapped={len(sector_names)}; unmapped codes remain explicit BK identifiers."
-                    + ((" Errors: " + " | ".join(errors)) if errors else ""),
+        "detail": f"EastMoney-derived third-party archive; latest trade date={latest}; imported rows={imported}; sector names mapped={len(sector_names)}; unresolved codes={sum(1 for x in merged.values() if not x.get('industry_name'))}."
+                    + ((" Mapping errors: " + " | ".join(name_errors)) if name_errors else "")\n                    + ((" Archive errors: " + " | ".join(errors)) if errors else ""),
     }
     doc.update({"trade_date": latest, "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "sources": list(sources.values())})
     source_file.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"status": status, "latest_trade_date": latest, "imported_rows": imported,
-                      "history_rows": len(merged), "errors": errors}, ensure_ascii=False))
+                      "history_rows": len(merged), "mapped_sector_names": len(sector_names), "mapping_errors": name_errors, "errors": errors}, ensure_ascii=False))
     return 0
 
 
