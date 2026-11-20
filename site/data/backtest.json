@@ -1,6 +1,8 @@
 {
-  "status": "unavailable",
-  "reason": "行业日线历史尚未积累",
+  "status": "warming_up",
+  "reason": "至少需要10个有效交易日及10个行业样本",
   "minimum_sessions": 10,
-  "sessions": 0
+  "sessions": 7,
+  "industry_count": 1053,
+  "generated_at": "2026-11-20T13:12:28+00:00"
 }

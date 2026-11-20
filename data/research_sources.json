@@ -1,0 +1,41 @@
+{
+  "trade_date": "2026-11-20",
+  "checked_at": "2026-11-20T21:11:58+08:00",
+  "sources": [
+    {
+      "source": "modi-hu/stock-data sector_daily_quotes",
+      "status": "success",
+      "detail": "EastMoney-derived third-party archive; latest trade date=2026-11-17; imported rows=7187; sector labels are BK codes, not mapped industry names."
+    },
+    {
+      "source": "industry_snapshot",
+      "status": "failed",
+      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。"
+    },
+    {
+      "source": "sector_flow_今日",
+      "status": "failed",
+      "detail": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "source": "sector_flow_5日",
+      "status": "failed",
+      "detail": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "source": "sector_flow_10日",
+      "status": "failed",
+      "detail": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "source": "etf_shares_sse",
+      "status": "failed",
+      "detail": "HTTPSConnectionPool(host='query.sse.com.cn', port=443): Max retries exceeded with url: /commonQuery.do?isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1&pageHelp.beginPage=1&pageHelp.cacheSize=1&pageHelp.endPage=1&sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L&STAT_DATE=2026-11-20 (Caused by NewConnectionError(\"HTTPSConnection(host='query.sse.com.cn', port=443): Failed to establish a ne"
+    },
+    {
+      "source": "etf_shares_szse",
+      "status": "failed",
+      "detail": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+    }
+  ]
+}
