@@ -33,6 +33,9 @@ def main():
         for item in items:
             if not str(item.get("industry") or item.get("sector_code") or "").strip():
                 raise RuntimeError(f"{section_name}: missing industry identity")
+            display_name = str(item.get("industry_name") or item.get("display_name") or item.get("industry") or "").strip()
+            if not display_name or display_name.startswith("BK"):
+                raise RuntimeError(f"{section_name}: missing Chinese industry name for {item.get('sector_code') or item.get('industry')}")
             if not finite_number(item.get("change_pct", item.get("latest_change"))):
                 raise RuntimeError(f"{section_name}: invalid/missing change percentage")
             if not finite_number(item.get("turnover_cny")) or float(item["turnover_cny"]) <= 0:
