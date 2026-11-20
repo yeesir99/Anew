@@ -1,11 +1,11 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-20T22:07:39+08:00",
+  "checked_at": "2026-11-20T22:13:14+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
       "status": "success",
-      "detail": "EastMoney-derived third-party archive; latest trade date=2026-11-17; imported rows=7187; sector labels are BK codes, not mapped industry names."
+      "detail": "EastMoney-derived third-party archive; latest trade date=2026-11-17; imported rows=7187; sector names mapped=0; unmapped codes remain explicit BK identifiers."
     },
     {
       "source": "industry_snapshot",
@@ -29,8 +29,9 @@
     },
     {
       "source": "etf_shares_sse",
-      "status": "failed",
-      "detail": "\"None of [Index(['序号', '基金代码', '基金简称', 'ETF类型', '统计日期', '基金份额'], dtype='object')] are in the [columns]\""
+      "status": "success",
+      "records": 927,
+      "detail": "交易所公开份额数据；份额变化不等于机构净买入"
     },
     {
       "source": "etf_shares_szse",
