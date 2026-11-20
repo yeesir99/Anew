@@ -6,7 +6,7 @@ This repository includes the public market-data companion and Pages site for A-S
 
 - GitHub Actions runs manually and at 17:35 China time on weekdays.
 - `scripts/collect_public.py` downloads the current monthly CSV from `modi-hu/stock-data`.
-- The collector validates mandatory columns, A-share ticker format, latest trade date, freshness (maximum 7 calendar days), and at least 2,500 valid securities before producing a JSON snapshot.
+- The collector validates mandatory columns, A-share ticker format, latest trade date, freshness (maximum 7 calendar days and no more than 2 missed weekdays), and at least 2,500 valid securities before producing a JSON snapshot.
 - Only the static dashboard and sanitized market JSON are published to the `gh-pages` branch. The collector workflow uses the repository's built-in GitHub token; no cross-repository PAT is required.
 - Enable GitHub Pages once: **Settings → Pages → Deploy from a branch → gh-pages → /(root)**.
 - Site content: daily market breadth, advance/decline counts, median change, aggregate turnover, leaders and most-active names.
