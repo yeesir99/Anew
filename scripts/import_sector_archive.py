@@ -54,13 +54,13 @@ def load_sector_names():
     # EastMoney's public board-list endpoint returns f12=BK code, f14=Chinese name.
     for board_type in ("t:2", "t:3"):
         url = ("https://push2.eastmoney.com/api/qt/clist/get?"
-               "pn=1&pz=1000&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+" +
-               board_type + "&fields=f12,f14")
+               "pn=1&pz=2000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:90+" +
+               board_type + "+f:!50&fields=f12,f14")
         try:
             req = urllib.request.Request(url, headers={
                 "User-Agent": "Mozilla/5.0 A-Share-Alpha-Radar/2.0",
-                "Referer": "https://quote.eastmoney.com/",
-                "Accept": "application/json,text/plain,*/*",
+                "Referer": "https://quote.eastmoney.com/center/boardlist.html",
+                "Accept": "application/json,text/plain,*/*",\n                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
             })
             with urllib.request.urlopen(req, timeout=15) as response:
                 payload = json.loads(response.read().decode("utf-8"))
