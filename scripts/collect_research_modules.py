@@ -59,7 +59,15 @@ def load_validated_trade_day() -> date:
     frame = pd.read_csv(path, encoding="utf-8-sig")
     if "trade_date" not in frame or len(frame) < 2500:
         raise RuntimeError("行情日期或覆盖率不满足研究采集条件")
-    day = pd.to_datetime(frame["trade_date"], errors="coerce").dropna().max()
+    # The live collector stores dates as YYYYMMDD integers/strings.
+    # pandas otherwise interprets values such as 20261120 as nanoseconds
+    # after the Unix epoch and silently turns them into 1970-01-01.
+    raw_dates = frame["trade_date"].astype(str).str.strip().str.replace(r"\\.0$", "", regex=True)
+    parsed = pd.to_datetime(raw_dates, format="%Y%m%d", errors="coerce")
+    missing = parsed.isna()
+    if missing.any():
+        parsed.loc[missing] = pd.to_datetime(raw_dates.loc[missing], errors="coerce")
+    day = parsed.dropna().max()
     if pd.isna(day):
         raise RuntimeError("无法识别行情交易日")
     trade_day = day.date()
