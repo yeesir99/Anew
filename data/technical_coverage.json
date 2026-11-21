@@ -3,15 +3,27 @@
   "stocks": 5576,
   "history_sessions": 3,
   "coverage": {
-    "ma5": 5,
-    "ma10": 5,
-    "ma20": 5,
-    "ma60": 5,
-    "rsi14": 5,
-    "macd_dif": 5,
-    "macd_dea": 5,
-    "macd_hist": 5,
-    "volatility20": 5
+    "ma5": 100,
+    "ma10": 100,
+    "ma20": 100,
+    "ma60": 99,
+    "rsi14": 100,
+    "macd_dif": 100,
+    "macd_dea": 99,
+    "macd_hist": 99,
+    "volatility20": 100
   },
-  "method": "persisted full-market daily close series; no missing values fabricated"
-}\n
+  "per_symbol_history": {
+    "requested": 100,
+    "successful": 100,
+    "failed": 0,
+    "cache_hits": 0,
+    "universe": 100,
+    "workers": 3,
+    "window_days": 170,
+    "history_sessions_median": 116.0,
+    "history_sessions_min": 29,
+    "history_sessions_max": 116
+  },
+  "method": "persisted full-market daily snapshots plus independent per-symbol bars for liquid stocks; no missing values fabricated"
+}
