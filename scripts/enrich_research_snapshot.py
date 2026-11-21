@@ -149,6 +149,7 @@ def main():
                 "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or SECTOR_NAMES.get(str(row.get("industry") or "")), "change_pct": num(row.get("change_pct")),
                 "main_net_inflow": num(row.get("main_net_inflow_cny")),
                 "main_net_ratio": num(row.get("main_net_ratio_pct")), "source": row.get("source")})
+    live_flow_count = len(flow_items)
     if not flow_items:
         for row in current:
             net = num(row.get("main_net_inflow_cny"))
@@ -195,8 +196,10 @@ def main():
                 "main_net_inflow": net_sum,
                 "main_net_ratio": round(net_sum / turnover_sum * 100, 4),
                 "source": f"sector_daily_quotes rolling {window}-session aggregate (EastMoney-derived archive)"})
-    # Prefer the live THS fallback for today's cross-industry snapshot while
-    # keeping the archived rolling 5/10-session aggregates as a separate source.
+    # Use THS to replace stale archive "today" values only when no live
+    # EastMoney flow rows were available; keep rolling 5/10-session history separate.
+    if ths_live_items and live_flow_count == 0:
+        flow_items = [x for x in flow_items if x.get("indicator") != "今日"]
     existing_today_names = {str(x.get("industry_name") or x.get("industry") or "")
                             for x in flow_items if x.get("indicator") == "今日"}
     for row in ths_live_items:
