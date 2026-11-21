@@ -168,11 +168,22 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     if limit == 0:
         limit = len(latest)
     latest = latest.copy()
-    if "amount" in latest:
-        latest["amount"] = pd.to_numeric(latest["amount"], errors="coerce")
-        universe = latest.sort_values("amount", ascending=False, na_position="last").head(limit)
-    else:
-        universe = latest.head(limit)
+    # Rotate through the full market universe deterministically. The cache
+    # lets each symbol keep its 170-day history, while every run advances to
+    # previously unprocessed codes instead of repeatedly sampling only the top 100.
+    codes = sorted(set(latest["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)))
+    cursor_path = DATA / "technical_history_cursor.json"
+    try:
+        cursor_state = json.loads(cursor_path.read_text(encoding="utf-8")) if cursor_path.exists() else {}
+    except Exception:
+        cursor_state = {}
+    start_index = int(cursor_state.get("next_index", 0)) % max(1, len(codes))
+    batch_size = min(limit, len(codes))
+    selected_codes = [codes[(start_index + i) % len(codes)] for i in range(batch_size)] if codes else []
+    cursor_next = (start_index + batch_size) % max(1, len(codes))
+    cursor_path.write_text(json.dumps({"next_index":cursor_next,"universe_total":len(codes),
+        "last_batch":selected_codes,"updated_for_trade_date":day}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    universe = latest[latest["symbol"].isin(selected_codes)].copy()
     day_obj = datetime.strptime(day, "%Y%m%d").date()
     full_start = (day_obj - timedelta(days=170)).strftime("%Y%m%d")
     cache_path = DATA / "technical_history.csv"
@@ -242,6 +253,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
         cache.to_csv(cache_path, index=False, encoding="utf-8-sig")
     stats = {"requested": len(requests_needed), "successful": len(histories), "failed": failures,
              "cache_hits": len(cached_symbols), "universe": len(universe),
+             "universe_total": len(codes), "cursor_start": start_index, "cursor_next": cursor_next,
              "workers": workers, "window_days": 170}
     if cache.empty:
         return latest, stats
