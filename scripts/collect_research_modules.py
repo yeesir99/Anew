@@ -227,6 +227,7 @@ def main():
         date_col = next((x for x in ("日期", "统计日期", "交易日期") if x in frame.columns), None)
         if not code_col or not shares_col or not date_col:
             raise RuntimeError("SZSE daily ETF fields changed: " + str(list(frame.columns)))
+        szse_added = 0
         for _, item in frame.iterrows():
             code = str(item.get(code_col, "")).strip()
             shares = number(item.get(shares_col))
@@ -236,8 +237,9 @@ def main():
                     "code":code,"name":str(item.get(name_col,"")) if name_col else "",
                     "shares":shares,"nav":None,"source":"SZSE official daily ETF share history",
                     "captured_at":checked})
+                szse_added += 1
         statuses.append({"source":"etf_shares_szse",
-            "status":"partial" if failed_ranges else "success","records":len(etf_rows),
+            "status":"partial" if failed_ranges else "success","records":szse_added,
             "detail":"SZSE official ETF daily share history; 60-day chunks; failed_ranges="
                      + json.dumps(failed_ranges, ensure_ascii=False)[:700]})
     except Exception as exc:
