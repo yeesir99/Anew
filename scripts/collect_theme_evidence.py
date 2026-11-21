@@ -199,19 +199,26 @@ def main():
     sina_headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
                     "Referer":"http://vip.stock.finance.sina.com.cn/mkt/"}
     try:
-        node_fn = getattr(ak, "stock_classify_board", None)
-        if node_fn is not None:
-            raw_nodes = node_fn()
-            if isinstance(raw_nodes, dict):
-                for group, frame in raw_nodes.items():
-                    if isinstance(frame, pd.DataFrame) and not frame.empty:
-                        name_col = find_col(frame.columns, ("name","名称","板块名称"))
-                        code_col = find_col(frame.columns, ("code","代码","板块代码"))
-                        if name_col and code_col:
-                            sina_nodes[str(group)] = [
-                                {"name":clean(row.get(name_col)),"node":clean(row.get(code_col))}
-                                for row in frame.to_dict("records")
-                                if clean(row.get(name_col)) and clean(row.get(code_col))]
+        # Call Sina's taxonomy endpoint directly with a bounded timeout; the
+        # legacy AKShare helper does not expose a request timeout.
+        taxonomy_url = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodes"
+        response = requests.get(taxonomy_url, headers=sina_headers, timeout=15)
+        response.raise_for_status()
+        payload = response.json()
+        groups = payload[1][0][1]
+        for group_item in groups:
+            raw_group = str(group_item[0])
+            group = re.sub(r"<[^>]+>", "", raw_group).strip()
+            rows = group_item[1:][0]
+            frame = pd.DataFrame(rows)
+            if frame.empty or frame.shape[1] < 3:
+                continue
+            name_col = frame.columns[0]
+            code_col = frame.columns[2]
+            sina_nodes[group] = [
+                {"name":clean(row.get(name_col)),"node":clean(row.get(code_col))}
+                for row in frame.to_dict("records")
+                if clean(row.get(name_col)) and clean(row.get(code_col))]
     except Exception as exc:
         LOG.warning("Sina classification taxonomy unavailable: %s", exc)
 
