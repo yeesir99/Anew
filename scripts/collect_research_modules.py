@@ -160,7 +160,7 @@ def main():
             ths_snapshot = {"trade_date":trade_day.isoformat(),"status":"success",
                 "provider":"THS","records":len(ths_rows),"captured_at":checked,"items":ths_rows,
                 "note":"同花顺实时行业榜备用源；独立展示，不混入申万历史轮动序列。"}
-            ths_snapshot_path.write_text(json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+            ths_snapshot_path.write_text(json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             statuses.append({"source":"industry_snapshot_ths","status":"success",
                 "records":len(ths_rows),"provider":"THS",
                 "detail":"EastMoney限流时使用同花顺行业实时榜；独立展示，金额单位已由亿元转换为元"})
