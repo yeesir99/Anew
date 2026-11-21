@@ -59,7 +59,24 @@ jobs:
         env:
           MAX_HISTORY_STOCKS: "100"
           HISTORY_WORKERS: "1"
-        run: python scripts/build_market_technicals.py
+        run: |
+          python scripts/build_market_technicals.py || {
+            python - <<'PY'
+            import json
+            from datetime import datetime, timezone
+            from pathlib import Path
+            path = Path("data/technical_coverage.json")
+            try:
+                report = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+            except Exception:
+                report = {}
+            report["status"] = "degraded"
+            report["last_attempt_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            report["last_attempt_error"] = "technical builder exited abnormally; retained previous validated values without relabelling them as fresh"
+            path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+            print(json.dumps({"technical_status":"degraded","last_attempt_error":report["last_attempt_error"]}))
+            PY
+          }
       - name: Collect validated archive fallback if live API is unavailable
         if: steps.live.outcome == 'failure'
         env:
