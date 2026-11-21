@@ -294,6 +294,68 @@ def main():
     except Exception as exc:
         LOG.warning("Sina classification taxonomy unavailable: %s", exc)
 
+    def fetch_ths_concept_members(theme, name):
+        """Fallback for THS concept boards when Sina has no exact taxonomy node."""
+        if not is_concept_code(clean(theme.get("sector_code"))):
+            return [], None
+        name_fn = getattr(ak, "stock_board_concept_name_ths", None)
+        if name_fn is None:
+            return [], None
+        try:
+            names_frame = name_fn()
+            name_col = find_col(names_frame.columns, ("name", "概念名称", "名称"))
+            code_col = find_col(names_frame.columns, ("code", "概念代码", "代码"))
+            if not name_col or not code_col:
+                return [], None
+            candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
+            normal = lambda x: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(x or "")).lower()
+            selected = None
+            for candidate in candidates:
+                matched = names_frame[names_frame[name_col].astype(str).map(normal) == normal(candidate)]
+                if not matched.empty:
+                    selected = (str(matched.iloc[0][name_col]), str(matched.iloc[0][code_col]))
+                    break
+            if not selected:
+                return [], None
+            matched_name, board_code = selected
+            members = {}
+            headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+                       "Referer":"https://q.10jqka.com.cn/gn/"}
+            for page in range(1, 21):
+                url = f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/page/{page}/ajax/1/code/{board_code}"
+                response = requests.get(url, headers=headers, timeout=15)
+                response.raise_for_status()
+                try:
+                    tables = pd.read_html(response.text)
+                except ValueError:
+                    break
+                if not tables:
+                    break
+                frame = tables[0]
+                code_col = find_col(frame.columns, ("代码", "股票代码", "证券代码"))
+                name_col = find_col(frame.columns, ("名称", "股票简称", "证券简称"))
+                if not code_col:
+                    raise RuntimeError("THS concept table missing stock code: " + str(list(frame.columns)))
+                page_rows = 0
+                for row in frame.to_dict("records"):
+                    code_value = norm_code(row.get(code_col))
+                    if code_value:
+                        members[code_value] = {"code":code_value,
+                            "name":clean(row.get(name_col)) if name_col else None}
+                        page_rows += 1
+                if page_rows == 0 or len(frame) < 10:
+                    break
+                time.sleep(0.15)
+            if not members:
+                return [], None
+            return list(members.values()), {"provider":"THS","taxonomy":"概念板块",
+                "matched_symbol":matched_name,
+                "mapping_source":"THS stock_board_concept_name_ths + gn constituent endpoint",
+                "status":"success"}
+        except Exception as exc:
+            LOG.warning("THS concept constituents %s failed: %s", name, exc)
+            return [], None
+
     def fetch_sina_members(theme, name):
         concept = is_concept_code(clean(theme.get("sector_code")))
         group_order = ("热门概念","申万行业","申万一级","申万二级","申万三级","地域板块") if concept else (
@@ -367,15 +429,18 @@ def main():
                 pass
         try:
             members, meta = fetch_sina_members(theme, name)
+            if not members:
+                members, meta = fetch_ths_concept_members(theme, name)
             if members:
                 fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
-                cache[name] = {"members":members,"fetched_at":fetched,"source":"Sina stock_classify_board",
+                source_name = meta.get("provider", "Sina")
+                cache[name] = {"members":members,"fetched_at":fetched,"source":source_name,
                     "matched_symbol":meta.get("matched_symbol"),"sector_code":code}
                 cache_dirty = True
                 return members, {"source":"constituents:"+name,"status":"success","records":len(members),
                     **meta,"mapping_date":fetched,"checked_at":fetched}
         except Exception as exc:
-            LOG.warning("Sina constituents %s failed: %s", name, exc)
+            LOG.warning("Sina/THS constituents %s failed: %s", name, exc)
         # EastMoney Push2 fallback. Open a circuit on the first upstream rate limit.
         if push2_circuit_open:
             return [], {"source":"constituents:"+name,"status":"failed","records":0,
