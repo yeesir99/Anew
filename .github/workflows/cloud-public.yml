@@ -75,6 +75,7 @@ jobs:
       - name: Collect public industry, capital-flow and ETF-share history
         if: always() && !cancelled() && steps.live.outcome == 'success'
         continue-on-error: true
+        timeout-minutes: 8
         env:
           TZ: Asia/Shanghai
         run: python scripts/collect_research_modules.py
