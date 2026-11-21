@@ -2,10 +2,14 @@
 """Refresh Chinese-language A-share news independently of trading-day close collection."""
 from __future__ import annotations
 import json
+import sys
 from pathlib import Path
-from src.collectors import collect_news
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from src.collectors import collect_news
+
 DATA = ROOT / "data"
 
 

@@ -40,11 +40,11 @@ jobs:
         run: python -m compileall -q src scripts
       - name: Collect latest public A-share market data
         id: live
-        timeout-minutes: 8
+        timeout-minutes: 15
         continue-on-error: true
         env:
           MAX_HISTORY_STOCKS: "100"
-          HISTORY_WORKERS: "2"
+          HISTORY_WORKERS: "3"
           TZ: Asia/Shanghai
         run: python -m src.main close
       - name: Collect Chinese-language A-share news
