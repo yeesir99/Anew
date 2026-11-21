@@ -149,7 +149,46 @@ def main():
                     "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or row.get("industry_name"), "change_pct": num(row.get("change_pct")),
                     "main_net_inflow": net, "main_net_ratio": num(row.get("main_net_ratio_pct")),
                     "source": row.get("source", "public sector archive")})
-    flow_items.sort(key=lambda x: (x.get("indicator") != "今日", -(x.get("main_net_inflow") or 0)))
+    # Build auditable 5/10-session flow persistence from the same dated
+    # sector archive. Ratios are weighted by turnover; incomplete windows
+    # remain absent and never get zero-filled.
+    archive_rows = [x for x in industries
+        if str(x.get("source", "")).find("sector_daily_quotes") >= 0
+        and str(x.get("trade_date", ""))[:10] <= str(day)[:10]
+        and num(x.get("main_net_inflow_cny")) is not None
+        and (num(x.get("turnover_cny")) or 0) > 0]
+    archive_days = sorted({str(x.get("trade_date", ""))[:10] for x in archive_rows})
+    flow_keys = {(str(x.get("indicator")), str(x.get("industry"))) for x in flow_items}
+    by_sector = {}
+    for row in archive_rows:
+        by_sector.setdefault(str(row.get("industry") or row.get("sector_code") or ""), []).append(row)
+    for code, rows in by_sector.items():
+        rows.sort(key=lambda x: str(x.get("trade_date", "")))
+        for period, window in (("5日", 5), ("10日", 10)):
+            target_days = archive_days[-window:]
+            sample = [x for x in rows if str(x.get("trade_date", ""))[:10] in target_days]
+            if len(sample) != window or [str(x.get("trade_date", ""))[:10] for x in sample] != target_days:
+                continue
+            if (period, code) in flow_keys:
+                continue
+            net_sum = sum(num(x.get("main_net_inflow_cny")) or 0 for x in sample)
+            turnover_sum = sum(num(x.get("turnover_cny")) or 0 for x in sample)
+            if turnover_sum <= 0:
+                continue
+            cumulative_return = 1.0
+            for item in sample:
+                daily_change = num(item.get("change_pct"))
+                if daily_change is not None:
+                    cumulative_return *= 1 + daily_change / 100
+            flow_items.append({"trade_date": target_days[-1], "indicator": period,
+                "industry": code,
+                "industry_name": industry_names.get(code) or SECTOR_NAMES.get(code) or sample[-1].get("industry_name"),
+                "change_pct": round((cumulative_return - 1) * 100, 4),
+                "main_net_inflow": net_sum,
+                "main_net_ratio": round(net_sum / turnover_sum * 100, 4),
+                "source": f"sector_daily_quotes rolling {window}-session aggregate (EastMoney-derived archive)"})
+    flow_items.sort(key=lambda x: ({"今日":0,"5日":1,"10日":2}.get(x.get("indicator"), 3),
+                                   -(x.get("main_net_inflow") or 0)))
     etf_items = []
     for row in etfs:
         if row.get("trade_date") != day:
