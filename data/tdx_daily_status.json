@@ -1,0 +1,25 @@
+{
+  "source": "Tongdaxin official hsjday.zip",
+  "source_url": "https://data.tdx.com.cn/vipdoc/hsjday.zip",
+  "retrieved_at": "2026-11-21T08:26:26+00:00",
+  "target_trade_date": "20261120",
+  "archive_latest_trade_date": "20261120",
+  "archive_bytes": 553741733,
+  "download_skipped_unchanged": false,
+  "archive_content_type": "application/zip",
+  "archive_etag": "\"6afffdba-21016da5\"",
+  "archive_last_modified": "Fri, 20 Nov 2026 07:58:50 GMT",
+  "archive_files_parsed": 12250,
+  "market_symbols": 5576,
+  "symbols_in_archive": 12045,
+  "same_day_price_comparisons": 5660,
+  "same_day_close_mismatches_over_0_03": 89,
+  "median_history_sessions": 1677.5,
+  "status": "validated",
+  "usage_policy": "unadjusted reference data only; not injected into scoring or adjusted technical indicators",
+  "notes": [
+    "Official full daily-bar archive parsed and CRC-checked by ZIP member reads.",
+    "Prices and volumes are retained as a secondary-source audit, not treated as adjusted series.",
+    "A corporate-action adjustment source is required before using this history for long-window technical scoring."
+  ]
+}

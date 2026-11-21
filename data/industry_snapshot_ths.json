@@ -3,7 +3,7 @@
   "status": "success",
   "provider": "THS",
   "records": 90,
-  "captured_at": "2026-11-21T16:13:06+08:00",
+  "captured_at": "2026-11-21T16:31:04+08:00",
   "items": [
     {
       "trade_date": "2026-11-20",
@@ -17,7 +17,7 @@
       "leader_name": "中国太保",
       "leader_change_pct": 1.6,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -31,7 +31,7 @@
       "leader_name": "工商银行",
       "leader_change_pct": 3.3,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -45,7 +45,7 @@
       "leader_name": "满坤科技",
       "leader_change_pct": 20.0,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -59,7 +59,7 @@
       "leader_name": "锦江航运",
       "leader_change_pct": 3.42,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -73,7 +73,7 @@
       "leader_name": "好当家",
       "leader_change_pct": 10.0,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -87,7 +87,7 @@
       "leader_name": "申万宏源",
       "leader_change_pct": 1.4,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -101,7 +101,7 @@
       "leader_name": "安泰集团",
       "leader_change_pct": 3.81,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -115,7 +115,7 @@
       "leader_name": "万向德农",
       "leader_change_pct": 9.98,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -129,7 +129,7 @@
       "leader_name": "上海机场",
       "leader_change_pct": 0.69,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -143,7 +143,7 @@
       "leader_name": "重庆路桥",
       "leader_change_pct": 3.61,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -157,7 +157,7 @@
       "leader_name": "科力股份",
       "leader_change_pct": 1.39,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -171,7 +171,7 @@
       "leader_name": "宇通客车",
       "leader_change_pct": 3.47,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -185,7 +185,7 @@
       "leader_name": "金洲管道",
       "leader_change_pct": 2.68,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -199,7 +199,7 @@
       "leader_name": "东方海洋",
       "leader_change_pct": 9.97,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -213,7 +213,7 @@
       "leader_name": "德龙汇能",
       "leader_change_pct": 9.99,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -227,7 +227,7 @@
       "leader_name": "国投电力",
       "leader_change_pct": 3.96,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -241,7 +241,7 @@
       "leader_name": "凡拓数创",
       "leader_change_pct": 20.0,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -255,7 +255,7 @@
       "leader_name": "华智数媒",
       "leader_change_pct": 8.8,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -269,7 +269,7 @@
       "leader_name": "恒通股份",
       "leader_change_pct": 5.93,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -283,7 +283,7 @@
       "leader_name": "恩威医药",
       "leader_change_pct": 3.3,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -297,7 +297,7 @@
       "leader_name": "江苏金租",
       "leader_change_pct": 0.51,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -311,7 +311,7 @@
       "leader_name": "华统股份",
       "leader_change_pct": 2.07,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -325,7 +325,7 @@
       "leader_name": "大参林",
       "leader_change_pct": -0.87,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -339,7 +339,7 @@
       "leader_name": "国光股份",
       "leader_change_pct": 10.0,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -353,7 +353,7 @@
       "leader_name": "贵州茅台",
       "leader_change_pct": 1.75,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -367,7 +367,7 @@
       "leader_name": "*ST华幸",
       "leader_change_pct": 10.39,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -381,7 +381,7 @@
       "leader_name": "三一重工",
       "leader_change_pct": 1.06,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -395,7 +395,7 @@
       "leader_name": "中国铝业",
       "leader_change_pct": 0.26,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -409,7 +409,7 @@
       "leader_name": "伊利股份",
       "leader_change_pct": 1.34,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -423,7 +423,7 @@
       "leader_name": "铁科轨道",
       "leader_change_pct": 3.44,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -437,7 +437,7 @@
       "leader_name": "中国外运",
       "leader_change_pct": -0.41,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -451,7 +451,7 @@
       "leader_name": "绿通科技",
       "leader_change_pct": 8.25,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -465,7 +465,7 @@
       "leader_name": "华融化学",
       "leader_change_pct": 4.67,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -479,7 +479,7 @@
       "leader_name": "ST如意",
       "leader_change_pct": 5.46,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -493,7 +493,7 @@
       "leader_name": "紫金矿业",
       "leader_change_pct": -0.63,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -507,7 +507,7 @@
       "leader_name": "宝丽迪",
       "leader_change_pct": 3.62,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -521,7 +521,7 @@
       "leader_name": "苏州规划",
       "leader_change_pct": 9.35,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -535,7 +535,7 @@
       "leader_name": "*ST纳川",
       "leader_change_pct": 3.47,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -549,7 +549,7 @@
       "leader_name": "*ST仕净",
       "leader_change_pct": 14.24,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -563,7 +563,7 @@
       "leader_name": "日出东方",
       "leader_change_pct": 1.86,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -577,7 +577,7 @@
       "leader_name": "阳谷华泰",
       "leader_change_pct": 0.68,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -591,7 +591,7 @@
       "leader_name": "*ST西旅",
       "leader_change_pct": 1.5,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -605,7 +605,7 @@
       "leader_name": "*ST威领",
       "leader_change_pct": -0.84,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -619,7 +619,7 @@
       "leader_name": "*ST皇庭",
       "leader_change_pct": 0.65,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -633,7 +633,7 @@
       "leader_name": "中顺洁柔",
       "leader_change_pct": -1.64,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -647,7 +647,7 @@
       "leader_name": "*ST开元",
       "leader_change_pct": 3.85,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -661,7 +661,7 @@
       "leader_name": "太阳纸业",
       "leader_change_pct": -0.79,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -675,7 +675,7 @@
       "leader_name": "ST天圣",
       "leader_change_pct": 2.63,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -689,7 +689,7 @@
       "leader_name": "华阳智能",
       "leader_change_pct": 0.65,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -703,7 +703,7 @@
       "leader_name": "苏美达",
       "leader_change_pct": -1.89,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -717,7 +717,7 @@
       "leader_name": "爱伦医疗",
       "leader_change_pct": 2.9,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -731,7 +731,7 @@
       "leader_name": "节能铁汉",
       "leader_change_pct": 4.37,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -745,7 +745,7 @@
       "leader_name": "*ST沐邦",
       "leader_change_pct": 6.15,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -759,7 +759,7 @@
       "leader_name": "大东方",
       "leader_change_pct": 10.02,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -773,7 +773,7 @@
       "leader_name": "高乐股份",
       "leader_change_pct": 7.78,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -787,7 +787,7 @@
       "leader_name": "汇金科技",
       "leader_change_pct": 6.78,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -801,7 +801,7 @@
       "leader_name": "盟固利",
       "leader_change_pct": 0.56,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -815,7 +815,7 @@
       "leader_name": "苏试试验",
       "leader_change_pct": 1.95,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -829,7 +829,7 @@
       "leader_name": "智翔金泰",
       "leader_change_pct": -0.21,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -843,7 +843,7 @@
       "leader_name": "迅游科技",
       "leader_change_pct": 0.5,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -857,7 +857,7 @@
       "leader_name": "鼎龙科技",
       "leader_change_pct": 10.02,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -871,7 +871,7 @@
       "leader_name": "特变电工",
       "leader_change_pct": 0.78,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -885,7 +885,7 @@
       "leader_name": "天工股份",
       "leader_change_pct": 0.81,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -899,7 +899,7 @@
       "leader_name": "克来机电",
       "leader_change_pct": 10.0,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -913,7 +913,7 @@
       "leader_name": "航民股份",
       "leader_change_pct": -0.9,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -927,7 +927,7 @@
       "leader_name": "真视通",
       "leader_change_pct": 10.01,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -941,7 +941,7 @@
       "leader_name": "聚石化学",
       "leader_change_pct": 5.54,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -955,7 +955,7 @@
       "leader_name": "洛轴股份",
       "leader_change_pct": 1.93,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -969,7 +969,7 @@
       "leader_name": "大丰实业",
       "leader_change_pct": 4.93,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -983,7 +983,7 @@
       "leader_name": "狮头股份",
       "leader_change_pct": 0.36,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -997,7 +997,7 @@
       "leader_name": "北纬科技",
       "leader_change_pct": 8.17,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1011,7 +1011,7 @@
       "leader_name": "勤上股份",
       "leader_change_pct": 8.21,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1025,7 +1025,7 @@
       "leader_name": "TCL智家",
       "leader_change_pct": 2.29,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1039,7 +1039,7 @@
       "leader_name": "国电南瑞",
       "leader_change_pct": 0.4,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1053,7 +1053,7 @@
       "leader_name": "中航沈飞",
       "leader_change_pct": 0.65,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1067,7 +1067,7 @@
       "leader_name": "永新股份",
       "leader_change_pct": -0.84,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1081,7 +1081,7 @@
       "leader_name": "*ST英飞",
       "leader_change_pct": 0.57,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1095,7 +1095,7 @@
       "leader_name": "冰山冷热",
       "leader_change_pct": 10.03,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1109,7 +1109,7 @@
       "leader_name": "索通发展",
       "leader_change_pct": -3.72,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1123,7 +1123,7 @@
       "leader_name": "莱克电气",
       "leader_change_pct": 0.23,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1137,7 +1137,7 @@
       "leader_name": "易天股份",
       "leader_change_pct": 20.0,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1151,7 +1151,7 @@
       "leader_name": "海希通讯",
       "leader_change_pct": 12.23,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1165,7 +1165,7 @@
       "leader_name": "上海电气",
       "leader_change_pct": -0.34,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1179,7 +1179,7 @@
       "leader_name": "光华科技",
       "leader_change_pct": 10.03,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1193,7 +1193,7 @@
       "leader_name": "昆工科技",
       "leader_change_pct": -2.92,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1207,7 +1207,7 @@
       "leader_name": "通则康威",
       "leader_change_pct": 2.13,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1221,7 +1221,7 @@
       "leader_name": "华微电子",
       "leader_change_pct": 10.01,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1235,7 +1235,7 @@
       "leader_name": "ST亚光",
       "leader_change_pct": -0.29,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1249,7 +1249,7 @@
       "leader_name": "海信视像",
       "leader_change_pct": -2.1,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     },
     {
       "trade_date": "2026-11-20",
@@ -1263,7 +1263,7 @@
       "leader_name": "汉朔科技",
       "leader_change_pct": -1.78,
       "source": "AKShare/THS live industry summary",
-      "captured_at": "2026-11-21T16:13:06+08:00"
+      "captured_at": "2026-11-21T16:31:04+08:00"
     }
   ],
   "note": "同花顺实时行业榜备用源；独立展示，不混入申万历史轮动序列。"
