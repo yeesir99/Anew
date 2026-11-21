@@ -11,6 +11,7 @@ import logging
 import inspect
 import re
 import time
+from html import unescape
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
@@ -169,6 +170,63 @@ def call_source(name, fn, *args, **kwargs):
                     "detail": str(exc)[:400], "checked_at": started}
 
 
+def _score_key(value):
+    return re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+
+
+def model_score(change_pct, flow_5d=None, flow_10d=None):
+    """Port the existing private scoring contract; never impute missing dimensions."""
+    change = number(change_pct)
+    f5, f10 = number(flow_5d), number(flow_10d)
+    structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
+    persistence = None
+    if f5 is not None and f10 is not None:
+        if f5 > 0 and f10 > 0:
+            persistence = 75.0
+        elif f5 < 0 and f10 < 0:
+            persistence = 25.0
+        else:
+            persistence = 50.0
+    health_dims = {"industry_thesis": None, "policy_event": None,
+        "capital_persistence": persistence,
+        "trend_structure": round(structure, 1) if structure is not None else None,
+        "earnings_delivery": None, "valuation_crowding": None}
+    health_weights = {"industry_thesis":20,"policy_event":10,"capital_persistence":20,
+        "trend_structure":20,"earnings_delivery":15,"valuation_crowding":15}
+    available = [(health_dims[k], w) for k, w in health_weights.items()
+                 if health_dims[k] is not None]
+    health_coverage = sum(w for _, w in available)
+    health_score = (round(sum(v*w for v, w in available) / health_coverage, 1)
+                    if health_coverage else None)
+    return {"score": round(structure, 1) if structure is not None else None,
+        "coverage": 15 if structure is not None else 0,
+        "dimensions": {"policy_macro": None, "industry_trend": None,
+            "capital_institutions": None,
+            "market_structure": round(structure, 1) if structure is not None else None,
+            "earnings": None, "catalyst": None},
+        "stage": "证据不足，暂不判定",
+        "health": {"score": health_score, "coverage": health_coverage,
+            "dimensions": health_dims,
+            "note": "资金持续性仅参考公开行业主力资金5日/10日净占比同向性，不代表机构专属资金；缺失维度不补值。"}}
+
+
+def flow_ratio_for_theme(flow_rows, theme, period):
+    name = _score_key(theme.get("industry_name") or theme.get("industry"))
+    code = _score_key(theme.get("sector_code"))
+    matches = []
+    for row in flow_rows:
+        if str(row.get("indicator") or "").strip() != period:
+            continue
+        row_keys = {_score_key(row.get("industry_name")), _score_key(row.get("industry")),
+                    _score_key(row.get("sector_code"))}
+        row_keys.discard("")
+        if name and name in row_keys or code and code in row_keys:
+            value = number(row.get("main_net_ratio"))
+            if value is not None:
+                matches.append((str(row.get("trade_date") or ""), value))
+    return max(matches, key=lambda x: x[0])[1] if matches else None
+
+
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     SITE.mkdir(parents=True, exist_ok=True)
@@ -236,12 +294,74 @@ def main():
     except Exception as exc:
         LOG.warning("Sina classification taxonomy unavailable: %s", exc)
 
+    def fetch_ths_concept_members(theme, name):
+        """Fallback for THS concept boards when Sina has no exact taxonomy node."""
+        if not is_concept_code(clean(theme.get("sector_code"))):
+            return [], None
+        name_fn = getattr(ak, "stock_board_concept_name_ths", None)
+        if name_fn is None:
+            return [], None
+        try:
+            names_frame = name_fn()
+            name_col = find_col(names_frame.columns, ("name", "概念名称", "名称"))
+            code_col = find_col(names_frame.columns, ("code", "概念代码", "代码"))
+            if not name_col or not code_col:
+                return [], None
+            candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
+            normal = lambda x: re.sub(r"[\s·（）()ⅢⅣ]", "", str(x or "")).lower()
+            selected = None
+            for candidate in candidates:
+                matched = names_frame[names_frame[name_col].astype(str).map(normal) == normal(candidate)]
+                if not matched.empty:
+                    selected = (str(matched.iloc[0][name_col]), str(matched.iloc[0][code_col]))
+                    break
+            if not selected:
+                return [], None
+            matched_name, board_code = selected
+            members = {}
+            headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+                       "Referer":"https://q.10jqka.com.cn/gn/"}
+            for page in range(1, 21):
+                url = f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/page/{page}/ajax/1/code/{board_code}"
+                response = requests.get(url, headers=headers, timeout=15)
+                response.raise_for_status()
+                try:
+                    tables = pd.read_html(response.text)
+                except ValueError:
+                    break
+                if not tables:
+                    break
+                frame = tables[0]
+                code_col = find_col(frame.columns, ("代码", "股票代码", "证券代码"))
+                name_col = find_col(frame.columns, ("名称", "股票简称", "证券简称"))
+                if not code_col:
+                    raise RuntimeError("THS concept table missing stock code: " + str(list(frame.columns)))
+                page_rows = 0
+                for row in frame.to_dict("records"):
+                    code_value = norm_code(row.get(code_col))
+                    if code_value:
+                        members[code_value] = {"code":code_value,
+                            "name":clean(row.get(name_col)) if name_col else None}
+                        page_rows += 1
+                if page_rows == 0 or len(frame) < 10:
+                    break
+                time.sleep(0.15)
+            if not members:
+                return [], None
+            return list(members.values()), {"provider":"THS","taxonomy":"概念板块",
+                "matched_symbol":matched_name,
+                "mapping_source":"THS stock_board_concept_name_ths + gn constituent endpoint",
+                "status":"success"}
+        except Exception as exc:
+            LOG.warning("THS concept constituents %s failed: %s", name, exc)
+            return [], None
+
     def fetch_sina_members(theme, name):
         concept = is_concept_code(clean(theme.get("sector_code")))
         group_order = ("热门概念","申万行业","申万一级","申万二级","申万三级","地域板块") if concept else (
             "申万行业","申万一级","申万二级","申万三级","热门概念","地域板块")
         candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
-        normal = lambda x: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(x or "")).lower()
+        normal = lambda x: re.sub(r"[\s·（）()ⅢⅣ]", "", str(x or "")).lower()
         match = None
         for candidate in candidates:
             for group in group_order:
@@ -309,15 +429,18 @@ def main():
                 pass
         try:
             members, meta = fetch_sina_members(theme, name)
+            if not members:
+                members, meta = fetch_ths_concept_members(theme, name)
             if members:
                 fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
-                cache[name] = {"members":members,"fetched_at":fetched,"source":"Sina stock_classify_board",
+                source_name = meta.get("provider", "Sina")
+                cache[name] = {"members":members,"fetched_at":fetched,"source":source_name,
                     "matched_symbol":meta.get("matched_symbol"),"sector_code":code}
                 cache_dirty = True
                 return members, {"source":"constituents:"+name,"status":"success","records":len(members),
                     **meta,"mapping_date":fetched,"checked_at":fetched}
         except Exception as exc:
-            LOG.warning("Sina constituents %s failed: %s", name, exc)
+            LOG.warning("Sina/THS constituents %s failed: %s", name, exc)
         # EastMoney Push2 fallback. Open a circuit on the first upstream rate limit.
         if push2_circuit_open:
             return [], {"source":"constituents:"+name,"status":"failed","records":0,
@@ -472,10 +595,37 @@ def main():
             if not any(token in title for token in ("通知", "公告", "方案", "规划", "办法", "意见", "标准", "目录", "通告")):
                 continue
             policy_rows.append({"title": title, "url": url, "source": "工业和信息化部官网文件发布索引",
-                                "published_date": None, "document_type": "official_ministry_notice"})
+                                "published_date": None, "document_type": "official_ministry_notice",
+                                "body_text": None, "body_status": "not_fetched"})
+        # Fetch official article bodies for auditable policy evidence. An index
+        # title alone is not counted as a policy match or score input.
+        for item in policy_rows[:20]:
+            try:
+                article = requests.get(item["url"], timeout=10,
+                    headers={"User-Agent":"Mozilla/5.0 A-Share-Alpha-Radar"})
+                article.raise_for_status()
+                content_type = article.headers.get("Content-Type", "").lower()
+                if "pdf" in content_type:
+                    item["body_status"] = "pdf_not_parsed"
+                    continue
+                raw_html = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", article.text)
+                plain = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw_html))
+                plain = unescape(plain)
+                plain = re.sub(r"\s+", " ", plain).strip()
+                date_match = re.search(r"(20\d{2})[年./-](\d{1,2})[月./-](\d{1,2})日?", plain)
+                if date_match:
+                    item["published_date"] = f"{int(date_match.group(1)):04d}-{int(date_match.group(2)):02d}-{int(date_match.group(3)):02d}"
+                item["body_text"] = plain[:12000] if len(plain) >= 200 else None
+                item["body_status"] = "success" if item["body_text"] else "empty"
+            except Exception as article_exc:
+                item["body_status"] = "failed"
+                item["body_error"] = str(article_exc)[:180]
+            time.sleep(0.1)
         policy_status = {"source": "MIIT_official_release_index",
-                         "status": "success" if policy_rows else "empty",
-                         "records": len(policy_rows), "url": policy_url}
+                         "status": "success" if any(x.get("body_status") == "success" for x in policy_rows) else "partial" if policy_rows else "empty",
+                         "records": len(policy_rows),
+                         "full_text_records": sum(1 for x in policy_rows if x.get("body_status") == "success"),
+                         "url": policy_url}
     except Exception as exc:
         policy_status = {"source": "MIIT_official_release_index", "status": "failed",
                          "records": 0, "detail": str(exc)[:400], "url": policy_url}
@@ -553,11 +703,15 @@ def main():
             "contracts": {"records": contracts, "coverage": len(contracts), "source": "AKShare/EastMoney stock_zdhtmx_em"},
             "company_events": {"records": event_rows, "coverage": len(event_rows), "source": "AKShare stock_notice_report"},
             "government_policy": {"records": [r for r in policy_rows
-                if any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,)))],
-                "coverage": sum(1 for r in policy_rows
+                if r.get("body_status") == "success" and
+                any(k in (r["title"] + " " + (r.get("body_text") or "")) for k in POLICY_SYNONYMS.get(name, (name,)))],
+                "coverage": sum(1 for r in policy_rows if r.get("body_status") == "success" and
+                any(k in (r["title"] + " " + (r.get("body_text") or "")) for k in POLICY_SYNONYMS.get(name, (name,)))),
+                "index_matches": sum(1 for r in policy_rows
                 if any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,)))),
-                "status": "success" if any(any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,))) for r in policy_rows) else "no_matching_official_document",
-                "source": "工业和信息化部官网文件发布索引"},
+                "status": "success" if any(r.get("body_status") == "success" and
+                    any(k in (r["title"] + " " + (r.get("body_text") or "")) for k in POLICY_SYNONYMS.get(name, (name,))) for r in policy_rows) else "no_matching_official_full_text",
+                "source": "工业和信息化部官网文件发布索引及原文页"},
         }
 
     evidence = {
@@ -600,7 +754,17 @@ def main():
             "government_policy": item.get("government_policy", {}).get("coverage", 0),
         }
         theme["model"] = theme.get("model") or {}
+        flow_rows = research.get("sections", {}).get("capital-flows", {}).get("items", [])
+        score_result = model_score(theme.get("change_pct"),
+            flow_ratio_for_theme(flow_rows, theme, "5日"),
+            flow_ratio_for_theme(flow_rows, theme, "10日"))
+        theme["model"]["score"] = score_result["score"]
+        theme["model"]["potential_score_coverage"] = score_result["coverage"]
+        theme["model"]["dimensions"] = score_result["dimensions"]
+        theme["model"]["health"] = score_result["health"]
+        theme["model"]["stage"] = score_result["stage"]
         theme["model"]["evidence_status"] = "partial" if any(theme["evidence_coverage"].values()) else "unavailable"
+        theme["model"]["partial_score_status"] = "partial" if score_result["coverage"] < 100 else "complete"
         theme["model"]["full_score_status"] = "pending_required_evidence"
         missing = []
         for key, label in (("financials", "财务"), ("earnings_forecasts", "业绩预告"),
