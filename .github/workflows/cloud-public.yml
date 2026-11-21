@@ -52,8 +52,12 @@ jobs:
         continue-on-error: true
         timeout-minutes: 4
         run: python scripts/collect_chinese_news.py
-      - name: Build broad-market technical indicators from persisted daily snapshots
+      - name: Build broad-market technical indicators and backfill liquid-stock history
         if: steps.live.outcome == 'success'
+        timeout-minutes: 15
+        env:
+          MAX_HISTORY_STOCKS: "100"
+          HISTORY_WORKERS: "3"
         run: python scripts/build_market_technicals.py
       - name: Collect validated archive fallback if live API is unavailable
         if: steps.live.outcome == 'failure'
