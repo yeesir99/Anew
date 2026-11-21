@@ -18,7 +18,7 @@ def main():
     DATA.mkdir(exist_ok=True)
     for name in ("latest_news.json", "morning_news.json"):
         (DATA / name).write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"source":"GDELT Chinese-language A-share query",
+    print(json.dumps({"source":"GDELT and domestic Chinese financial feeds",
         "records":len(items),"languages":sorted({str(x.get("language")) for x in items}),
         "files":["data/latest_news.json","data/morning_news.json"]}, ensure_ascii=False))
 
