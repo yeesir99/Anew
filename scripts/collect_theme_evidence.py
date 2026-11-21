@@ -28,7 +28,7 @@ SITE = ROOT / "site" / "data"
 LOG = logging.getLogger("theme-evidence")
 THEME_ALIASES = {
     "集成电路制造": ("半导体", "集成电路", "芯片概念"),
-    "橡胶助剂": ("橡胶制品", "化工新材料"),
+    "橡胶助剂": ("橡胶制品", "橡胶制品Ⅱ", "化工新材料"),
     "厨房小家电": ("小家电", "厨卫电器"),
     "半导体材料": ("半导体", "电子化学品", "新材料概念"),
     "钼": ("小金属", "小金属概念"),
@@ -38,12 +38,12 @@ THEME_ALIASES = {
     "烟草与大麻": ("烟草与大麻",),
     "个护用品Ⅲ": ("美容护理", "个护用品"),
     "白酒概念": ("白酒", "白酒概念"),
-    "养老概念": ("养老概念", "养老金"),
-    "港口航运": ("港口航运", "航运概念"),
+    "养老概念": ("养老概念", "养老产业", "养老服务", "养老金"),
+    "港口航运": ("港口航运", "航运港口", "航运概念"),
     "第三代半导体": ("第三代半导体", "半导体"),
     "机器人概念": ("机器人概念", "机器人"),
-    "乳业": ("乳业",),
-    "可选消费经销Ⅲ": ("可选消费经销Ⅲ", "贸易"),
+    "乳业": ("乳业", "乳品", "乳品饮料"),
+    "可选消费经销Ⅲ": ("可选消费经销Ⅲ", "贸易", "贸易Ⅱ", "贸易行业"),
     "参股民营银行": ("参股民营银行", "银行"),
     "粤港澳大湾区": ("粤港澳大湾区",),
     "科创次新股": ("科创次新股", "次新股"),
@@ -207,25 +207,39 @@ def main():
         payload = response.json()
         groups = payload[1][0][1]
         for group_item in groups:
-            raw_group = str(group_item[0])
-            group = re.sub(r"<[^>]+>", "", raw_group).strip()
-            rows = group_item[1:][0]
-            frame = pd.DataFrame(rows)
-            if frame.empty or frame.shape[1] < 3:
-                continue
-            name_col = frame.columns[0]
-            code_col = frame.columns[2]
-            sina_nodes[group] = [
-                {"name":clean(row.get(name_col)),"node":clean(row.get(code_col))}
-                for row in frame.to_dict("records")
-                if clean(row.get(name_col)) and clean(row.get(code_col))]
+            try:
+                if not isinstance(group_item, (list, tuple)) or len(group_item) < 2:
+                    continue
+                raw_group = str(group_item[0])
+                group = re.sub(r"<[^>]+>", "", raw_group).strip()
+                rows = group_item[1]
+                if isinstance(rows, dict):
+                    if rows and all(not isinstance(v, (list, tuple, dict)) for v in rows.values()):
+                        rows = [rows]
+                    elif rows and all(isinstance(v, dict) for v in rows.values()):
+                        rows = list(rows.values())
+                if not isinstance(rows, list) or not rows:
+                    continue
+                frame = pd.DataFrame(rows)
+                if frame.empty or frame.shape[1] < 3:
+                    continue
+                name_col = frame.columns[0]
+                code_col = frame.columns[2]
+                parsed = [
+                    {"name":clean(row.get(name_col)),"node":clean(row.get(code_col))}
+                    for row in frame.to_dict("records")
+                    if clean(row.get(name_col)) and clean(row.get(code_col))]
+                if parsed:
+                    sina_nodes[group] = parsed
+            except Exception as group_exc:
+                LOG.debug("Skip malformed Sina taxonomy group %s: %s", group_item[0] if group_item else "?", group_exc)
     except Exception as exc:
         LOG.warning("Sina classification taxonomy unavailable: %s", exc)
 
     def fetch_sina_members(theme, name):
         concept = is_concept_code(clean(theme.get("sector_code")))
-        group_order = ("热门概念","申万行业","申万二级","地域板块") if concept else (
-            "申万行业","申万二级","热门概念","地域板块")
+        group_order = ("热门概念","申万行业","申万一级","申万二级","申万三级","地域板块") if concept else (
+            "申万行业","申万一级","申万二级","申万三级","热门概念","地域板块")
         candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
         normal = lambda x: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(x or "")).lower()
         match = None
