@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-21T11:22:32+08:00",
+  "checked_at": "2026-11-21T11:33:23+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -35,9 +35,9 @@
     },
     {
       "source": "etf_shares_szse",
-      "status": "partial",
-      "records": 1088,
-      "detail": "日频历史不可用；仅保留当日份额快照"
+      "status": "success",
+      "records": 83920,
+      "detail": "SZSE official ETF daily share history; 60-day chunks; failed_ranges=[]"
     }
   ]
 }
