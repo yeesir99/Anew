@@ -5,15 +5,15 @@
   "history_sessions": 41,
   "snapshot_history_sessions": 3,
   "coverage": {
-    "ma5": 587,
-    "ma10": 587,
-    "ma20": 587,
-    "ma60": 585,
-    "rsi14": 587,
-    "macd_dif": 587,
-    "macd_dea": 585,
-    "macd_hist": 585,
-    "volatility20": 587
+    "ma5": 687,
+    "ma10": 687,
+    "ma20": 686,
+    "ma60": 684,
+    "rsi14": 686,
+    "macd_dif": 686,
+    "macd_dea": 684,
+    "macd_hist": 684,
+    "volatility20": 686
   },
   "bulk_archive": {
     "status": "partial",
@@ -28,18 +28,18 @@
     "adjustment": "backward-adjusted from daily change_percent, anchored to latest raw close"
   },
   "per_symbol_history": {
-    "requested": 98,
-    "successful": 98,
+    "requested": 100,
+    "successful": 100,
     "failed": 0,
-    "cache_hits": 2,
+    "cache_hits": 0,
     "universe": 100,
     "universe_total": 5576,
-    "cursor_start": 400,
-    "cursor_next": 500,
+    "cursor_start": 500,
+    "cursor_next": 600,
     "workers": 1,
     "window_days": 170,
     "history_sessions_median": 116.0,
-    "history_sessions_min": 29,
+    "history_sessions_min": 14,
     "history_sessions_max": 116
   },
   "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated"
