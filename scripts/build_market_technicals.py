@@ -171,7 +171,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     # Rotate through the full market universe deterministically. The cache
     # lets each symbol keep its 170-day history, while every run advances to
     # previously unprocessed codes instead of repeatedly sampling only the top 100.
-    codes = sorted(set(latest["symbol"].astype(str).str.replace(r"\\.0$", "", regex=True).str.zfill(6)))
+    codes = sorted(set(latest["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)))
     cursor_path = DATA / "technical_history_cursor.json"
     try:
         cursor_state = json.loads(cursor_path.read_text(encoding="utf-8")) if cursor_path.exists() else {}
