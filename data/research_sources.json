@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-21T11:52:44+08:00",
+  "checked_at": "2026-11-21T12:55:38+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -38,6 +38,13 @@
       "status": "success",
       "records": 83920,
       "detail": "SZSE official ETF daily share history; 60-day chunks; failed_ranges=[]"
+    },
+    {
+      "source": "industry_snapshot_ths",
+      "status": "success",
+      "records": 90,
+      "provider": "THS",
+      "detail": "EastMoney限流时使用同花顺行业实时榜；独立展示，金额单位已由亿元转换为元"
     }
   ]
 }
