@@ -11,6 +11,7 @@ import logging
 import inspect
 import re
 import time
+from html import unescape
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
@@ -544,7 +545,7 @@ def main():
                     continue
                 raw_html = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", article.text)
                 plain = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw_html))
-                plain = requests.utils.unquote(plain)
+                plain = unescape(plain)
                 plain = re.sub(r"\s+", " ", plain).strip()
                 date_match = re.search(r"(20\d{2})[年./-](\d{1,2})[月./-](\d{1,2})日?", plain)
                 if date_match:
