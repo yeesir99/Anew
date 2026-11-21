@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
@@ -243,7 +244,7 @@ def collect_news(max_records: int = 80) -> list[dict[str, Any]]:
     def add_item(title, url, published, source, content="", domain=""):
         title = str(title or "").strip()
         content = str(content or "").strip()
-        if not title or not re.search(r"[\\u4e00-\\u9fff]", title + content):
+        if not title or not re.search(r"[\u4e00-\u9fff]", title + content):
             return
         if not any(k in title + " " + content for k in (
             "A股", "沪深", "上证", "深证", "创业板", "科创板", "北交所", "上市公司",
@@ -259,7 +260,7 @@ def collect_news(max_records: int = 80) -> list[dict[str, Any]]:
             stamp = stamp.tz_convert("Asia/Shanghai")
         if stamp < cutoff:
             return
-        key = str(url or "").strip() or title
+        key = (source + ":" + title) if str(url or "").strip() in ("https://www.cls.cn/telegraph", "https://news.10jqka.com.cn/realtimenews.html", "https://finance.sina.com.cn/7x24", "https://kuaixun.eastmoney.com/7_24.html", "https://stock.eastmoney.com/a/czpnc.html") else (str(url or "").strip() or (source + ":" + title))
         if key in seen:
             return
         seen.add(key)
@@ -312,8 +313,8 @@ def collect_news(max_records: int = 80) -> list[dict[str, Any]]:
             frame = fn(**kwargs)
             if frame is None or frame.empty:
                 continue
-            title_col = next((c for c in ("标题", "title", "新闻标题") if c in frame.columns), None)
             content_col = next((c for c in ("内容", "摘要", "summary", "digest") if c in frame.columns), None)
+            title_col = next((c for c in ("标题", "title", "新闻标题") if c in frame.columns), content_col)
             date_col = next((c for c in ("发布时间", "发布日期", "时间", "showTime", "rtime") if c in frame.columns), None)
             url_col = next((c for c in ("链接", "url", "URL", "uniqueUrl") if c in frame.columns), None)
             if not title_col or not date_col:
