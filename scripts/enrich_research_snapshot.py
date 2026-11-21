@@ -264,8 +264,14 @@ def main():
         "note": industry_note}
     sections["themes"] = {"items": themes}
     sections["rotation"] = {"items": rotation, "note": industry_note}
+    if live_flow_count > 0:
+        today_flow_provider = "东方财富公开行业主力资金估算"
+    elif ths_live_items:
+        today_flow_provider = "同花顺实时行业摘要"
+    else:
+        today_flow_provider = "行业日频档案最新可用快照"
     sections["capital-flows"] = {"items": flow_items,
-        "note": "今日值来自东方财富公开主力资金估算；5日/10日为行业日频档案按成交额加权汇总，不是机构专属账户流向，也不代表真实机构账户净买入。"}
+        "note": f"今日值来源：{today_flow_provider}；5日/10日为行业日频档案按成交额加权汇总。均为公开行业估算，不是机构专属账户流向，也不代表真实机构账户净买入。"}
     sections["etf-shares"] = {"items": etf_items,
         "note": "份额变化按相同代码、交易所和来源口径比较；份额变化不等于机构净买入。"}
     sections["data-sources"] = {"items": source_doc.get("sources", [])}
