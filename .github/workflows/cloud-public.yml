@@ -113,6 +113,17 @@ jobs:
           latest = json.loads((root / "latest.json").read_text(encoding="utf-8"))
           research = json.loads((root / "research.json").read_text(encoding="utf-8"))
           assert research["privacy"] == "public_research_only"
+          for news_name in ("latest_news.json", "morning_news.json"):
+              news_path = Path("data") / news_name
+              if news_path.exists():
+                  news_items = json.loads(news_path.read_text(encoding="utf-8"))
+                  assert all(item.get("language") == "Chinese" for item in news_items), news_name
+                  assert all(item.get("title") and item.get("published") for item in news_items), news_name
+          news_status_path = Path("data") / "news_collection_status.json"
+          if news_status_path.exists():
+              news_status = json.loads(news_status_path.read_text(encoding="utf-8"))
+              assert news_status["records"] >= 0
+              assert news_status["status"] in {"success", "empty"}
           assert latest["coverage"]["valid_stock_count"] >= 2500
           assert latest["data_status"] in {"validated", "stale"}
           assert not any(k in research["sections"] for k in ("portfolio", "evidence", "personal_accounts"))
