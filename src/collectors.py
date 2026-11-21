@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
@@ -235,50 +236,105 @@ def collect_market(day: date) -> pd.DataFrame:
 
 
 def collect_news(max_records: int = 80) -> list[dict[str, Any]]:
-    """Collect Chinese-language A-share news; keep GDELT links for source verification."""
+    """Collect recent Chinese A-share news from GDELT and domestic financial feeds."""
+    cutoff = pd.Timestamp.now(tz="Asia/Shanghai") - pd.Timedelta(hours=36)
+    result: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    def add_item(title, url, published, source, content="", domain=""):
+        title = str(title or "").strip()
+        content = str(content or "").strip()
+        if not title or not re.search(r"[\u4e00-\u9fff]", title + content):
+            return
+        if not any(k in title + " " + content for k in (
+            "A股", "沪深", "上证", "深证", "创业板", "科创板", "北交所", "上市公司",
+            "证券", "股票", "股市", "基金", "涨停", "跌停", "财报", "业绩",
+            "行业", "个股", "交易所", "资本市场", "沪指", "深成指", "主板",
+            "半导体", "新能源", "机器人", "医药", "消费电子", "光伏", "电池", "储能",
+            "芯片", "算力", "人工智能", "汽车", "军工", "银行", "券商", "地产",
+            "有色金属", "钢铁", "煤炭", "电力", "港口", "航运", "白酒", "家电",
+            "国务院", "工信部", "发改委", "央行", "产业政策")):
+            return
+        stamp = pd.to_datetime(published, errors="coerce")
+        if pd.isna(stamp):
+            return
+        if stamp.tzinfo is None:
+            stamp = stamp.tz_localize("Asia/Shanghai")
+        else:
+            stamp = stamp.tz_convert("Asia/Shanghai")
+        if stamp < cutoff:
+            return
+        key = (source + ":" + title) if str(url or "").strip() in ("https://www.cls.cn/telegraph", "https://news.10jqka.com.cn/realtimenews.html", "https://finance.sina.com.cn/7x24", "https://kuaixun.eastmoney.com/7_24.html", "https://stock.eastmoney.com/a/czpnc.html") else (str(url or "").strip() or (source + ":" + title))
+        if key in seen:
+            return
+        seen.add(key)
+        result.append({"title": title, "summary": content[:1200] or None,
+            "url": str(url or "").strip(), "domain": domain or "",
+            "language": "Chinese", "source_country": "CN",
+            "published": stamp.isoformat(), "source": source})
+
+    # GDELT is useful for international coverage, but its Chinese-language
+    # A-share query may legitimately return no articles; it is not the only feed.
     end = datetime.utcnow()
     start = end - timedelta(hours=36)
     queries = [
         '(A股 OR 沪深股市 OR 上市公司 OR 证券市场 OR 股票 OR 交易所) sourcelang:Chinese',
         '(半导体 OR 新能源 OR 机器人 OR 医药 OR 消费) (A股 OR 上市公司 OR 证券) sourcelang:Chinese',
     ]
-    seen, result = set(), []
     for query in queries:
-        params = {
-            "query": query, "mode": "ArtList", "format": "json",
+        params = {"query": query, "mode": "ArtList", "format": "json",
             "sort": "HybridRel", "maxrecords": str(max_records),
             "startdatetime": start.strftime("%Y%m%d%H%M%S"),
-            "enddatetime": end.strftime("%Y%m%d%H%M%S"),
-        }
-        for attempt in range(3):
-            try:
-                response = requests.get(GDELT_URL, params=params, timeout=35)
-                response.raise_for_status()
-                articles = response.json().get("articles", []) or []
-                for item in articles:
-                    url = item.get("url")
-                    language = str(item.get("language", "")).strip().lower()
-                    if not url or url in seen or language not in ("chinese", "zh", "zh-cn"):
-                        continue
-                    seen.add(url)
-                    result.append({"title": item.get("title", ""), "url": url,
-                        "domain": item.get("domain", ""), "language": item.get("language", ""),
-                        "source_country": item.get("sourceCountry", ""),
-                        "published": item.get("seendate", ""),
-                        "query_scope": "chinese_a_share_news"})
-                break
-            except Exception as exc:
-                if attempt == 2:
-                    LOG.warning("中文A股新闻查询失败（%s）：%s", query[:45], exc)
-                else:
-                    time.sleep(2 ** attempt)
+            "enddatetime": end.strftime("%Y%m%d%H%M%S")}
+        try:
+            response = requests.get(GDELT_URL, params=params, timeout=12)
+            response.raise_for_status()
+            for item in response.json().get("articles", []) or []:
+                if str(item.get("language", "")).strip().lower() not in ("chinese", "zh", "zh-cn"):
+                    continue
+                add_item(item.get("title"), item.get("url"), item.get("seendate"),
+                    "GDELT", item.get("title"), item.get("domain", ""))
+        except Exception as exc:
+            LOG.warning("GDELT Chinese news unavailable: %s", str(exc)[:180])
+        if len(result) >= max_records:
+            return result[:max_records]
+
+    ak = _ak()
+    domestic_sources = [
+        ("stock_news_global_ths", {}, "同花顺财经快讯", "https://news.10jqka.com.cn/realtimenews.html"),
+        ("stock_news_global_cls", {"symbol": "全部"}, "财联社电报", "https://www.cls.cn/telegraph"),
+        ("stock_news_global_sina", {}, "新浪财经快讯", "https://finance.sina.com.cn/7x24"),
+        ("stock_news_global_em", {}, "东方财富财经快讯", "https://kuaixun.eastmoney.com/7_24.html"),
+        ("stock_news_cjzc_em", {}, "东方财富财经早餐", "https://stock.eastmoney.com/a/czpnc.html"),
+    ]
+    for fn_name, kwargs, source_name, fallback_url in domestic_sources:
         if len(result) >= max_records:
             break
-    # Prefer Chinese-language articles and cap after de-duplication.
-    result.sort(key=lambda x: (str(x.get("language", "")).lower() not in ("chinese", "zh", "zh-cn"),
-                               x.get("published", "")), reverse=False)
-    return result[:max_records]
+        fn = getattr(ak, fn_name, None)
+        if fn is None:
+            continue
+        try:
+            frame = fn(**kwargs)
+            if frame is None or frame.empty:
+                continue
+            content_col = next((c for c in ("内容", "摘要", "summary", "digest") if c in frame.columns), None)
+            title_col = next((c for c in ("标题", "title", "新闻标题") if c in frame.columns), content_col)
+            date_col = next((c for c in ("发布时间", "发布日期", "时间", "showTime", "rtime") if c in frame.columns), None)
+            url_col = next((c for c in ("链接", "url", "URL", "uniqueUrl") if c in frame.columns), None)
+            if not title_col or not date_col:
+                LOG.warning("%s news schema changed: %s", fn_name, list(frame.columns))
+                continue
+            for row in frame.to_dict("records"):
+                published = row.get(date_col)
+                if "发布日期" in row and "发布时间" in row:
+                    published = str(row.get("发布日期")) + " " + str(row.get("发布时间"))
+                add_item(row.get(title_col), row.get(url_col) or fallback_url,
+                    published, source_name, row.get(content_col), fallback_url.split("/")[2])
+        except Exception as exc:
+            LOG.warning("%s news feed unavailable: %s", fn_name, str(exc)[:180])
 
+    result.sort(key=lambda x: x.get("published", ""), reverse=True)
+    return result[:max_records]
 
 def collect_announcements(day: date) -> list[dict[str, Any]]:
     """Best-effort public announcement index from AKShare; verify originals at CNINFO/exchanges."""
