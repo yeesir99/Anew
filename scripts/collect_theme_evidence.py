@@ -203,7 +203,7 @@ def main():
         cached = cache.get(name) or {}
         cached_members = cached.get("members") or []
         cached_at = clean(cached.get("fetched_at"))
-        if cached_members and cached_at:
+        if cached_members and cached_at and cached.get("sector_code") == code:
             try:
                 age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(cached_at.replace("Z","+00:00"))).days
                 if age_days <= 30:
