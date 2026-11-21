@@ -158,6 +158,14 @@ def main() -> None:
             records = parse_archive(archive_path, allowed_ts_codes)
         tdx = pd.DataFrame(records).sort_values("symbol")
         tdx.to_csv(OUT_CSV, index=False, encoding="utf-8-sig")
+    # Re-apply the exact universe filter on cached extracts too, so an
+    # older pre-filter CSV cannot survive merely because the remote ETag
+    # has not changed.
+    tdx["ts_code"] = tdx["ts_code"].astype(str).str.upper().str.strip()
+    tdx = tdx[tdx["ts_code"].isin(allowed_ts_codes)].drop_duplicates("ts_code", keep="last")
+    if len(tdx) < 1000:
+        raise RuntimeError(f"cached/parsed TDX extract has too few matching A-share codes: {len(tdx)}")
+    tdx.to_csv(OUT_CSV, index=False, encoding="utf-8-sig")
     joined = market[["ts_code", "close"]].copy()
     joined["ts_code"] = joined["ts_code"].astype(str).str.upper().str.strip()
     joined["close"] = pd.to_numeric(joined["close"], errors="coerce")
@@ -169,6 +177,7 @@ def main() -> None:
     latest_date = str(tdx["trade_date"].max())
     session_median = float(tdx["history_sessions"].median())
     status = {
+        "schema_version": 2,
         "source": "Tongdaxin official hsjday.zip",
         "source_url": URL,
         "retrieved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
