@@ -1,0 +1,17 @@
+{
+  "trade_date": "20261120",
+  "stocks": 5576,
+  "history_sessions": 3,
+  "coverage": {
+    "ma5": 5,
+    "ma10": 5,
+    "ma20": 5,
+    "ma60": 5,
+    "rsi14": 5,
+    "macd_dif": 5,
+    "macd_dea": 5,
+    "macd_hist": 5,
+    "volatility20": 5
+  },
+  "method": "persisted full-market daily close series; no missing values fabricated"
+}\n

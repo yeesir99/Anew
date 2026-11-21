@@ -1,11 +1,18 @@
 {
-  "generated_at": "2026-11-20T23:00:11+00:00",
-  "market_trade_date": "2026-11-20T22:58:20+00:00",
+  "generated_at": "2026-11-21T02:41:16+00:00",
+  "market_trade_date": "2026-11-21T02:39:11+00:00",
   "financial_report_date": "20260930",
   "themes": {
     "集成电路制造": {
       "sector_code": "BK1329",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:集成电路制造",
+        "status": "failed",
+        "records": 0,
+        "detail": "stock_board_industry_cons_em(BK1329): 东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -56,6 +63,13 @@
     "橡胶助剂": {
       "sector_code": "BK1443",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:橡胶助剂",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -98,6 +112,13 @@
     "厨房小家电": {
       "sector_code": "BK1457",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:厨房小家电",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -140,6 +161,13 @@
     "半导体材料": {
       "sector_code": "BK1325",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:半导体材料",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -190,6 +218,13 @@
     "钼": {
       "sector_code": "BK1623",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:钼",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -232,6 +267,13 @@
     "医疗器械": {
       "sector_code": "BK1039",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:医疗器械",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -274,6 +316,13 @@
     "辅助生殖": {
       "sector_code": "BK0732",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:辅助生殖",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -316,6 +365,13 @@
     "商业服务": {
       "sector_code": "BK1015",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:商业服务",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -358,6 +414,13 @@
     "烟草与大麻": {
       "sector_code": "BK1036",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:烟草与大麻",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -400,6 +463,13 @@
     "个护用品Ⅲ": {
       "sector_code": "BK1038",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:个护用品Ⅲ",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -442,6 +512,13 @@
     "白酒概念": {
       "sector_code": "BK0475",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:白酒概念",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -484,6 +561,13 @@
     "养老概念": {
       "sector_code": "BK0474",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:养老概念",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -526,6 +610,13 @@
     "港口航运": {
       "sector_code": "BK1019",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:港口航运",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -568,6 +659,13 @@
     "第三代半导体": {
       "sector_code": "BK0731",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:第三代半导体",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -610,6 +708,13 @@
     "机器人概念": {
       "sector_code": "BK0471",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:机器人概念",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -652,6 +757,13 @@
     "乳业": {
       "sector_code": "BK0450",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:乳业",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -694,6 +806,13 @@
     "可选消费经销Ⅲ": {
       "sector_code": "BK1029",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:可选消费经销Ⅲ",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -736,6 +855,13 @@
     "参股民营银行": {
       "sector_code": "BK0456",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:参股民营银行",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -778,6 +904,13 @@
     "粤港澳大湾区": {
       "sector_code": "BK0473",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:粤港澳大湾区",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -820,6 +953,13 @@
     "科创次新股": {
       "sector_code": "BK0730",
       "constituent_count": 0,
+      "mapping": {
+        "source": "constituents:科创次新股",
+        "status": "failed",
+        "records": 0,
+        "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+        "checked_at": "2026-11-21T02:39:12+00:00"
+      },
       "constituent_codes": [],
       "financials": {
         "report_date": "20260930",
@@ -865,171 +1005,171 @@
       "source": "constituents:集成电路制造",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "stock_board_industry_cons_em(BK1329): 东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:橡胶助剂",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:厨房小家电",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:半导体材料",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:钼",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:医疗器械",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:辅助生殖",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:商业服务",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:烟草与大麻",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:个护用品Ⅲ",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:白酒概念",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:养老概念",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:港口航运",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:20+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:第三代半导体",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:机器人概念",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:乳业",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:可选消费经销Ⅲ",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:参股民营银行",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:粤港澳大湾区",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "constituents:科创次新股",
       "status": "failed",
       "records": 0,
-      "detail": "stock_board_industry_cons_ths unavailable; stock_board_concept_cons_ths unavailable",
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "detail": "EastMoney Push2 circuit breaker open after upstream rate limit",
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "stock_yjbb_em:20260930",
       "status": "success",
       "records": 5813,
-      "checked_at": "2026-11-20T22:58:21+00:00"
+      "checked_at": "2026-11-21T02:39:12+00:00"
     },
     {
       "source": "stock_yjyg_em:20260930",
       "status": "success",
       "records": 543,
-      "checked_at": "2026-11-20T22:58:42+00:00"
+      "checked_at": "2026-11-21T02:39:33+00:00"
     },
     {
       "source": "stock_institute_hold:2026Q3",
       "status": "success",
       "records": 3295,
-      "checked_at": "2026-11-20T22:58:44+00:00"
+      "checked_at": "2026-11-21T02:39:34+00:00"
     },
     {
       "source": "fund_report_stock_cninfo:20260930",
       "status": "success",
       "records": 3088,
-      "checked_at": "2026-11-20T22:58:47+00:00"
+      "checked_at": "2026-11-21T02:39:39+00:00"
     },
     {
       "source": "stock_zdhtmx_em",
       "status": "success",
       "records": 504,
-      "checked_at": "2026-11-20T22:58:50+00:00"
+      "checked_at": "2026-11-21T02:39:41+00:00"
     },
     {
       "source": "MIIT_official_release_index",
@@ -1041,31 +1181,31 @@
       "source": "stock_notice_report:20261120",
       "status": "success",
       "records": 1223,
-      "checked_at": "2026-11-20T22:58:55+00:00"
+      "checked_at": "2026-11-21T02:39:49+00:00"
     },
     {
       "source": "stock_notice_report:20261119",
       "status": "success",
       "records": 1342,
-      "checked_at": "2026-11-20T22:59:11+00:00"
+      "checked_at": "2026-11-21T02:40:07+00:00"
     },
     {
       "source": "stock_notice_report:20261118",
       "status": "success",
       "records": 1420,
-      "checked_at": "2026-11-20T22:59:26+00:00"
+      "checked_at": "2026-11-21T02:40:26+00:00"
     },
     {
       "source": "stock_notice_report:20261117",
       "status": "success",
       "records": 1787,
-      "checked_at": "2026-11-20T22:59:43+00:00"
+      "checked_at": "2026-11-21T02:40:46+00:00"
     },
     {
       "source": "stock_notice_report:20261116",
       "status": "success",
       "records": 535,
-      "checked_at": "2026-11-20T23:00:03+00:00"
+      "checked_at": "2026-11-21T02:41:09+00:00"
     }
   ],
   "quality_status": "degraded",
