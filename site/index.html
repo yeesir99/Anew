@@ -180,7 +180,8 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
     el.innerHTML='<div class="subpage-banner-copy"><div class="subpage-banner-title">'+esc(title)+'</div><div class="subpage-banner-desc">'+esc(desc)+'</div></div><div class="subpage-banner-meta">'+pills.map(x=>'<span class="subpage-pill">'+esc(x)+'</span>').join('')+'</div>';
     const head=root.querySelector('.head');if(head)head.insertAdjacentElement('afterend',el);
   };
-  addBanner('#themes','主题证据工作台','量价表现与产业证据分层呈现；覆盖不足时不输出完整主线结论。',[themes.length+' 个候选主题',(eq.status||'证据状态待核验')]);
+  const themeItems=items('themes'),evidenceMeta=d.evidence_quality||{};
+  addBanner('#themes','主题证据工作台','量价表现与产业证据分层呈现；覆盖不足时不输出完整主线结论。',[themeItems.length+' 个候选主题',(evidenceMeta.status||'证据状态待核验')]);
   addBanner('#rotation','行业强弱与轮动阶段','将历史收益、轮动强度与当日行业快照分开展示，避免不同口径混算。',[rotData.length+' 个历史观察项',liveIndustries.length+' 个实时行业']);
   const flowItems=items('capital-flows'),etfItems=items('etf-shares'),sourceItems=items('data-sources');
   addBanner('#capital','市场资金与份额监测','公开市场估算、交易所ETF份额与数据源健康度分区呈现，不将成交额解释为净流入。',[flowItems.length+' 条资金流记录',etfItems.length+' 条ETF份额记录']);
@@ -191,8 +192,8 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
     el.innerHTML=stats.map(x=>'<div class="subpage-stat"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
     const banner=root.querySelector('.subpage-banner');if(banner)banner.insertAdjacentElement('afterend',el);
   };
-  const mappedThemes=themes.filter(x=>Number(x.evidence_coverage?.constituents)>0).length;
-  metricStrip('#themes',[['候选主题',String(themes.length)],['已关联成分',String(mappedThemes)],['关联股票',String(eq.unique_constituents??'—')],['失败数据源',String(eq.failed_sources??'—')]]);
+  const mappedThemes=themeItems.filter(x=>Number(x.evidence_coverage?.constituents)>0).length;
+  metricStrip('#themes',[['候选主题',String(themeItems.length)],['已关联成分',String(mappedThemes)],['关联股票',String(evidenceMeta.unique_constituents??'—')],['失败数据源',String(evidenceMeta.failed_sources??'—')]]);
   const avg5=rotData.length?rotData.map(x=>Number(x.return_5d_pct)).filter(Number.isFinite):[];
   metricStrip('#rotation',[['轮动观察',String(rotData.length)],['实时行业',String(liveIndustries.length)],['5日收益中位数',avg5.length?fmt(avg5.sort((a,b)=>a-b)[Math.floor(avg5.length/2)])+'%':'—'],['历史样本',String(Math.max(0,...rotData.map(x=>Number(x.history_sessions)||0)))]]);
   metricStrip('#capital',[['资金流记录',String(flowItems.length)],['ETF份额记录',String(etfItems.length)],['数据源状态项',String(sourceItems.length)],['可用资金周期',String([...new Set(flowItems.map(x=>x.indicator).filter(Boolean))].length)]]);
