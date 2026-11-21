@@ -120,13 +120,30 @@ def main() -> None:
         raise SystemExit(f"invalid target trade date: {target_day!r}")
 
     DATA.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="tdx-hsjday-") as temp:
-        archive_path = Path(temp) / "hsjday.zip"
-        download = download_archive(archive_path)
-        records = parse_archive(archive_path)
-
-    tdx = pd.DataFrame(records).sort_values("symbol")
-    tdx.to_csv(OUT_CSV, index=False, encoding="utf-8-sig")
+    previous = {}
+    if OUT_STATUS.exists():
+        try:
+            previous = json.loads(OUT_STATUS.read_text(encoding="utf-8"))
+        except Exception:
+            previous = {}
+    remote = remote_metadata()
+    unchanged = (OUT_CSV.exists() and remote.get("etag") and
+                 remote.get("etag") == previous.get("archive_etag"))
+    if unchanged:
+        logging.info("Official archive ETag unchanged; reusing validated local extract")
+        tdx = pd.read_csv(OUT_CSV, encoding="utf-8-sig", dtype={"symbol": str})
+        download = {"bytes": previous.get("archive_bytes", 0),
+                    "content_type": remote.get("content_type"),
+                    "etag": remote.get("etag"),
+                    "last_modified": remote.get("last_modified"),
+                    "download_skipped": True}
+    else:
+        with tempfile.TemporaryDirectory(prefix="tdx-hsjday-") as temp:
+            archive_path = Path(temp) / "hsjday.zip"
+            download = download_archive(archive_path)
+            records = parse_archive(archive_path)
+        tdx = pd.DataFrame(records).sort_values("symbol")
+        tdx.to_csv(OUT_CSV, index=False, encoding="utf-8-sig")
     joined = market[["symbol", "close"]].copy()
     joined["symbol"] = joined["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
     joined["close"] = pd.to_numeric(joined["close"], errors="coerce")
@@ -144,6 +161,7 @@ def main() -> None:
         "target_trade_date": target_day,
         "archive_latest_trade_date": latest_date,
         "archive_bytes": download["bytes"],
+        "download_skipped_unchanged": bool(download.get("download_skipped", False)),
         "archive_content_type": download["content_type"],
         "archive_etag": download["etag"],
         "archive_last_modified": download["last_modified"],
