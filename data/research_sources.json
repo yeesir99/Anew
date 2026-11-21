@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-21T19:10:20+08:00",
+  "checked_at": "2026-11-22T02:32:43+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -19,9 +19,8 @@
     },
     {
       "source": "sector_flow_5日",
-      "status": "success",
-      "records": 496,
-      "detail": "公开市场主力资金估算，不代表机构专属账户"
+      "status": "failed",
+      "detail": "Expecting value: line 1 column 1 (char 0)"
     },
     {
       "source": "sector_flow_10日",
