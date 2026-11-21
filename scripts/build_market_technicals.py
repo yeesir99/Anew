@@ -112,7 +112,7 @@ def _archive_history(day: str) -> tuple[pd.DataFrame, dict]:
         last_error = None
         for attempt in range(2):
             try:
-                response = requests.get(url, timeout=(10, 75),
+                response = requests.get(url, timeout=(10, 45),
                     headers={"User-Agent":"A-Share-Alpha-Radar/2.0"})
                 response.raise_for_status()
                 if len(response.content) < 100:
