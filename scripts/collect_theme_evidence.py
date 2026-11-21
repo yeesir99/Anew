@@ -170,7 +170,7 @@ def call_source(name, fn, *args, **kwargs):
 
 
 def _score_key(value):
-    return re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+    return re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
 
 
 def model_score(change_pct, flow_5d=None, flow_10d=None):
@@ -298,7 +298,7 @@ def main():
         group_order = ("热门概念","申万行业","申万一级","申万二级","申万三级","地域板块") if concept else (
             "申万行业","申万一级","申万二级","申万三级","热门概念","地域板块")
         candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
-        normal = lambda x: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(x or "")).lower()
+        normal = lambda x: re.sub(r"[\s·（）()ⅢⅣ]", "", str(x or "")).lower()
         match = None
         for candidate in candidates:
             for group in group_order:
