@@ -169,6 +169,63 @@ def call_source(name, fn, *args, **kwargs):
                     "detail": str(exc)[:400], "checked_at": started}
 
 
+def _score_key(value):
+    return re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+
+
+def model_score(change_pct, flow_5d=None, flow_10d=None):
+    """Port the existing private scoring contract; never impute missing dimensions."""
+    change = number(change_pct)
+    f5, f10 = number(flow_5d), number(flow_10d)
+    structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
+    persistence = None
+    if f5 is not None and f10 is not None:
+        if f5 > 0 and f10 > 0:
+            persistence = 75.0
+        elif f5 < 0 and f10 < 0:
+            persistence = 25.0
+        else:
+            persistence = 50.0
+    health_dims = {"industry_thesis": None, "policy_event": None,
+        "capital_persistence": persistence,
+        "trend_structure": round(structure, 1) if structure is not None else None,
+        "earnings_delivery": None, "valuation_crowding": None}
+    health_weights = {"industry_thesis":20,"policy_event":10,"capital_persistence":20,
+        "trend_structure":20,"earnings_delivery":15,"valuation_crowding":15}
+    available = [(health_dims[k], w) for k, w in health_weights.items()
+                 if health_dims[k] is not None]
+    health_coverage = sum(w for _, w in available)
+    health_score = (round(sum(v*w for v, w in available) / health_coverage, 1)
+                    if health_coverage else None)
+    return {"score": round(structure, 1) if structure is not None else None,
+        "coverage": 15 if structure is not None else 0,
+        "dimensions": {"policy_macro": None, "industry_trend": None,
+            "capital_institutions": None,
+            "market_structure": round(structure, 1) if structure is not None else None,
+            "earnings": None, "catalyst": None},
+        "stage": "证据不足，暂不判定",
+        "health": {"score": health_score, "coverage": health_coverage,
+            "dimensions": health_dims,
+            "note": "资金持续性仅参考公开行业主力资金5日/10日净占比同向性，不代表机构专属资金；缺失维度不补值。"}}
+
+
+def flow_ratio_for_theme(flow_rows, theme, period):
+    name = _score_key(theme.get("industry_name") or theme.get("industry"))
+    code = _score_key(theme.get("sector_code"))
+    matches = []
+    for row in flow_rows:
+        if str(row.get("indicator") or "").strip() != period:
+            continue
+        row_keys = {_score_key(row.get("industry_name")), _score_key(row.get("industry")),
+                    _score_key(row.get("sector_code"))}
+        row_keys.discard("")
+        if name and name in row_keys or code and code in row_keys:
+            value = number(row.get("main_net_ratio"))
+            if value is not None:
+                matches.append((str(row.get("trade_date") or ""), value))
+    return max(matches, key=lambda x: x[0])[1] if matches else None
+
+
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     SITE.mkdir(parents=True, exist_ok=True)
@@ -600,7 +657,17 @@ def main():
             "government_policy": item.get("government_policy", {}).get("coverage", 0),
         }
         theme["model"] = theme.get("model") or {}
+        flow_rows = research.get("sections", {}).get("capital-flows", {}).get("items", [])
+        score_result = model_score(theme.get("change_pct"),
+            flow_ratio_for_theme(flow_rows, theme, "5日"),
+            flow_ratio_for_theme(flow_rows, theme, "10日"))
+        theme["model"]["score"] = score_result["score"]
+        theme["model"]["coverage"] = score_result["coverage"]
+        theme["model"]["dimensions"] = score_result["dimensions"]
+        theme["model"]["health"] = score_result["health"]
+        theme["model"]["stage"] = score_result["stage"]
         theme["model"]["evidence_status"] = "partial" if any(theme["evidence_coverage"].values()) else "unavailable"
+        theme["model"]["partial_score_status"] = "partial" if score_result["coverage"] < 100 else "complete"
         theme["model"]["full_score_status"] = "pending_required_evidence"
         missing = []
         for key, label in (("financials", "财务"), ("earnings_forecasts", "业绩预告"),
