@@ -63,7 +63,7 @@ def download_archive(path: Path) -> dict:
             "last_modified": response.headers.get("Last-Modified")}
 
 
-def parse_archive(path: Path) -> list[dict]:
+def parse_archive(path: Path, allowed_ts_codes: set[str]) -> list[dict]:
     records = []
     seen_codes = set()
     with zipfile.ZipFile(path) as archive:
@@ -78,6 +78,11 @@ def parse_archive(path: Path) -> list[dict]:
                 continue
             market, code = match.group(1).lower(), match.group(2)
             ts_code = f"{code}.{market.upper()}"
+            # TDX archives also contain index and other instrument .day files.
+            # Restrict to the exact A-share universe from the validated market
+            # snapshot, matching both code AND exchange to avoid index collisions.
+            if ts_code not in allowed_ts_codes:
+                continue
             try:
                 raw = archive.read(member)  # zipfile verifies CRC on read
                 if not raw or len(raw) % 32:
@@ -112,7 +117,7 @@ def parse_archive(path: Path) -> list[dict]:
                 logging.info("Parsed %d/%d daily files; valid securities=%d",
                              index, len(members), len(seen_codes))
     if len(records) < 1000:
-        raise RuntimeError(f"parsed too few valid securities from official archive: {len(records)}")
+        raise RuntimeError(f"parsed too few validated A-share securities from official archive: {len(records)}")
     return records
 
 
@@ -120,8 +125,10 @@ def main() -> None:
     if not LATEST.exists():
         raise SystemExit("latest_market.csv missing; run market collector first")
     market = pd.read_csv(LATEST, encoding="utf-8-sig", dtype={"symbol": str})
-    if market.empty or not {"symbol", "trade_date", "close"}.issubset(market.columns):
-        raise SystemExit("latest_market.csv lacks symbol/trade_date/close")
+    if market.empty or not {"symbol", "ts_code", "trade_date", "close"}.issubset(market.columns):
+        raise SystemExit("latest_market.csv lacks symbol/ts_code/trade_date/close")
+    market["ts_code"] = market["ts_code"].astype(str).str.upper().str.strip()
+    allowed_ts_codes = set(market["ts_code"].dropna())
     target_day = "".join(ch for ch in str(market.iloc[0]["trade_date"]) if ch.isdigit())[:8]
     if len(target_day) != 8:
         raise SystemExit(f"invalid target trade date: {target_day!r}")
@@ -148,13 +155,13 @@ def main() -> None:
         with tempfile.TemporaryDirectory(prefix="tdx-hsjday-") as temp:
             archive_path = Path(temp) / "hsjday.zip"
             download = download_archive(archive_path)
-            records = parse_archive(archive_path)
+            records = parse_archive(archive_path, allowed_ts_codes)
         tdx = pd.DataFrame(records).sort_values("symbol")
         tdx.to_csv(OUT_CSV, index=False, encoding="utf-8-sig")
-    joined = market[["symbol", "close"]].copy()
-    joined["symbol"] = joined["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
+    joined = market[["ts_code", "close"]].copy()
+    joined["ts_code"] = joined["ts_code"].astype(str).str.upper().str.strip()
     joined["close"] = pd.to_numeric(joined["close"], errors="coerce")
-    compare = tdx.merge(joined, on="symbol", how="inner", suffixes=("_tdx", "_market"))
+    compare = tdx.merge(joined, on="ts_code", how="inner", suffixes=("_tdx", "_market"))
     same_day = compare[compare["trade_date"] == target_day].copy()
     same_day["abs_close_diff"] = (same_day["close_tdx"] - same_day["close_market"]).abs()
     comparable = same_day.dropna(subset=["abs_close_diff"])
