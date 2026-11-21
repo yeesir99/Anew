@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import time
+import requests
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -78,6 +79,46 @@ def load_validated_trade_day() -> date:
     if trade_day > today or gap > 1:
         raise RuntimeError(f"行情日期 {trade_day} 非最新有效交易日（工作日差 {gap}），跳过行业/资金采集")
     return trade_day
+
+
+def fetch_sse_etf_scale_direct(day: date) -> pd.DataFrame:
+    """Retry the SSE public ETF-size endpoint directly if AkShare's wrapper gets HTML/empty output."""
+    url = "https://query.sse.com.cn/commonQuery.do"
+    stat_date = day.strftime("%Y-%m-%d")
+    params = {
+        "isPagination": "true", "pageHelp.pageSize": "10000",
+        "pageHelp.pageNo": "1", "pageHelp.beginPage": "1",
+        "pageHelp.cacheSize": "1", "pageHelp.endPage": "1",
+        "sqlId": "COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L",
+        "STAT_DATE": stat_date,
+    }
+    headers = {"Referer":"https://www.sse.com.cn/",
+        "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
+    last_error = None
+    for attempt in range(3):
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=(10, 25))
+            response.raise_for_status()
+            payload = response.json()
+            rows = payload.get("result") if isinstance(payload, dict) else None
+            if not isinstance(rows, list) or not rows:
+                raise RuntimeError("SSE response has no result rows")
+            frame = pd.DataFrame(rows).rename(columns={"NUM":"序号","SEC_CODE":"基金代码",
+                "SEC_NAME":"基金简称","ETF_TYPE":"ETF类型","STAT_DATE":"统计日期","TOT_VOL":"基金份额"})
+            required = ["基金代码","基金份额","统计日期"]
+            if not set(required).issubset(frame.columns):
+                raise RuntimeError("SSE response schema changed: " + str(list(frame.columns)))
+            frame["基金份额"] = pd.to_numeric(frame["基金份额"], errors="coerce") * 10000
+            frame["统计日期"] = pd.to_datetime(frame["统计日期"], errors="coerce")
+            frame = frame.dropna(subset=["基金代码","基金份额","统计日期"])
+            if frame.empty:
+                raise RuntimeError("SSE result rows failed schema/value validation")
+            return frame
+        except Exception as exc:
+            last_error = str(exc)
+            if attempt < 2:
+                time.sleep(1 + attempt * 2)
+    raise RuntimeError("SSE direct endpoint retries exhausted: " + str(last_error)[:300])
 
 
 def main():
@@ -237,8 +278,26 @@ def main():
         statuses.append({"source":"etf_shares_sse","status":"success","records":len(frame),
             "detail":"上交所官方指定交易日份额快照"})
     except Exception as exc:
-        LOG.warning("SSE ETF份额采集失败：%s", exc)
-        statuses.append({"source":"etf_shares_sse","status":"failed","detail":str(exc)[:400]})
+        LOG.warning("AkShare SSE ETF份额接口失败，改用交易所原始接口重试：%s", exc)
+        try:
+            frame = fetch_sse_etf_scale_direct(trade_day)
+            code_col = "基金代码"
+            name_col = "基金简称" if "基金简称" in frame.columns else None
+            shares_col = "基金份额"
+            for _, item in frame.iterrows():
+                code = str(item.get(code_col, "")).strip()
+                shares = number(item.get(shares_col))
+                if code and code != "nan" and shares is not None:
+                    etf_rows.append({"trade_date":trade_day.isoformat(),"exchange":"SSE",
+                        "code":code,"name":str(item.get(name_col,"")) if name_col else "",
+                        "shares":shares,"nav":None,"source":"SSE official ETF share snapshot (direct API retry)",
+                        "captured_at":checked})
+            statuses.append({"source":"etf_shares_sse","status":"success","records":len(frame),
+                "detail":"AkShare失败后由上交所原始API重试成功"})
+        except Exception as fallback_exc:
+            LOG.warning("SSE ETF份额原始接口重试失败：%s", fallback_exc)
+            statuses.append({"source":"etf_shares_sse","status":"failed",
+                "detail":(str(exc)+"; direct retry: "+str(fallback_exc))[:500]})
 
     # SZSE serves an XLSX file. Split the six-month window into smaller
     # bounded ranges and retry transient resets; keep partial history if only

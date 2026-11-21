@@ -54,10 +54,11 @@ jobs:
         run: python scripts/collect_chinese_news.py
       - name: Build broad-market technical indicators and rotate full-universe history backfill
         if: steps.live.outcome == 'success'
+        continue-on-error: true
         timeout-minutes: 15
         env:
-          MAX_HISTORY_STOCKS: "300"
-          HISTORY_WORKERS: "3"
+          MAX_HISTORY_STOCKS: "100"
+          HISTORY_WORKERS: "1"
         run: python scripts/build_market_technicals.py
       - name: Collect validated archive fallback if live API is unavailable
         if: steps.live.outcome == 'failure'

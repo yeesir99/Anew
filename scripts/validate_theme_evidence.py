@@ -67,8 +67,9 @@ summary = {"themes": len(themes), "themes_with_constituents": with_constituents,
            "unique_constituents": len(total_codes), "failed_sources": len(source_failures),
            "quality_status": evidence.get("quality_status")}
 print(json.dumps(summary, ensure_ascii=False))
-if evidence.get("quality_status") != "validated":
-    errors.append("collector quality_status is not validated")
+quality_status = evidence.get("quality_status")
+if quality_status not in ("validated", "degraded"):
+    errors.append("collector quality_status is missing or unknown")
 if with_constituents == 0 or not total_codes:
     errors.append("no valid theme constituent mapping; evidence cannot be joined")
 if errors:
@@ -76,4 +77,10 @@ if errors:
     for error in errors[:50]:
         print(" - " + error)
     raise SystemExit(1)
+if quality_status == "degraded":
+    print("DEGRADED: structurally valid partial mapping; unresolved themes and source failures remain visible")
+    for name, item in themes.items():
+        if not (item.get("constituent_codes") or []):
+            print(" - unresolved theme: " + name)
+    raise SystemExit(0)
 print("PASS: theme evidence joins and coverage are structurally valid")

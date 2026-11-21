@@ -227,7 +227,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
         else:
             start = full_start
         requests_needed.append((code, start))
-    workers = max(1, min(int(os.getenv("HISTORY_WORKERS", "3")), 8))
+    workers = max(1, min(int(os.getenv("HISTORY_WORKERS", "1")), 2))
     ak = _ak()
     histories = []
     failures = 0
@@ -320,12 +320,22 @@ def main():
             logging.warning("bulk technical calculation failed; use per-symbol fallback: %s", str(exc)[:300])
             archive_stats["calculation_error"] = str(exc)[:300]
     if not archive_applied:
-        latest, backfill_stats = _backfill_per_symbol(latest, day)
+        try:
+            latest, backfill_stats = _backfill_per_symbol(latest, day)
+        except BaseException as exc:
+            # Native numerical libraries may terminate the process (SIGTRAP)
+            # during threaded calculations; preserve the validated market
+            # snapshot and record the technical domain as degraded.
+            logging.exception("per-symbol technical backfill failed; preserving market snapshot")
+            backfill_stats = {"status":"failed","error":str(exc)[:500],
+                "requested":0,"successful":0,"failed":0,"cache_hits":0,
+                "note":"technical indicators remain missing where no validated history exists"}
     latest.to_csv(LATEST, index=False, encoding="utf-8-sig")
     trade_date_iso = datetime.strptime(day, "%Y%m%d").date().isoformat()
     latest.to_csv(DATA / f"market_{trade_date_iso}.csv", index=False, encoding="utf-8-sig")
     coverage = {col: int(latest[col].notna().sum()) if col in latest else 0 for col in METRICS}
     result = {"trade_date": day, "stocks": len(latest),
+        "status": "validated" if archive_applied or backfill_stats.get("failed", 0) == 0 and backfill_stats.get("status") != "failed" else "degraded",
         "history_sessions": archive_stats.get("history_sessions", snapshot_sessions),
         "snapshot_history_sessions": snapshot_sessions,
         "coverage": coverage, "bulk_archive": archive_stats,
