@@ -662,7 +662,7 @@ def main():
             flow_ratio_for_theme(flow_rows, theme, "5日"),
             flow_ratio_for_theme(flow_rows, theme, "10日"))
         theme["model"]["score"] = score_result["score"]
-        theme["model"]["coverage"] = score_result["coverage"]
+        theme["model"]["potential_score_coverage"] = score_result["coverage"]
         theme["model"]["dimensions"] = score_result["dimensions"]
         theme["model"]["health"] = score_result["health"]
         theme["model"]["stage"] = score_result["stage"]
