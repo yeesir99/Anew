@@ -529,10 +529,37 @@ def main():
             if not any(token in title for token in ("通知", "公告", "方案", "规划", "办法", "意见", "标准", "目录", "通告")):
                 continue
             policy_rows.append({"title": title, "url": url, "source": "工业和信息化部官网文件发布索引",
-                                "published_date": None, "document_type": "official_ministry_notice"})
+                                "published_date": None, "document_type": "official_ministry_notice",
+                                "body_text": None, "body_status": "not_fetched"})
+        # Fetch official article bodies for auditable policy evidence. An index
+        # title alone is not counted as a policy match or score input.
+        for item in policy_rows[:20]:
+            try:
+                article = requests.get(item["url"], timeout=10,
+                    headers={"User-Agent":"Mozilla/5.0 A-Share-Alpha-Radar"})
+                article.raise_for_status()
+                content_type = article.headers.get("Content-Type", "").lower()
+                if "pdf" in content_type:
+                    item["body_status"] = "pdf_not_parsed"
+                    continue
+                raw_html = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\\1>", " ", article.text)
+                plain = re.sub(r"\\s+", " ", re.sub(r"<[^>]+>", " ", raw_html))
+                plain = requests.utils.unquote(plain)
+                plain = re.sub(r"\\s+", " ", plain).strip()
+                date_match = re.search(r"(20\\d{2})[年./-](\\d{1,2})[月./-](\\d{1,2})日?", plain)
+                if date_match:
+                    item["published_date"] = f"{int(date_match.group(1)):04d}-{int(date_match.group(2)):02d}-{int(date_match.group(3)):02d}"
+                item["body_text"] = plain[:12000] if len(plain) >= 200 else None
+                item["body_status"] = "success" if item["body_text"] else "empty"
+            except Exception as article_exc:
+                item["body_status"] = "failed"
+                item["body_error"] = str(article_exc)[:180]
+            time.sleep(0.1)
         policy_status = {"source": "MIIT_official_release_index",
-                         "status": "success" if policy_rows else "empty",
-                         "records": len(policy_rows), "url": policy_url}
+                         "status": "success" if any(x.get("body_status") == "success" for x in policy_rows) else "partial" if policy_rows else "empty",
+                         "records": len(policy_rows),
+                         "full_text_records": sum(1 for x in policy_rows if x.get("body_status") == "success"),
+                         "url": policy_url}
     except Exception as exc:
         policy_status = {"source": "MIIT_official_release_index", "status": "failed",
                          "records": 0, "detail": str(exc)[:400], "url": policy_url}
@@ -610,11 +637,15 @@ def main():
             "contracts": {"records": contracts, "coverage": len(contracts), "source": "AKShare/EastMoney stock_zdhtmx_em"},
             "company_events": {"records": event_rows, "coverage": len(event_rows), "source": "AKShare stock_notice_report"},
             "government_policy": {"records": [r for r in policy_rows
-                if any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,)))],
-                "coverage": sum(1 for r in policy_rows
+                if r.get("body_status") == "success" and
+                any(k in (r["title"] + " " + (r.get("body_text") or "")) for k in POLICY_SYNONYMS.get(name, (name,)))],
+                "coverage": sum(1 for r in policy_rows if r.get("body_status") == "success" and
+                any(k in (r["title"] + " " + (r.get("body_text") or "")) for k in POLICY_SYNONYMS.get(name, (name,)))),
+                "index_matches": sum(1 for r in policy_rows
                 if any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,)))),
-                "status": "success" if any(any(k in r["title"] for k in POLICY_SYNONYMS.get(name, (name,))) for r in policy_rows) else "no_matching_official_document",
-                "source": "工业和信息化部官网文件发布索引"},
+                "status": "success" if any(r.get("body_status") == "success" and
+                    any(k in (r["title"] + " " + (r.get("body_text") or "")) for k in POLICY_SYNONYMS.get(name, (name,))) for r in policy_rows) else "no_matching_official_full_text",
+                "source": "工业和信息化部官网文件发布索引及原文页"},
         }
 
     evidence = {
