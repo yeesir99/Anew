@@ -296,8 +296,9 @@ def main():
 
     def fetch_ths_concept_members(theme, name):
         """Fallback for THS concept boards when Sina has no exact taxonomy node."""
-        if not is_concept_code(clean(theme.get("sector_code"))):
-            return [], None
+        # Try exact THS concept-name matching for every unresolved theme.
+        # Some EastMoney BK concept codes are absent from the local concept-code
+        # registry; exact name matching avoids incorrectly classifying them as industries.
         name_fn = getattr(ak, "stock_board_concept_name_ths", None)
         if name_fn is None:
             return [], None
