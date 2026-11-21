@@ -542,11 +542,11 @@ def main():
                 if "pdf" in content_type:
                     item["body_status"] = "pdf_not_parsed"
                     continue
-                raw_html = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\\1>", " ", article.text)
-                plain = re.sub(r"\\s+", " ", re.sub(r"<[^>]+>", " ", raw_html))
+                raw_html = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", article.text)
+                plain = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw_html))
                 plain = requests.utils.unquote(plain)
-                plain = re.sub(r"\\s+", " ", plain).strip()
-                date_match = re.search(r"(20\\d{2})[年./-](\\d{1,2})[月./-](\\d{1,2})日?", plain)
+                plain = re.sub(r"\s+", " ", plain).strip()
+                date_match = re.search(r"(20\d{2})[年./-](\d{1,2})[月./-](\d{1,2})日?", plain)
                 if date_match:
                     item["published_date"] = f"{int(date_match.group(1)):04d}-{int(date_match.group(2)):02d}-{int(date_match.group(3)):02d}"
                 item["body_text"] = plain[:12000] if len(plain) >= 200 else None
