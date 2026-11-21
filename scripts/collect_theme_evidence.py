@@ -20,6 +20,7 @@ from pathlib import Path
 
 import akshare as ak
 import pandas as pd
+from import_sector_archive import is_concept_code
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -183,66 +184,104 @@ def main():
     source_status = []
     theme_members = {}
     all_codes = set()
-    # Use the THS constituent endpoints first: the EastMoney Push2 endpoint was
-    # rate-limited for every theme in the previous run. Keep industry and concept
-    # taxonomies separate; only accept a source that returns a valid code column.
-    def fetch_members(name):
-        attempts = (
-            ("stock_board_industry_cons_ths", "THS industry"),
-            ("stock_board_concept_cons_ths", "THS concept"),
-        )
+    # AkShare 1.16+ no longer ships the old THS constituent functions. Use the
+    # supported EastMoney industry/concept endpoints and the BK code from the
+    # validated sector archive. Cache successes and stop hammering Push2 on 429.
+    cache_path = DATA / "theme_constituents_cache.json"
+    try:
+        cache = json.loads(cache_path.read_text(encoding="utf-8")) if cache_path.exists() else {}
+    except Exception:
+        cache = {}
+    cache_dirty = False
+    theme_member_meta = {}
+    push2_circuit_open = False
+
+    def fetch_members(theme, name):
+        nonlocal cache_dirty, push2_circuit_open
+        code = clean(theme.get("sector_code"))
+        concept = is_concept_code(code)
+        cached = cache.get(name) or {}
+        cached_members = cached.get("members") or []
+        cached_at = clean(cached.get("fetched_at"))
+        if cached_members and cached_at:
+            try:
+                age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(cached_at.replace("Z","+00:00"))).days
+                if age_days <= 30:
+                    return cached_members, {"source":"constituents:"+name,"status":"cached",
+                        "records":len(cached_members),"mapping_source":cached.get("source"),
+                        "mapping_date":cached_at,"checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
+            except Exception:
+                pass
+        if push2_circuit_open:
+            return [], {"source":"constituents:"+name,"status":"failed","records":0,
+                "detail":"EastMoney Push2 circuit breaker open after upstream rate limit",
+                "checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        attempts = [("stock_board_concept_cons_em" if concept else "stock_board_industry_cons_em",
+                     "EastMoney concept" if concept else "EastMoney industry")]
+        if not code:
+            attempts = [("stock_board_industry_cons_em","EastMoney industry"),
+                        ("stock_board_concept_cons_em","EastMoney concept")]
         errors = []
-        candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
+        candidates = tuple(dict.fromkeys(x for x in (code, name, *THEME_ALIASES.get(name, ())) if x))
         for fn_name, label in attempts:
             fn = getattr(ak, fn_name, None)
             if fn is None:
-                errors.append(fn_name + " unavailable")
+                errors.append(fn_name + " unavailable in installed AkShare")
                 continue
             try:
-                sig = inspect.signature(fn)
-                if "symbol" not in sig.parameters:
+                if "symbol" not in inspect.signature(fn).parameters:
                     errors.append(fn_name + " has no symbol parameter")
                     continue
-                for candidate in candidates:
-                    try:
-                        frame = fn(symbol=candidate)
-                        rows = records(frame)
-                        if not rows:
-                            errors.append(fn_name + "(" + candidate + ") returned empty")
-                            continue
-                        code_col = find_col(rows[0].keys(), ("代码", "股票代码", "证券代码", "成分股代码"))
-                        name_col = find_col(rows[0].keys(), ("名称", "股票简称", "证券简称", "成分股名称"))
-                        if not code_col:
-                            errors.append(fn_name + "(" + candidate + ") missing security-code column")
-                            continue
-                        members = []
-                        for row in rows:
-                            code = norm_code(row.get(code_col))
-                            if code and len(code) == 6:
-                                members.append({"code": code, "name": row.get(name_col)})
-                        members = list({x["code"]: x for x in members}.values())
-                        if members:
-                            return members, {"source": "constituents:" + name, "status": "success",
-                                "records": len(members), "provider": label, "matched_symbol": candidate,
-                                "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
-                        errors.append(fn_name + "(" + candidate + ") returned no valid six-digit codes")
-                    except Exception as exc:
-                        errors.append(fn_name + "(" + candidate + "): " + str(exc)[:140])
-                    time.sleep(0.6)
             except Exception as exc:
-                errors.append(fn_name + ": " + str(exc)[:180])
-        return [], {"source": "constituents:" + name, "status": "failed", "records": 0,
-                    "detail": "; ".join(errors)[:400],
-                    "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+                errors.append(fn_name + " signature unavailable: " + str(exc)[:100])
+                continue
+            for candidate in candidates:
+                try:
+                    frame = fn(symbol=candidate)
+                    rows = records(frame)
+                    if not rows:
+                        errors.append(fn_name + "(" + candidate + ") returned empty")
+                        continue
+                    code_col = find_col(rows[0].keys(), ("代码","股票代码","证券代码","成分股代码"))
+                    name_col = find_col(rows[0].keys(), ("名称","股票简称","证券简称","成分股名称"))
+                    if not code_col:
+                        errors.append(fn_name + " missing security-code column")
+                        continue
+                    members = list({norm_code(row.get(code_col)): {"code":norm_code(row.get(code_col)),
+                        "name":row.get(name_col)} for row in rows if norm_code(row.get(code_col))})
+                    if members:
+                        fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                        cache[name] = {"members":members,"fetched_at":fetched,"source":fn_name,
+                            "matched_symbol":candidate,"sector_code":code}
+                        cache_dirty = True
+                        return members, {"source":"constituents:"+name,"status":"success",
+                            "records":len(members),"provider":label,"matched_symbol":candidate,
+                            "mapping_source":fn_name,"mapping_date":fetched,"checked_at":fetched}
+                    errors.append(fn_name + "(" + candidate + ") returned no valid six-digit codes")
+                except Exception as exc:
+                    message = str(exc)
+                    errors.append(fn_name + "(" + candidate + "): " + message[:140])
+                    if "Push2RateLimitError" in message or "短时间内请求过多" in message or "429" in message:
+                        push2_circuit_open = True
+                        break
+                time.sleep(0.8)
+            if push2_circuit_open:
+                break
+        return [], {"source":"constituents:"+name,"status":"failed","records":0,
+            "detail":"; ".join(errors)[:400],
+            "checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
 
     for theme in themes:
         name = clean(theme.get("industry_name") or theme.get("industry"))
         if not name:
             continue
-        members, status = fetch_members(name)
+        members, status = fetch_members(theme, name)
         source_status.append(status)
         theme_members[name] = members
+        theme_member_meta[name] = status
         all_codes.update(x["code"] for x in members)
+    if cache_dirty:
+        cache_path.write_text(json.dumps(cache,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
 
     # Latest published quarterly financial report and forecast, each as a full-market
     # table. Keep the exact reporting period and source columns.
@@ -394,6 +433,7 @@ def main():
         output[name] = {
             "sector_code": theme.get("sector_code"),
             "constituent_count": len(members),
+            "mapping": theme_member_meta.get(name, {}),
             "constituent_codes": sorted(codes),
             "financials": {"report_date": report_date, "records": financial,
                 "coverage": len({re.sub(r"\D", "", str(r.get("股票代码") or r.get("证券代码") or "")) for r in financial})},
@@ -418,7 +458,7 @@ def main():
         "financial_report_date": report_date,
         "themes": output,
         "sources": source_status,
-        "quality_status": "validated" if sum(1 for x in source_status if x.get("source","").startswith("constituents:") and x.get("status") == "success") == len(themes) and len(all_codes) > 0 else "degraded",
+        "quality_status": "validated" if sum(1 for x in source_status if x.get("source","").startswith("constituents:") and x.get("status") in ("success","cached")) == len(themes) and len(all_codes) > 0 else "degraded",
         "quality_summary": {
             "themes_total": len(themes),
             "themes_with_constituents": sum(1 for x in theme_members.values() if x),
