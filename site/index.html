@@ -67,7 +67,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
   if(newsPage){
     const newsBody=newsItems.length
       ? '<div class="card"><div class="section">近36小时快讯 · '+newsItems.length+' 条</div><div style="display:grid;gap:12px">'+newsItems.map(x=>{
-          const url=String(x.url||'');const safeUrl=/^https?:\\/\\//i.test(url)?url:'';
+          const url=String(x.url||'');const safeUrl=(url.startsWith('http://')||url.startsWith('https://'))?url:'';
           return '<article style="padding:10px 0;border-bottom:1px solid #edf0f2"><b>'+esc(x.title)+'</b><div class="sub" style="margin:5px 0">'+esc(x.summary||'')+'</div><div class="sub">'+esc(x.source||x.domain||'')+' · '+esc(x.published||'时间未知')+' '+(safeUrl?'<a href="'+esc(safeUrl)+'" target="_blank" rel="noopener">查看来源</a>':'')+'</div></article>';
         }).join('')+'</div></div>'
       : '<div class="empty">'+(newsMeta.status==='empty'?'最近36小时没有取得符合筛选条件的中文A股新闻。':'新闻采集状态尚不可用。')+'</div>';
