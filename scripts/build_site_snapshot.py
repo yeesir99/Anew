@@ -48,6 +48,8 @@ def main() -> None:
         coverage = snapshot["coverage"]
         ui_breadth = {**breadth, "up": coverage["up"], "down": coverage["down"],
                       "flat": coverage["unchanged"], "total": count,
+                      "aggregate_turnover_cny": breadth.get("aggregate_turnover_cny"),
+                      "turnover_cny": breadth.get("aggregate_turnover_cny"),
                       "turnover": breadth.get("aggregate_turnover_cny")}
         industry_rows = []
         industry_history = ROOT / "data" / "industry_history.csv"
