@@ -47,6 +47,11 @@ jobs:
           HISTORY_WORKERS: "2"
           TZ: Asia/Shanghai
         run: python -m src.main close
+      - name: Collect Chinese-language A-share news
+        if: always() && !cancelled()
+        continue-on-error: true
+        timeout-minutes: 4
+        run: python scripts/collect_chinese_news.py
       - name: Build broad-market technical indicators from persisted daily snapshots
         if: steps.live.outcome == 'success'
         run: python scripts/build_market_technicals.py
