@@ -181,6 +181,10 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
     const head=root.querySelector('.head');if(head)head.insertAdjacentElement('afterend',el);
   };
   const themeItems=items('themes'),evidenceMeta=d.evidence_quality||{};
+  // Initialize all datasets before subpage summaries read them.
+  
+  const liveIndustries=items('industry-live');
+  const newsItems=items('news'),newsMeta=s.news||{};
   addBanner('#themes','主题证据工作台','量价表现与产业证据分层呈现；覆盖不足时不输出完整主线结论。',[themeItems.length+' 个候选主题',(evidenceMeta.status||'证据状态待核验')]);
   addBanner('#rotation','行业强弱与轮动阶段','将历史收益、轮动强度与当日行业快照分开展示，避免不同口径混算。',[rotData.length+' 个历史观察项',liveIndustries.length+' 个实时行业']);
   const flowItems=items('capital-flows'),etfItems=items('etf-shares'),sourceItems=items('data-sources');
@@ -204,15 +208,14 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
   const rot=document.querySelector('#rotation .empty');
   const rotData=items('rotation');
   if(rot)rot.outerHTML='<div class="card"><div class="section">行业轮动观察</div>'+table(rotData,[['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['轮动强度',x=>fmt(x.rotation_strength_score)],['最新涨幅',x=>pct(x.latest_change)],['5日复合',x=>pct(x.return_5d_pct)],['10日复合',x=>pct(x.return_10d_pct)],['20日复合',x=>pct(x.return_20d_pct)],['历史交易日',x=>x.history_sessions??0]])+'</div>';
-  const liveIndustries=items('industry-live'),liveMeta=s['industry-live']||{},liveRoot=document.getElementById('industry-live');
+  const liveMeta=s['industry-live']||{},liveRoot=document.getElementById('industry-live');
   if(liveRoot)liveRoot.innerHTML=liveIndustries.length
     ? '<div class="card"><div class="section">同花顺实时行业榜 · '+esc(liveMeta.trade_date||'交易日未知')+' · '+liveIndustries.length+' 个行业</div>'+table(liveIndustries,[['行业',x=>esc(x.industry_name)],['涨跌幅',x=>pct(x.change_pct)],['成交额',x=>x.turnover_cny==null?'—':fmt(Number(x.turnover_cny)/1e8)+'亿'],['估算净流入',x=>x.main_net_inflow_cny==null?'—':fmt(Number(x.main_net_inflow_cny)/1e8)+'亿'],['上涨家数',x=>fmt(x.up_count,0)],['下跌家数',x=>fmt(x.down_count,0)],['领涨股',x=>esc(x.leader_name)],['领涨股涨幅',x=>pct(x.leader_change_pct)]])+'</div><div class="note">来源：'+esc(liveMeta.provider||'THS')+'；采集时间：'+esc(liveMeta.captured_at||'—')+'。实时榜与历史轮动分开展示，不混合计算历史收益。</div>'
     : '<div class="note">同花顺备用实时行业榜本轮未取得数据；历史轮动继续使用公开行业日频归档。状态：'+esc(liveMeta.status||'missing')+'</div>';
   const cap=document.querySelector('#capital .empty');
   if(cap)cap.outerHTML='<div class="card"><div class="section">公开资金流估算</div>'+table(items('capital-flows').slice(0,60),[['周期',x=>esc(x.indicator)],['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['涨跌幅',x=>pct(x.change_pct)],['估算净流入',x=>x.main_net_inflow==null?'—':fmt(Number(x.main_net_inflow)/1e8)+'亿'],['日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">ETF份额变化</div>'+table(items('etf-shares').slice(0,50),[['代码',x=>esc(x.code)],['名称',x=>esc(x.name)],['基金份额',x=>x.shares==null?'—':fmt(x.shares,0)],['份额变化',x=>pct(x.change_pct)],['对比日期',x=>esc(x.previous_date||'历史基准待积累')],['快照日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">数据源状态</div>'+table(items('data-sources'),[['数据源',x=>esc(x.source)],['状态',x=>esc(x.status)],['说明',x=>esc(x.detail)]])+'</div>';
   const newsPage=document.querySelector('#news .empty');
-  const newsItems=items('news');
-  const newsMeta=s.news||{};
+  
   if(newsPage){
     const newsBody=newsItems.length
       ? '<div class="card"><div class="section">近36小时快讯 · '+newsItems.length+' 条</div><div class="news-list">'+newsItems.map(x=>{
