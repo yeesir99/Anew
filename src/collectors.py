@@ -257,7 +257,8 @@ def collect_news(max_records: int = 80) -> list[dict[str, Any]]:
                 articles = response.json().get("articles", []) or []
                 for item in articles:
                     url = item.get("url")
-                    if not url or url in seen:
+                    language = str(item.get("language", "")).strip().lower()
+                    if not url or url in seen or language not in ("chinese", "zh", "zh-cn"):
                         continue
                     seen.add(url)
                     result.append({"title": item.get("title", ""), "url": url,
