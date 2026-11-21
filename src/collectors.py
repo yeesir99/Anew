@@ -297,8 +297,8 @@ def collect_news(max_records: int = 80) -> list[dict[str, Any]]:
 
     ak = _ak()
     domestic_sources = [
-        ("stock_news_global_cls", {"symbol": "全部"}, "财联社电报", "https://www.cls.cn/telegraph"),
         ("stock_news_global_ths", {}, "同花顺财经快讯", "https://news.10jqka.com.cn/realtimenews.html"),
+        ("stock_news_global_cls", {"symbol": "全部"}, "财联社电报", "https://www.cls.cn/telegraph"),
         ("stock_news_global_sina", {}, "新浪财经快讯", "https://finance.sina.com.cn/7x24"),
         ("stock_news_global_em", {}, "东方财富财经快讯", "https://kuaixun.eastmoney.com/7_24.html"),
         ("stock_news_cjzc_em", {}, "东方财富财经早餐", "https://stock.eastmoney.com/a/czpnc.html"),
