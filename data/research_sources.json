@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-21T10:39:00+08:00",
+  "checked_at": "2026-11-21T10:45:25+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -31,12 +31,13 @@
       "source": "etf_shares_sse",
       "status": "success",
       "records": 927,
-      "detail": "交易所公开份额数据；份额变化不等于机构净买入"
+      "detail": "上交所官方指定交易日份额快照"
     },
     {
       "source": "etf_shares_szse",
-      "status": "failed",
-      "detail": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+      "status": "partial",
+      "records": 1088,
+      "detail": "日频历史不可用；仅保留当日份额快照"
     }
   ]
 }
