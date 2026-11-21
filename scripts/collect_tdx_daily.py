@@ -6,10 +6,8 @@ coverage report are retained. Raw, unadjusted bars are NOT fed into scoring.
 """
 from __future__ import annotations
 
-import csv
 import json
 import logging
-import os
 import re
 import tempfile
 import zipfile
@@ -34,6 +32,15 @@ DTYPE = np.dtype({
     "itemsize": 32,
 })
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+
+def remote_metadata() -> dict:
+    response = requests.head(URL, timeout=(15, 45), headers={"User-Agent": USER_AGENT})
+    response.raise_for_status()
+    return {"etag": response.headers.get("ETag"),
+            "last_modified": response.headers.get("Last-Modified"),
+            "content_length": int(response.headers.get("Content-Length") or 0),
+            "content_type": response.headers.get("Content-Type", "")}
 
 
 def download_archive(path: Path) -> dict:
@@ -165,7 +172,7 @@ def main() -> None:
         "archive_content_type": download["content_type"],
         "archive_etag": download["etag"],
         "archive_last_modified": download["last_modified"],
-        "archive_files_parsed": len(records),
+        "archive_files_parsed": int(len(tdx)),
         "market_symbols": int(market["symbol"].nunique()),
         "symbols_in_archive": int(tdx["symbol"].nunique()),
         "same_day_price_comparisons": int(len(comparable)),
