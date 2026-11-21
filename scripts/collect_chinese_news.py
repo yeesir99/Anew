@@ -25,7 +25,7 @@ def main():
         "sources":sorted({str(x.get("source")) for x in items}),
         "languages":sorted({str(x.get("language")) for x in items})}
     (DATA / "news_collection_status.json").write_text(
-        json.dumps(status, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"source":"GDELT and domestic Chinese financial feeds",
         **status,"files":["data/latest_news.json","data/morning_news.json"]}, ensure_ascii=False))
 
