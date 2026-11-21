@@ -296,6 +296,16 @@ def main():
 
     def fetch_ths_concept_members(theme, name):
         """Fallback for THS concept boards when Sina has no exact taxonomy node."""
+        ths_cookie = ""
+        try:
+            import py_mini_racer
+            from akshare.datasets import get_ths_js
+            js_runtime = py_mini_racer.MiniRacer()
+            with open(get_ths_js("ths.js"), "r", encoding="utf-8") as js_file:
+                js_runtime.eval(js_file.read())
+            ths_cookie = str(js_runtime.call("v"))
+        except Exception as cookie_exc:
+            LOG.warning("THS cookie generation unavailable: %s", str(cookie_exc)[:160])
         # Try exact THS concept-name matching for every unresolved theme.
         # Some EastMoney BK concept codes are absent from the local concept-code
         # registry; exact name matching avoids incorrectly classifying them as industries.
@@ -321,7 +331,8 @@ def main():
             matched_name, board_code = selected
             members = {}
             headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-                       "Referer":"https://q.10jqka.com.cn/gn/"}
+                       "Referer":"https://q.10jqka.com.cn/gn/",
+                       "Cookie":f"v={ths_cookie}" if ths_cookie else ""}
             for page in range(1, 21):
                 url = f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/page/{page}/ajax/1/code/{board_code}"
                 response = requests.get(url, headers=headers, timeout=15)
