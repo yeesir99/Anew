@@ -192,6 +192,15 @@ def main():
     sections["external-market-data"] = {"leaders": leaders,
         "note": "按全市场成交额排序；成交额表示交易活跃度，不代表资金净流入。"}
 
+    technical_path = DATA / "technical_coverage.json"
+    technical = {}
+    if technical_path.exists():
+        try:
+            technical = json.loads(technical_path.read_text(encoding="utf-8"))
+        except Exception:
+            technical = {}
+    sections["technical-coverage"] = technical or {
+        "status": "warming_up", "note": "尚无足够的连续全市场日线样本，不填造技术指标。"}
     sections["backtest"] = json.loads((SITE / "backtest.json").read_text(encoding="utf-8")) if (SITE / "backtest.json").exists() else {"status": "unavailable"}
     # Twelve sections; unavailable fields are explicitly labelled rather than filled with synthetic values.
     sections_report = [
@@ -203,7 +212,7 @@ def main():
         ("6. ETF份额变化", f"本日份额快照 {len(etf_items)} 条；只有存在上一交易日同口径记录时才计算变化率。"),
         ("7. 宽基指数与宏观环境", "当前公开流水线未接入稳定的指数/宏观历史序列；本栏不生成虚构指数结论。"),
         ("8. 个股活跃度与异动", f"有效成交活跃榜 {len(leaders)} 只，按全市场成交额排序；成交额表示交易活动，不表示净流入。"),
-        ("9. 技术结构与趋势", "当前可用全市场日快照；MA/RSI/MACD全市场连续序列尚未形成，不将少量样本外推至全市场。"),
+        ("9. 技术结构与趋势", "全市场技术指标覆盖：" + "；".join(f"{k} {v}/{technical.get('stocks', 0)}" for k, v in technical.get("coverage", {}).items()) + f"；连续历史交易日 {technical.get('history_sessions', 0)}。指标仅在样本数满足窗口时计算，未满足的股票继续显示缺失。"),
         ("10. 公告、政策与事件", "公告与新闻索引如未取得将标记为空；重大事项必须打开交易所/巨潮资讯原文核验。"),
         ("11. 盈利、估值与基本面", "尚无覆盖全市场且可持续的授权一致预期数据；不以单只股票或行业估值快照替代全市场判断。"),
         ("12. 风险、数据质量与行动清单", f"数据状态：{market.get('data_status')}；数据日：{day}；行情上游可能延迟或限流。该报告仅作研究辅助，不构成投资建议。")

@@ -184,9 +184,9 @@ def main():
     source_status = []
     theme_members = {}
     all_codes = set()
-    # AkShare 1.16+ no longer ships the old THS constituent functions. Use the
-    # supported EastMoney industry/concept endpoints and the BK code from the
-    # validated sector archive. Cache successes and stop hammering Push2 on 429.
+    # Sina publishes industry and popular-concept classifications independently
+    # of EastMoney Push2. Resolve the requested theme against this taxonomy first,
+    # then fetch only the matched category's members. EastMoney remains a fallback.
     cache_path = DATA / "theme_constituents_cache.json"
     try:
         cache = json.loads(cache_path.read_text(encoding="utf-8")) if cache_path.exists() else {}
@@ -195,11 +195,85 @@ def main():
     cache_dirty = False
     theme_member_meta = {}
     push2_circuit_open = False
+    sina_nodes = {}
+    sina_headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+                    "Referer":"http://vip.stock.finance.sina.com.cn/mkt/"}
+    try:
+        node_fn = getattr(ak, "stock_classify_board", None)
+        if node_fn is not None:
+            raw_nodes = node_fn()
+            if isinstance(raw_nodes, dict):
+                for group, frame in raw_nodes.items():
+                    if isinstance(frame, pd.DataFrame) and not frame.empty:
+                        name_col = find_col(frame.columns, ("name","名称","板块名称"))
+                        code_col = find_col(frame.columns, ("code","代码","板块代码"))
+                        if name_col and code_col:
+                            sina_nodes[str(group)] = [
+                                {"name":clean(row.get(name_col)),"node":clean(row.get(code_col))}
+                                for row in frame.to_dict("records")
+                                if clean(row.get(name_col)) and clean(row.get(code_col))]
+    except Exception as exc:
+        LOG.warning("Sina classification taxonomy unavailable: %s", exc)
+
+    def fetch_sina_members(theme, name):
+        concept = is_concept_code(clean(theme.get("sector_code")))
+        group_order = ("热门概念","申万行业","申万二级","地域板块") if concept else (
+            "申万行业","申万二级","热门概念","地域板块")
+        candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
+        normal = lambda x: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(x or "")).lower()
+        match = None
+        for candidate in candidates:
+            for group in group_order:
+                for item in sina_nodes.get(group, []):
+                    if normal(item["name"]) == normal(candidate):
+                        match = (group, item)
+                        break
+                if match:
+                    break
+            if match:
+                break
+        if not match:
+            return [], None
+        group, item = match
+        count_url = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeStockCount"
+        data_url = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData"
+        count_response = requests.get(count_url, params={"node":item["node"]}, headers=sina_headers, timeout=15)
+        count_response.raise_for_status()
+        total = int(count_response.json())
+        if total <= 0:
+            return [], {"provider":"Sina","taxonomy":group,"matched_symbol":item["name"],
+                        "mapping_source":"Sina stock_classify_board","status":"empty"}
+        members = {}
+        pages = min(20, (total + 79) // 80)
+        for page in range(1, pages + 1):
+            params = {"page":page,"num":"80","sort":"symbol","asc":"1","node":item["node"],
+                      "symbol":"","_s_r_a":"init"}
+            response = requests.get(data_url, params=params, headers=sina_headers, timeout=15)
+            response.raise_for_status()
+            payload = response.json()
+            if not isinstance(payload, list) or not payload:
+                break
+            frame = pd.DataFrame(payload)
+            code_col = find_col(frame.columns, ("symbol","code","代码","证券代码"))
+            name_col = find_col(frame.columns, ("name","名称","证券简称"))
+            if not code_col:
+                raise RuntimeError("Sina constituent payload missing code field: " + str(list(frame.columns)))
+            for row in frame.to_dict("records"):
+                code_value = norm_code(row.get(code_col))
+                if code_value:
+                    members[code_value] = {"code":code_value,
+                        "name":clean(row.get(name_col)) if name_col else None}
+            time.sleep(0.15)
+        if not members:
+            return [], {"provider":"Sina","taxonomy":group,"matched_symbol":item["name"],
+                        "mapping_source":"Sina stock_classify_board","status":"empty"}
+        return list(members.values()), {"provider":"Sina","taxonomy":group,
+            "matched_symbol":item["name"],"mapping_source":"Sina stock_classify_board",
+            "status":"success"}
 
     def fetch_members(theme, name):
         nonlocal cache_dirty, push2_circuit_open
         code = clean(theme.get("sector_code"))
-        concept = is_concept_code(code)
         cached = cache.get(name) or {}
         cached_members = cached.get("members") or []
         cached_at = clean(cached.get("fetched_at"))
@@ -212,17 +286,30 @@ def main():
                         "mapping_date":cached_at,"checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
             except Exception:
                 pass
+        try:
+            members, meta = fetch_sina_members(theme, name)
+            if members:
+                fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                cache[name] = {"members":members,"fetched_at":fetched,"source":"Sina stock_classify_board",
+                    "matched_symbol":meta.get("matched_symbol"),"sector_code":code}
+                cache_dirty = True
+                return members, {"source":"constituents:"+name,"status":"success","records":len(members),
+                    **meta,"mapping_date":fetched,"checked_at":fetched}
+        except Exception as exc:
+            LOG.warning("Sina constituents %s failed: %s", name, exc)
+        # EastMoney Push2 fallback. Open a circuit on the first upstream rate limit.
         if push2_circuit_open:
             return [], {"source":"constituents:"+name,"status":"failed","records":0,
-                "detail":"EastMoney Push2 circuit breaker open after upstream rate limit",
+                "detail":"Sina taxonomy unmatched/unavailable; EastMoney Push2 circuit breaker open",
                 "checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        concept = is_concept_code(code)
         attempts = [("stock_board_concept_cons_em" if concept else "stock_board_industry_cons_em",
                      "EastMoney concept" if concept else "EastMoney industry")]
         if not code:
             attempts = [("stock_board_industry_cons_em","EastMoney industry"),
                         ("stock_board_concept_cons_em","EastMoney concept")]
         errors = []
-        candidates = tuple(dict.fromkeys(x for x in (code, name, *THEME_ALIASES.get(name, ())) if x))
+        candidates = tuple(dict.fromkeys(x for x in (name, *THEME_ALIASES.get(name, ()), code) if x))
         for fn_name, label in attempts:
             fn = getattr(ak, fn_name, None)
             if fn is None:
