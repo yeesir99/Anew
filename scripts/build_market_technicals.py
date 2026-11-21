@@ -182,7 +182,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     selected_codes = [codes[(start_index + i) % len(codes)] for i in range(batch_size)] if codes else []
     cursor_next = (start_index + batch_size) % max(1, len(codes))
     cursor_path.write_text(json.dumps({"next_index":cursor_next,"universe_total":len(codes),
-        "last_batch":selected_codes,"updated_for_trade_date":day}, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        "last_batch":selected_codes,"updated_for_trade_date":day}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     universe = latest[latest["symbol"].isin(selected_codes)].copy()
     day_obj = datetime.strptime(day, "%Y%m%d").date()
     full_start = (day_obj - timedelta(days=170)).strftime("%Y%m%d")
