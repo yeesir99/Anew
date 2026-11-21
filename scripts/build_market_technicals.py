@@ -35,8 +35,8 @@ def main():
     if not parts:
         raise SystemExit("no daily full-market snapshots")
     history = pd.concat(parts, ignore_index=True)
-    history["symbol"] = history["symbol"].astype(str).str.replace(r"\\.0$", "", regex=True).str.zfill(6)
-    history["trade_date"] = history["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str[:8]
+    history["symbol"] = history["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
+    history["trade_date"] = history["trade_date"].astype(str).str.replace(r"\.0$", "", regex=True).str[:8]
     history["close"] = pd.to_numeric(history["close"], errors="coerce")
     history = history.dropna(subset=["symbol", "trade_date", "close"])
     history = history[history["close"] > 0].drop_duplicates(["symbol", "trade_date"], keep="last")
@@ -58,13 +58,13 @@ def main():
     history["macd_hist"] = (history["macd_dif"] - history["macd_dea"]) * 2
     history["volatility20"] = g.transform(lambda x: x.pct_change().rolling(20, min_periods=20).std() * (252 ** 0.5) * 100)
     latest = pd.read_csv(LATEST, encoding="utf-8-sig", dtype={"symbol": str})
-    latest["symbol"] = latest["symbol"].astype(str).str.replace(r"\\.0$", "", regex=True).str.zfill(6)
-    day = str(latest["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).max())[:8]
+    latest["symbol"] = latest["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
+    day = str(latest["trade_date"].astype(str).str.replace(r"\.0$", "", regex=True).max())[:8]
     calc = history[history["trade_date"] == day][["symbol"] + METRICS]
     latest = latest.drop(columns=[c for c in METRICS if c in latest.columns], errors="ignore").merge(calc, on="symbol", how="left")
     # Keep better independently collected history-based values if they exist.
     original = pd.read_csv(LATEST, encoding="utf-8-sig", dtype={"symbol": str})
-    original["symbol"] = original["symbol"].astype(str).str.replace(r"\\.0$", "", regex=True).str.zfill(6)
+    original["symbol"] = original["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
     for col in METRICS:
         if col in original:
             values = original.set_index("symbol")[col]
