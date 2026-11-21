@@ -25,7 +25,7 @@ for name, item in themes.items():
     else:
         model = research_theme.get("model") or {}
         score = model.get("score")
-        coverage = model.get("coverage")
+        coverage = model.get("potential_score_coverage")
         expected = 0 if research_theme.get("change_pct") is None else 15
         if coverage != expected:
             errors.append(f"{name}: potential-score coverage {coverage} != {expected}")
