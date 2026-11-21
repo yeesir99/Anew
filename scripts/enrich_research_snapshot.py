@@ -164,6 +164,24 @@ def main():
             "previous_date": previous.get("trade_date") if previous else None, "source": row.get("source")})
     breadth = market.get("market_breadth", {})
     sections = research.setdefault("sections", {})
+    news_items = []
+    news_status = {}
+    try:
+        news_items = json.loads((DATA / "latest_news.json").read_text(encoding="utf-8"))
+        if not isinstance(news_items, list):
+            news_items = []
+    except Exception:
+        news_items = []
+    try:
+        news_status = json.loads((DATA / "news_collection_status.json").read_text(encoding="utf-8"))
+    except Exception:
+        news_status = {}
+    status_available = bool(news_status)
+    news_status["records"] = len(news_items)
+    news_status["status"] = "success" if news_items else "empty" if status_available else "missing"
+    sections["news"] = {"items": news_items[:80], "status": news_status.get("status"),
+        "checked_at": news_status.get("checked_at"), "sources": news_status.get("sources", []),
+        "note": "仅展示近36小时中文A股、上市公司及行业政策相关快讯；无数据时明确显示空状态，不以英文国际新闻替代。"}
     sections["overview"] = {"count": market.get("coverage", {}).get("valid_stock_count", 0),
         "up": market.get("coverage", {}).get("up", 0), "down": market.get("coverage", {}).get("down", 0)}
     sections["market-breadth"] = {"item": {"trade_date": day, "payload": breadth}}
