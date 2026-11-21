@@ -308,7 +308,7 @@ def main():
             if not name_col or not code_col:
                 return [], None
             candidates = tuple(dict.fromkeys((name,) + THEME_ALIASES.get(name, ())))
-            normal = lambda x: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(x or "")).lower()
+            normal = lambda x: re.sub(r"[\s·（）()ⅢⅣ]", "", str(x or "")).lower()
             selected = None
             for candidate in candidates:
                 matched = names_frame[names_frame[name_col].astype(str).map(normal) == normal(candidate)]
