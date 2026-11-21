@@ -10,6 +10,7 @@ import csv
 import json
 import logging
 import os
+import time
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -184,35 +185,61 @@ def main():
         LOG.warning("SSE ETF份额采集失败：%s", exc)
         statuses.append({"source":"etf_shares_sse","status":"failed","detail":str(exc)[:400]})
 
-    # Shenzhen exchange: historical endpoint gives daily rows and avoids a
-    # one-shot current-list failure leaving every change_pct permanently null.
+    # SZSE serves an XLSX file. Split the six-month window into smaller
+    # bounded ranges and retry transient resets; keep partial history if only
+    # some ranges succeed instead of discarding all returned dates.
     try:
         fn = getattr(ak, "fund_scale_daily_szse", None)
-        if fn is not None:
-            start_day = (trade_day - timedelta(days=170)).strftime("%Y%m%d")
-            end_key = trade_day.strftime("%Y%m%d")
-            frame = fn(start_date=start_day, end_date=end_key, symbol="ETF")
-            if frame is None or frame.empty:
-                raise RuntimeError("SZSE daily ETF share history returned empty")
-            code_col = next((x for x in ("基金代码", "代码", "证券代码") if x in frame.columns), None)
-            name_col = next((x for x in ("基金简称", "名称", "证券简称") if x in frame.columns), None)
-            shares_col = next((x for x in ("基金份额", "份额", "总份额") if x in frame.columns), None)
-            date_col = next((x for x in ("日期", "统计日期", "交易日期") if x in frame.columns), None)
-            if not code_col or not shares_col or not date_col:
-                raise RuntimeError("SZSE daily ETF fields changed: " + str(list(frame.columns)))
-            for _, item in frame.iterrows():
-                code = str(item.get(code_col, "")).strip()
-                shares = number(item.get(shares_col))
-                raw_day = pd.to_datetime(item.get(date_col), errors="coerce")
-                if code and code != "nan" and shares is not None and not pd.isna(raw_day):
-                    etf_rows.append({"trade_date":raw_day.date().isoformat(),"exchange":"SZSE",
-                        "code":code,"name":str(item.get(name_col,"")) if name_col else "",
-                        "shares":shares,"nav":None,"source":"SZSE official daily ETF share history",
-                        "captured_at":checked})
-            statuses.append({"source":"etf_shares_szse","status":"success","records":len(frame),
-                "detail":"深交所官方ETF日频份额历史（最多约六个月）"})
-        else:
+        if fn is None:
             raise RuntimeError("fund_scale_daily_szse unavailable in installed AkShare")
+        start_date = trade_day - timedelta(days=170)
+        cursor = start_date
+        frames = []
+        failed_ranges = []
+        while cursor <= trade_day:
+            chunk_end = min(cursor + timedelta(days=59), trade_day)
+            frame_part = None
+            last_error = None
+            for attempt in range(2):
+                try:
+                    candidate = fn(start_date=cursor.strftime("%Y%m%d"),
+                                   end_date=chunk_end.strftime("%Y%m%d"), symbol="ETF")
+                    if candidate is None or candidate.empty:
+                        raise RuntimeError("empty SZSE daily ETF response")
+                    frame_part = candidate
+                    break
+                except Exception as chunk_exc:
+                    last_error = str(chunk_exc)
+                    if attempt == 0:
+                        time.sleep(2)
+            if frame_part is not None:
+                frames.append(frame_part)
+            else:
+                failed_ranges.append({"start":cursor.isoformat(),"end":chunk_end.isoformat(),
+                                      "error":(last_error or "unknown")[:180]})
+            cursor = chunk_end + timedelta(days=1)
+        if not frames:
+            raise RuntimeError("all SZSE history ranges failed: " + json.dumps(failed_ranges, ensure_ascii=False))
+        frame = pd.concat(frames, ignore_index=True).drop_duplicates()
+        code_col = next((x for x in ("基金代码", "代码", "证券代码") if x in frame.columns), None)
+        name_col = next((x for x in ("基金简称", "名称", "证券简称") if x in frame.columns), None)
+        shares_col = next((x for x in ("基金份额", "份额", "总份额") if x in frame.columns), None)
+        date_col = next((x for x in ("日期", "统计日期", "交易日期") if x in frame.columns), None)
+        if not code_col or not shares_col or not date_col:
+            raise RuntimeError("SZSE daily ETF fields changed: " + str(list(frame.columns)))
+        for _, item in frame.iterrows():
+            code = str(item.get(code_col, "")).strip()
+            shares = number(item.get(shares_col))
+            raw_day = pd.to_datetime(item.get(date_col), errors="coerce")
+            if code and code != "nan" and shares is not None and not pd.isna(raw_day):
+                etf_rows.append({"trade_date":raw_day.date().isoformat(),"exchange":"SZSE",
+                    "code":code,"name":str(item.get(name_col,"")) if name_col else "",
+                    "shares":shares,"nav":None,"source":"SZSE official daily ETF share history",
+                    "captured_at":checked})
+        statuses.append({"source":"etf_shares_szse",
+            "status":"partial" if failed_ranges else "success","records":len(etf_rows),
+            "detail":"SZSE official ETF daily share history; 60-day chunks; failed_ranges="
+                     + json.dumps(failed_ranges, ensure_ascii=False)[:700]})
     except Exception as exc:
         LOG.warning("SZSE daily ETF份额历史失败：%s", exc)
         # Keep the official current-list endpoint as a last-resort snapshot.
