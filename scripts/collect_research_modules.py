@@ -148,11 +148,13 @@ def main():
                 amount_cny = amount_yi * 1e8 if amount_yi is not None else None
                 net_cny = net_yi * 1e8 if net_yi is not None else None
                 ratio = net_cny / amount_cny * 100 if net_cny is not None and amount_cny else None
+                leader_value = item.get(leader_col) if leader_col else None
+                leader_name = "" if leader_value is None or pd.isna(leader_value) else str(leader_value).strip()
                 ths_rows.append({"trade_date":trade_day.isoformat(),"industry_name":name,
                     "change_pct":change,"turnover_cny":amount_cny,"main_net_inflow_cny":net_cny,
                     "main_net_ratio_pct":ratio,"up_count":number(item.get(up_col)) if up_col else None,
                     "down_count":number(item.get(down_col)) if down_col else None,
-                    "leader_name":str(item.get(leader_col) or "") if leader_col else None,
+                    "leader_name":leader_name,
                     "leader_change_pct":number(item.get(leader_change_col)) if leader_change_col else None,
                     "source":"AKShare/THS live industry summary","captured_at":checked})
             if not ths_rows:
