@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-21T15:27:51+08:00",
+  "checked_at": "2026-11-21T15:37:42+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -31,7 +31,7 @@
       "source": "etf_shares_sse",
       "status": "success",
       "records": 927,
-      "detail": "上交所官方指定交易日份额快照"
+      "detail": "AkShare失败后由上交所原始API重试成功"
     },
     {
       "source": "etf_shares_szse",

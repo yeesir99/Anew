@@ -2,7 +2,7 @@
   "schema_version": 1,
   "product": "A-Share Alpha Radar",
   "trade_date": "2026-11-20",
-  "generated_at": "2026-11-21T07:27:50+00:00",
+  "generated_at": "2026-11-21T07:37:41+00:00",
   "data_status": "validated",
   "freshness": {
     "calendar_age_days": 1,
@@ -28,20 +28,20 @@
   },
   "leaders": [
     {
-      "symbol": "301313",
-      "name": "凡拓数创",
-      "change_pct": 20.0,
-      "amount_cny": 1490124358.0,
-      "close_cny": 59.16,
-      "turnover_rate": null,
-      "volume_ratio": null
-    },
-    {
       "symbol": "300812",
       "name": "易天股份",
       "change_pct": 20.0,
       "amount_cny": 503484141.0,
       "close_cny": 18.0,
+      "turnover_rate": null,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301313",
+      "name": "凡拓数创",
+      "change_pct": 20.0,
+      "amount_cny": 1490124358.0,
+      "close_cny": 59.16,
       "turnover_rate": null,
       "volume_ratio": null
     },
