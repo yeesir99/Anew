@@ -83,6 +83,52 @@ header{background:var(--navy);color:white;padding:18px 24px;display:flex;justify
 @media(max-width:480px){.report-kpi{padding:11px 12px}.report-kpi-value{font-size:20px}.report-panel{padding:14px}.report-quality-grid{gap:6px}.report-quality-cell{padding:8px}.report-hero h2{font-size:22px}}
 @media print{body{background:#fff}.report-hero{print-color-adjust:exact;-webkit-print-color-adjust:exact}.report-section-card,.report-panel,.report-kpi{box-shadow:none;break-inside:avoid}.report-section-grid{gap:8px}aside,header,.footer{display:none!important}main{max-width:none;padding:0}.page{display:none!important}#report.page{display:block!important}}
 @media(max-width:850px){.layout{display:block}aside{width:100%;position:sticky;top:0;z-index:4;padding:6px 8px;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}nav{display:flex;gap:4px}nav button{width:auto;white-space:nowrap;padding:9px 10px;margin:0;font-size:11px}main{padding:18px 12px 32px}.kpis{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.head{margin-bottom:14px}.date{display:none}}
+
+/* Research subpage system */
+.page:not(#overview){animation:page-enter .24s ease-out}
+@keyframes page-enter{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:none}}
+.page:not(#overview)>.head{padding:3px 2px 15px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.page:not(#overview)>.head h1{font-size:26px;letter-spacing:-.5px}
+.page:not(#overview)>.head .eyebrow{letter-spacing:2px}
+.subpage-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 18px;margin:0 0 15px;border:1px solid #dce7e3;border-radius:12px;background:linear-gradient(110deg,#edf3f0,#f8faf9 72%);color:#405c56}
+.subpage-banner-copy{min-width:0}.subpage-banner-title{font-size:13px;font-weight:750;color:#294b43}.subpage-banner-desc{font-size:11px;color:#758780;margin-top:3px}
+.subpage-banner-meta{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.subpage-pill{font-size:10px;padding:5px 9px;border:1px solid #d6e1dc;border-radius:99px;background:#fff;color:#5e756d;white-space:nowrap}
+.subpage-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.subpage-stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.subpage-stat span{display:block;font-size:10px;color:#87949b}.subpage-stat strong{display:block;font-size:20px;color:#294456;margin-top:3px;font-variant-numeric:tabular-nums}
+.theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.theme-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 16px;min-width:0;box-shadow:0 3px 12px #19304406}
+.theme-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.theme-card-name{font-size:14px;font-weight:750;color:#294456;overflow-wrap:anywhere}
+.theme-stage{font-size:10px;color:#627c71;background:#edf3f0;border-radius:99px;padding:4px 8px;white-space:nowrap}
+.theme-scoreline{display:flex;align-items:baseline;gap:6px;margin:12px 0 8px}
+.theme-scoreline strong{font-size:24px;color:#294456;font-variant-numeric:tabular-nums}
+.theme-scoreline span{font-size:10px;color:#89969d}
+.theme-meter{height:6px;background:#edf1f2;border-radius:99px;overflow:hidden}
+.theme-meter i{display:block;height:100%;background:#6d9686;border-radius:99px}
+.theme-evidence{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px}
+.theme-evidence div{background:#f7f9f9;border-radius:7px;padding:7px 8px;min-width:0}
+.theme-evidence b{display:block;font-size:13px;color:#405a68}.theme-evidence span{font-size:9px;color:#8b989e}
+.theme-card-foot{font-size:10px;line-height:1.6;color:#859199;margin-top:10px;overflow-wrap:anywhere}
+.subpage-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:12px;min-width:0}
+.subpage-panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.subpage-panel-head strong{font-size:13px;color:#294456}.subpage-panel-head span{font-size:10px;color:#89969d}
+#rotation .card,#capital .card,#news .card{margin-bottom:12px}
+#rotation table,#capital table{min-width:620px}
+.news-list{display:grid;gap:0}
+.news-item{padding:14px 2px;border-bottom:1px solid #edf0f2;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.news-item:last-child{border-bottom:0}
+.news-title{font-size:13px;line-height:1.55;font-weight:700;color:#304b5b;text-decoration:none}
+.news-title:hover{color:#547f70}
+.news-summary{font-size:11px;line-height:1.65;color:#778790;margin-top:5px}
+.news-meta{font-size:10px;color:#96a1a7;margin-top:7px}
+.news-source{font-size:10px;color:#668678;background:#eff4f1;padding:4px 7px;border-radius:6px;white-space:nowrap}
+#news .card>.section{font-size:14px}
+#capital .note,#rotation .note,#news .note{margin:0 0 13px}
+@media(max-width:850px){.subpage-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-grid{grid-template-columns:1fr}.subpage-banner{align-items:flex-start;flex-direction:column}.subpage-banner-meta{justify-content:flex-start}}
+@media(max-width:480px){.theme-evidence{grid-template-columns:repeat(2,minmax(0,1fr))}.subpage-stat strong{font-size:18px}.news-item{grid-template-columns:1fr}.news-source{justify-self:start}}
+
 </style></head>
 <body>
 <header><div class="brand">A-SHARE ALPHA RADAR<small>MARKET INTELLIGENCE · GITHUB CLOUD</small></div><span class="status" id="status">正在读取公开快照</span></header>
@@ -127,9 +173,34 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
   put('sourceNote',(d.market_status==='stale'?'行情滞后警告：当前未取得新鲜全市场行情，展示的只是上次公开快照。 ':'')+'公开数据生成于 '+d.generated_at+'。成交额不等于资金净流入；主力流向为第三方公开估算，非机构专属账户数据。');
   put('dailySummary','行业快照 '+industry.length+' 个；全市场上涨 '+(b.up??'—')+'、下跌 '+(b.down??'—')+'；涨跌幅中位数 '+fmt(b.median_change_pct)+'%；成交额 '+(b.turnover==null?'—':fmt(b.turnover/1e8)+'亿元')+'。');
 
+
+  const addBanner=(selector,title,desc,pills=[])=>{
+    const root=document.querySelector(selector);if(!root||root.querySelector('.subpage-banner'))return;
+    const el=document.createElement('div');el.className='subpage-banner';
+    el.innerHTML='<div class="subpage-banner-copy"><div class="subpage-banner-title">'+esc(title)+'</div><div class="subpage-banner-desc">'+esc(desc)+'</div></div><div class="subpage-banner-meta">'+pills.map(x=>'<span class="subpage-pill">'+esc(x)+'</span>').join('')+'</div>';
+    const head=root.querySelector('.head');if(head)head.insertAdjacentElement('afterend',el);
+  };
+  const themeItems=items('themes'),evidenceMeta=d.evidence_quality||{};
+  addBanner('#themes','主题证据工作台','量价表现与产业证据分层呈现；覆盖不足时不输出完整主线结论。',[themeItems.length+' 个候选主题',(evidenceMeta.status||'证据状态待核验')]);
+  addBanner('#rotation','行业强弱与轮动阶段','将历史收益、轮动强度与当日行业快照分开展示，避免不同口径混算。',[rotData.length+' 个历史观察项',liveIndustries.length+' 个实时行业']);
+  const flowItems=items('capital-flows'),etfItems=items('etf-shares'),sourceItems=items('data-sources');
+  addBanner('#capital','市场资金与份额监测','公开市场估算、交易所ETF份额与数据源健康度分区呈现，不将成交额解释为净流入。',[flowItems.length+' 条资金流记录',etfItems.length+' 条ETF份额记录']);
+  addBanner('#news','中文资讯流','按发布时间组织快讯，保留来源链接与采集状态；不以无关资讯填充空缺。',[newsItems.length+' 条快讯',(newsMeta.status||'状态未知')]);
+  const metricStrip=(selector,stats)=>{
+    const root=document.querySelector(selector);if(!root||root.querySelector('.subpage-stats'))return;
+    const el=document.createElement('div');el.className='subpage-stats';
+    el.innerHTML=stats.map(x=>'<div class="subpage-stat"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
+    const banner=root.querySelector('.subpage-banner');if(banner)banner.insertAdjacentElement('afterend',el);
+  };
+  const mappedThemes=themeItems.filter(x=>Number(x.evidence_coverage?.constituents)>0).length;
+  metricStrip('#themes',[['候选主题',String(themeItems.length)],['已关联成分',String(mappedThemes)],['关联股票',String(evidenceMeta.unique_constituents??'—')],['失败数据源',String(evidenceMeta.failed_sources??'—')]]);
+  const avg5=rotData.length?rotData.map(x=>Number(x.return_5d_pct)).filter(Number.isFinite):[];
+  metricStrip('#rotation',[['轮动观察',String(rotData.length)],['实时行业',String(liveIndustries.length)],['5日收益中位数',avg5.length?fmt(avg5.sort((a,b)=>a-b)[Math.floor(avg5.length/2)])+'%':'—'],['历史样本',String(Math.max(0,...rotData.map(x=>Number(x.history_sessions)||0)))]]);
+  metricStrip('#capital',[['资金流记录',String(flowItems.length)],['ETF份额记录',String(etfItems.length)],['数据源状态项',String(sourceItems.length)],['可用资金周期',String([...new Set(flowItems.map(x=>x.indicator).filter(Boolean))].length)]]);
+
   const panels=document.querySelectorAll('.page');
   const themes=document.querySelector('#themes .empty');
-  if(themes)themes.outerHTML='<div class="card"><div class="section">行业候选与评分证据</div>'+table(items('themes'),[['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['量价观察分',x=>x.proxy_score==null?'—':fmt(x.proxy_score)],['数据覆盖',x=>(x.model?.coverage??0)+'/'+(x.model?.coverage_total??5)],['5日收益',x=>pct(x.return_5d_pct)],['10日收益',x=>pct(x.return_10d_pct)],['20日收益',x=>pct(x.return_20d_pct)],['阶段',x=>esc(x.model?.stage)],['证据覆盖',x=>{const c=x.evidence_coverage||{};return '成分 '+(c.constituents??0)+' / 财务 '+(c.financials??0)+' / 预告 '+(c.earnings_forecasts??0)+' / 机构 '+(c.institutional_holdings??0)+' / 基金 '+(c.public_fund_holdings??0)+' / 合同 '+(c.contracts??0)+' / 事件 '+(c.company_events??0)+' / 政策 '+(c.government_policy??0)}],['待补证据',x=>(x.model?.missing_evidence||[]).join('、')||'—'],['潜力维度分（仅已覆盖项）',x=>x.model?.score==null?'—':fmt(x.model.score)+'（权重覆盖 '+(x.model.potential_score_coverage??0)+'/100）'],['主题健康度（部分）',x=>x.model?.health?.score==null?'证据不足':fmt(x.model.health.score)+'（权重覆盖 '+(x.model.health.coverage??0)+'/100）']])+'</div><div class="note">量价观察分按5日收益（70%）与最新单日收益（30%）计算，并映射至0–100；缺失窗口不补零。此分不是完整产业主线评分。已接入公开财报、业绩预告、机构/公募持仓、重大合同及公司公告采集；逐项显示证据覆盖与待补项目。政府政策原文未接入时不以公司公告替代。新增潜力维度分与主题健康度沿用原模型权重，只汇总已观测维度并展示权重覆盖；未取得的政策、盈利、估值等维度继续留空，不作为完整评分。</div>';
+  if(themes)themes.outerHTML='<div class="theme-grid">'+items('themes').map(x=>{const c=x.evidence_coverage||{},m=x.model||{},score=m.score,coverage=Number(m.potential_score_coverage)||0;return '<article class="theme-card"><div class="theme-card-head"><div class="theme-card-name">'+esc(x.industry_name||x.display_name||x.industry)+'</div><span class="theme-stage">'+esc(m.stage||'观察中')+'</span></div><div class="theme-scoreline"><strong>'+(score==null?'—':fmt(score))+'</strong><span>已覆盖维度分 · 权重覆盖 '+coverage+'/100</span></div><div class="theme-meter"><i style="width:'+Math.max(0,Math.min(100,coverage))+'%"></i></div><div class="theme-evidence"><div><b>'+esc(c.constituents??0)+'</b><span>成分股</span></div><div><b>'+esc(c.financials??0)+'</b><span>财报</span></div><div><b>'+esc(c.earnings_forecasts??0)+'</b><span>业绩预告</span></div><div><b>'+esc(c.institutional_holdings??0)+'</b><span>机构持仓</span></div></div><div class="theme-card-foot">量价观察 '+(x.proxy_score==null?'—':fmt(x.proxy_score))+' · 5日 '+pct(x.return_5d_pct)+' · 10日 '+pct(x.return_10d_pct)+' · 20日 '+pct(x.return_20d_pct)+'<br>基金 '+(c.public_fund_holdings??0)+' · 合同 '+(c.contracts??0)+' · 公司事件 '+(c.company_events??0)+' · 政策 '+(c.government_policy??0)+'<br>待补证据：'+esc((m.missing_evidence||[]).join('、')||'—')+'</div></article>';}).join('')+'</div><div class="note">量价观察分不等同完整产业主线评分。潜力维度分只汇总已观测维度，并明确显示权重覆盖；缺失政策、盈利、估值等证据不会补零或伪装为完整结论。</div>';
   const rot=document.querySelector('#rotation .empty');
   const rotData=items('rotation');
   if(rot)rot.outerHTML='<div class="card"><div class="section">行业轮动观察</div>'+table(rotData,[['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['轮动强度',x=>fmt(x.rotation_strength_score)],['最新涨幅',x=>pct(x.latest_change)],['5日复合',x=>pct(x.return_5d_pct)],['10日复合',x=>pct(x.return_10d_pct)],['20日复合',x=>pct(x.return_20d_pct)],['历史交易日',x=>x.history_sessions??0]])+'</div>';
@@ -144,9 +215,9 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
   const newsMeta=s.news||{};
   if(newsPage){
     const newsBody=newsItems.length
-      ? '<div class="card"><div class="section">近36小时快讯 · '+newsItems.length+' 条</div><div style="display:grid;gap:12px">'+newsItems.map(x=>{
+      ? '<div class="card"><div class="section">近36小时快讯 · '+newsItems.length+' 条</div><div class="news-list">'+newsItems.map(x=>{
           const url=String(x.url||'');const safeUrl=(url.startsWith('http://')||url.startsWith('https://'))?url:'';
-          return '<article style="padding:10px 0;border-bottom:1px solid #edf0f2"><b>'+esc(x.title)+'</b><div class="sub" style="margin:5px 0">'+esc(x.summary||'')+'</div><div class="sub">'+esc(x.source||x.domain||'')+' · '+esc(x.published||'时间未知')+' '+(safeUrl?'<a href="'+esc(safeUrl)+'" target="_blank" rel="noopener">查看来源</a>':'')+'</div></article>';
+          return '<article class="news-item"><div><a class="news-title" '+(safeUrl?'href="'+esc(safeUrl)+'" target="_blank" rel="noopener"':'')+'>'+esc(x.title)+'</a><div class="news-summary">'+esc(x.summary||'')+'</div><div class="news-meta">'+esc(x.published||'时间未知')+' · '+(safeUrl?'来源链接可核验':'暂无原文链接')+'</div></div><span class="news-source">'+esc(x.source||x.domain||'公开来源')+'</span></article>';
         }).join('')+'</div></div>'
       : '<div class="empty">'+(newsMeta.status==='empty'?'最近36小时没有取得符合筛选条件的中文A股新闻。':'新闻采集状态尚不可用。')+'</div>';
     newsPage.outerHTML=newsBody+'<div class="note">状态：'+esc(newsMeta.status||'missing')+'；检查时间：'+esc(newsMeta.checked_at||'—')+'；来源：'+esc((newsMeta.sources||[]).join('、')||'—')+'。'+esc(newsMeta.note||'空数据不以英文国际新闻替代。')+'</div>';
