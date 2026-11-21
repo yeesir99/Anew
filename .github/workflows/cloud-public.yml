@@ -47,6 +47,13 @@ jobs:
           HISTORY_WORKERS: "3"
           TZ: Asia/Shanghai
         run: python -m src.main close
+      - name: Download and validate official Tongdaxin daily archive
+        if: steps.live.outcome == 'success'
+        continue-on-error: true
+        timeout-minutes: 20
+        env:
+          TZ: Asia/Shanghai
+        run: python scripts/collect_tdx_daily.py
       - name: Collect Chinese-language A-share news
         if: always() && !cancelled()
         continue-on-error: true
