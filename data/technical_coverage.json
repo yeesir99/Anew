@@ -1,7 +1,8 @@
 {
   "trade_date": "20261120",
   "stocks": 5576,
-  "history_sessions": 3,
+  "history_sessions": 41,
+  "snapshot_history_sessions": 3,
   "coverage": {
     "ma5": 100,
     "ma10": 100,
@@ -13,11 +14,23 @@
     "macd_hist": 99,
     "volatility20": 100
   },
+  "bulk_archive": {
+    "status": "partial",
+    "source": "modi-hu/stock-data monthly/daily_quotes (EastMoney-derived public archive)",
+    "months_downloaded": 4,
+    "months_requested": 4,
+    "failed_months": [],
+    "records": 227506,
+    "stocks": 5585,
+    "history_sessions": 41,
+    "latest_archive_trade_date": "20261117",
+    "adjustment": "backward-adjusted from daily change_percent, anchored to latest raw close"
+  },
   "per_symbol_history": {
-    "requested": 100,
-    "successful": 100,
+    "requested": 1,
+    "successful": 1,
     "failed": 0,
-    "cache_hits": 0,
+    "cache_hits": 99,
     "universe": 100,
     "workers": 3,
     "window_days": 170,
@@ -25,5 +38,5 @@
     "history_sessions_min": 29,
     "history_sessions_max": 116
   },
-  "method": "persisted full-market daily snapshots plus independent per-symbol bars for liquid stocks; no missing values fabricated"
+  "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated"
 }
