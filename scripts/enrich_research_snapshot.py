@@ -176,8 +176,9 @@ def main():
         news_status = json.loads((DATA / "news_collection_status.json").read_text(encoding="utf-8"))
     except Exception:
         news_status = {}
+    status_available = bool(news_status)
     news_status["records"] = len(news_items)
-    news_status["status"] = "success" if news_items else "empty" if news_status else "missing"
+    news_status["status"] = "success" if news_items else "empty" if status_available else "missing"
     sections["news"] = {"items": news_items[:80], "status": news_status.get("status"),
         "checked_at": news_status.get("checked_at"), "sources": news_status.get("sources", []),
         "note": "仅展示近36小时中文A股、上市公司及行业政策相关快讯；无数据时明确显示空状态，不以英文国际新闻替代。"}
