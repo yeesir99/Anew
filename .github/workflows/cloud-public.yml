@@ -67,8 +67,10 @@ jobs:
           RADAR_MAX_WEEKDAY_GAP: "5"
           TZ: Asia/Shanghai
         run: python scripts/collect_public.py
-      - name: Import recent public sector archive history
+      - name: Import six months of public sector archive history
         if: always() && !cancelled()
+        timeout-minutes: 12
+        continue-on-error: true
         run: python scripts/import_sector_archive.py
       - name: Run industry momentum backtest (or mark warming up)
         if: always() && !cancelled()

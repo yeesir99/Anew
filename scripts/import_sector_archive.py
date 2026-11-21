@@ -20,10 +20,14 @@ BASE = "https://raw.githubusercontent.com/modi-hu/stock-data/master/monthly/sect
 
 
 def month_list():
+    """Import six recent monthly sector files to support 5/10/20/60-session analysis."""
     today = datetime.now(TZ).date()
-    first = today.replace(day=1)
-    previous_last = first - timedelta(days=1)
-    return [previous_last.strftime("%Y-%m"), today.strftime("%Y-%m")]
+    months = []
+    for offset in range(5, -1, -1):
+        total = today.year * 12 + today.month - 1 - offset
+        year, month = divmod(total, 12)
+        months.append(f"{year:04d}-{month + 1:02d}")
+    return months
 
 
 def number(value):
