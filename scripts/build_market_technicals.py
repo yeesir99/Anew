@@ -99,30 +99,78 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     else:
         universe = latest.head(limit)
     day_obj = datetime.strptime(day, "%Y%m%d").date()
-    start = (day_obj - timedelta(days=170)).strftime("%Y%m%d")
+    full_start = (day_obj - timedelta(days=170)).strftime("%Y%m%d")
+    cache_path = DATA / "technical_history.csv"
+    if cache_path.exists():
+        try:
+            cache = pd.read_csv(cache_path, encoding="utf-8-sig", dtype={"ts_code": str, "trade_date": str})
+        except Exception as exc:
+            logging.warning("technical history cache unreadable; rebuilding: %s", exc)
+            cache = pd.DataFrame(columns=["ts_code", "trade_date", "close", "vol"])
+    else:
+        cache = pd.DataFrame(columns=["ts_code", "trade_date", "close", "vol"])
+    required = ["ts_code", "trade_date", "close", "vol"]
+    if not set(required).issubset(cache.columns):
+        cache = pd.DataFrame(columns=required)
+    if not cache.empty:
+        cache = cache[required].copy()
+        cache["ts_code"] = cache["ts_code"].astype(str)
+        cache["trade_date"] = cache["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str[:8]
+        cache["close"] = pd.to_numeric(cache["close"], errors="coerce")
+        cache["vol"] = pd.to_numeric(cache["vol"], errors="coerce")
+        cache = cache.dropna(subset=["ts_code", "trade_date", "close", "vol"])
+        cache = cache.drop_duplicates(["ts_code", "trade_date"], keep="last")
+    cached_symbols = set()
+    requests_needed = []
+    for _, row in universe.iterrows():
+        code = str(row["symbol"]).zfill(6)
+        ts_code = f"{code}.SH" if code.startswith(("5", "6", "9")) else (
+            f"{code}.BJ" if code.startswith(("4", "8")) else f"{code}.SZ")
+        old = cache[cache["ts_code"] == ts_code] if not cache.empty else pd.DataFrame()
+        if not old.empty:
+            last = pd.to_datetime(old["trade_date"], format="%Y%m%d", errors="coerce").max()
+            sessions = old["trade_date"].nunique()
+            if pd.notna(last) and last.strftime("%Y%m%d") >= day and sessions >= 60:
+                cached_symbols.add(code)
+                continue
+            if pd.notna(last) and sessions >= 60:
+                start = max(datetime.strptime(last.strftime("%Y%m%d"), "%Y%m%d").date() - timedelta(days=5),
+                            day_obj - timedelta(days=170)).strftime("%Y%m%d")
+            else:
+                start = full_start
+        else:
+            start = full_start
+        requests_needed.append((code, start))
     workers = max(1, min(int(os.getenv("HISTORY_WORKERS", "3")), 8))
     ak = _ak()
     histories = []
     failures = 0
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {
-            pool.submit(_history_one, ak, str(row["symbol"]).zfill(6), day_obj, start): str(row["symbol"]).zfill(6)
-            for _, row in universe.iterrows()
+            pool.submit(_history_one, ak, code, day_obj, start): code
+            for code, start in requests_needed
         }
         for future in as_completed(futures):
             try:
                 part = future.result()
                 if part is not None and not part.empty:
-                    histories.append(part)
+                    histories.append(part[required].copy())
             except Exception as exc:
                 failures += 1
                 if failures <= 10:
                     logging.warning("technical history %s failed: %s", futures[future], str(exc)[:220])
-    stats = {"requested": len(universe), "successful": len(histories), "failed": failures,
+    if histories:
+        fresh = pd.concat(histories, ignore_index=True)
+        cache = pd.concat([cache, fresh], ignore_index=True)
+    if not cache.empty:
+        cache = cache.drop_duplicates(["ts_code", "trade_date"], keep="last").sort_values(["ts_code", "trade_date"])
+        cache.to_csv(cache_path, index=False, encoding="utf-8-sig")
+    stats = {"requested": len(requests_needed), "successful": len(histories), "failed": failures,
+             "cache_hits": len(cached_symbols), "universe": len(universe),
              "workers": workers, "window_days": 170}
-    if not histories:
+    if cache.empty:
         return latest, stats
-    raw = pd.concat(histories, ignore_index=True).drop_duplicates(["ts_code", "trade_date"], keep="last")
+    raw = cache.drop_duplicates(["ts_code", "trade_date"], keep="last")
     tech = _technical_history(raw, day)
     if tech.empty:
         return latest, stats
@@ -131,8 +179,8 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     by_symbol = tech.set_index("symbol")
     for col in METRICS:
         if col in by_symbol:
-            fresh = latest["symbol"].map(by_symbol[col])
-            latest[col] = fresh.combine_first(latest[col] if col in latest else pd.Series(index=latest.index, dtype=float))
+            fresh_values = latest["symbol"].map(by_symbol[col])
+            latest[col] = fresh_values.combine_first(latest[col] if col in latest else pd.Series(index=latest.index, dtype=float))
     session_counts = raw.groupby("ts_code")["trade_date"].nunique()
     stats["history_sessions_median"] = float(session_counts.median()) if not session_counts.empty else 0
     stats["history_sessions_min"] = int(session_counts.min()) if not session_counts.empty else 0
