@@ -88,7 +88,7 @@ jobs:
       - name: Collect auditable theme evidence (financials, forecasts, holdings, contracts, announcements)
         if: always() && !cancelled()
         continue-on-error: true
-        timeout-minutes: 20
+        timeout-minutes: 8
         env:
           TZ: Asia/Shanghai
         run: python scripts/collect_theme_evidence.py
