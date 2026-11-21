@@ -1,18 +1,19 @@
 {
   "trade_date": "20261120",
   "stocks": 5576,
+  "status": "validated",
   "history_sessions": 41,
   "snapshot_history_sessions": 3,
   "coverage": {
-    "ma5": 100,
-    "ma10": 100,
-    "ma20": 100,
-    "ma60": 99,
-    "rsi14": 100,
-    "macd_dif": 100,
-    "macd_dea": 99,
-    "macd_hist": 99,
-    "volatility20": 100
+    "ma5": 196,
+    "ma10": 196,
+    "ma20": 196,
+    "ma60": 195,
+    "rsi14": 196,
+    "macd_dif": 196,
+    "macd_dea": 195,
+    "macd_hist": 195,
+    "volatility20": 196
   },
   "bulk_archive": {
     "status": "partial",
@@ -27,12 +28,15 @@
     "adjustment": "backward-adjusted from daily change_percent, anchored to latest raw close"
   },
   "per_symbol_history": {
-    "requested": 1,
-    "successful": 1,
+    "requested": 96,
+    "successful": 96,
     "failed": 0,
-    "cache_hits": 99,
+    "cache_hits": 4,
     "universe": 100,
-    "workers": 3,
+    "universe_total": 5576,
+    "cursor_start": 0,
+    "cursor_next": 100,
+    "workers": 1,
     "window_days": 170,
     "history_sessions_median": 116.0,
     "history_sessions_min": 29,
