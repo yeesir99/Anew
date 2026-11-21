@@ -18,6 +18,29 @@ if not themes:
 with_constituents = 0
 total_codes = set()
 for name, item in themes.items():
+    research_theme = next((x for x in research.get("sections", {}).get("themes", {}).get("items", [])
+                           if str(x.get("industry_name") or x.get("industry") or "") == name), None)
+    if research_theme is None:
+        errors.append(f"{name}: missing matching research theme")
+    else:
+        model = research_theme.get("model") or {}
+        score = model.get("score")
+        coverage = model.get("coverage")
+        expected = 0 if research_theme.get("change_pct") is None else 15
+        if coverage != expected:
+            errors.append(f"{name}: potential-score coverage {coverage} != {expected}")
+        if expected == 15 and score is None:
+            errors.append(f"{name}: observed market-structure dimension has no partial score")
+        dimensions = model.get("dimensions") or {}
+        for key in ("policy_macro", "industry_trend", "capital_institutions", "earnings", "catalyst"):
+            if dimensions.get(key) is not None:
+                errors.append(f"{name}: unverified dimension {key} must remain null")
+        health = model.get("health") or {}
+        health_dims = health.get("dimensions") or {}
+        if health.get("score") is not None and health.get("coverage", 0) <= 0:
+            errors.append(f"{name}: health score has no coverage weight")
+        if health.get("coverage", 0) < 100 and model.get("full_score_status") != "pending_required_evidence":
+            errors.append(f"{name}: incomplete health score incorrectly marked complete")
     codes = item.get("constituent_codes") or []
     if len(codes) != item.get("constituent_count", -1):
         errors.append(f"{name}: constituent_count mismatch")
