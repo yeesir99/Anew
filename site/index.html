@@ -129,10 +129,62 @@ header{background:var(--navy);color:white;padding:18px 24px;display:flex;justify
 @media(max-width:850px){.subpage-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-grid{grid-template-columns:1fr}.subpage-banner{align-items:flex-start;flex-direction:column}.subpage-banner-meta{justify-content:flex-start}}
 @media(max-width:480px){.theme-evidence{grid-template-columns:repeat(2,minmax(0,1fr))}.subpage-stat strong{font-size:18px}.news-item{grid-template-columns:1fr}.news-source{justify-self:start}}
 
+
+/* Editorial design refresh: shared visual system for all six views */
+:root{--navy:#142c3b;--bg:#f4f6f5;--green:#557f70;--red:#b96f68;--amber:#a9844e;--ink:#203746;--muted:#788891;--line:#e1e8e5;--paper:#fff;--soft:#edf3f0;--shadow:0 8px 28px rgba(25,49,61,.055);--radius:15px}
+html{scroll-behavior:smooth}
+body{background:linear-gradient(180deg,#edf2ef 0,#f6f7f6 280px,#f6f7f6 100%);color:var(--ink);font-size:14px;line-height:1.65}
+header{position:relative;z-index:5;background:rgba(20,44,59,.97);padding:19px max(24px,calc((100vw - 1320px)/2));min-height:78px;box-shadow:0 5px 24px rgba(15,35,46,.12)}
+.brand{font-size:14px;letter-spacing:1.35px}.brand small{margin-top:3px;font-size:9px;letter-spacing:2px;color:#afc1c7}
+.status{border-color:#6c8b8b;color:#d7e6dc;background:#ffffff0b;padding:6px 11px}
+.layout{display:block;min-height:calc(100vh - 78px)}
+aside{width:100%;position:sticky;top:0;z-index:4;padding:0 max(20px,calc((100vw - 1320px)/2));background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border:0;border-bottom:1px solid #dfe7e3;box-shadow:0 4px 16px rgba(25,49,61,.035)}
+nav{display:flex;align-items:center;gap:5px;max-width:1320px;margin:auto;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{position:relative;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;width:auto;margin:0;padding:14px 17px;border-radius:0;color:#6f8088;font-size:12px;font-weight:600;transition:color .18s,background .18s}
+nav button:hover{background:#f3f6f4;color:#315d4f}
+nav button.active{background:transparent;color:#315d4f}
+nav button.active:after{content:"";position:absolute;left:15px;right:15px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#5b8977}
+main{max-width:1320px;padding:34px 30px 64px}
+.page{min-height:55vh}
+.page.active{animation:editorial-in .28s ease-out}
+@keyframes editorial-in{from{opacity:.35;transform:translateY(7px)}to{opacity:1;transform:none}}
+.head{align-items:end;margin-bottom:23px;padding:0 1px 17px;border-bottom:1px solid #dce5e0}
+.eyebrow{font-size:9px;letter-spacing:2.4px;color:#638675}
+h1{font-size:29px;letter-spacing:-.8px;font-weight:750;color:#1c3544;margin:4px 0 3px}
+.sub{font-size:12px;color:#849198;letter-spacing:.05px}
+.date{border:1px solid #dfe7e3;background:#fff;border-radius:99px;padding:7px 13px;color:#647b71;font-size:10px;box-shadow:0 2px 8px #1b354009}
+.grid{gap:16px}.kpis{gap:13px;margin-bottom:15px}
+.card,.report-panel,.report-kpi,.report-section-card,.subpage-panel,.theme-card,.subpage-stat{border:1px solid #e2e9e5;border-radius:var(--radius);box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease}
+.card{padding:19px 20px}.kpis .card{position:relative;overflow:hidden;padding:18px 20px 17px}
+.kpis .card:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5b8977,#b5c9bd)}
+.klabel{font-size:10px;letter-spacing:.45px;color:#85938f;font-weight:600}
+.kvalue{font-size:29px;letter-spacing:-.8px;font-weight:750;color:#203b49;margin:8px 0 5px;font-variant-numeric:tabular-nums}
+.kfoot{font-size:10px;color:#99a49f}.section{font-size:13px;color:#294452;margin-bottom:15px;letter-spacing:.1px}
+.section:before{content:"";width:3px;height:14px;border-radius:3px;background:#719583;margin-right:9px;display:inline-block;vertical-align:-2px}
+.two{gap:15px}.note{background:#edf3f0;border:1px solid #e0e9e3;border-left:3px solid #739583;border-radius:10px;padding:12px 15px;color:#60766c;font-size:11px;line-height:1.7;margin:14px 0 16px}
+table{font-size:11px}th{background:#f5f8f6;color:#82918a;font-size:10px;letter-spacing:.2px;padding:11px 10px}td{padding:11px 10px;border-bottom:1px solid #eef2ef}tr:hover td{background:#fafcfb}
+.empty{position:relative;padding:34px 22px;text-align:center;color:#788982;background:linear-gradient(145deg,#fff,#f8faf8);border:1px dashed #d5e1da;border-radius:14px;font-size:12px;line-height:1.8}
+.empty:before{content:"";display:block;width:30px;height:30px;border-radius:10px;background:#edf3ef;margin:0 auto 12px;box-shadow:inset 0 0 0 1px #e0e9e2}
+.footer{margin-top:45px;border-top:1px solid #e1e8e4;padding-top:19px;color:#9aa6a0;font-size:9px;letter-spacing:.4px}
+.page:not(#overview)>.head{border-bottom:1px solid #dce5e0;padding:0 1px 17px;margin-bottom:22px}.page:not(#overview)>.head h1{font-size:29px}
+.subpage-banner{border-radius:14px;padding:17px 20px;background:linear-gradient(105deg,#eaf1ed,#f7f9f7 78%);border-color:#dce7e0}
+.subpage-banner-title{font-size:13px;letter-spacing:.1px}.subpage-pill{border-radius:99px;background:#ffffffb8}
+.subpage-stats{gap:12px;margin-bottom:16px}.subpage-stat{padding:15px 17px}.subpage-stat strong{font-size:23px;letter-spacing:-.4px}
+.theme-grid{gap:14px}.theme-card{padding:18px 19px}.theme-card:hover,.report-section-card:hover,.subpage-panel:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(25,49,61,.075)}
+.theme-card-name{font-size:14px}.theme-scoreline strong{font-size:28px}.theme-meter{height:5px}
+.theme-evidence div{background:#f4f7f5;padding:9px;border-radius:8px}.subpage-panel{padding:18px 20px}
+.news-item{padding:17px 3px}.news-title{font-size:13px;color:#294655}.news-source{background:#edf3ef;color:#638172;border-radius:99px}
+.report-hero{border-radius:17px;box-shadow:0 14px 36px rgba(20,44,59,.15)}.report-kpi,.report-panel,.report-section-card{box-shadow:var(--shadow)}
+.report-section-card{padding:18px 19px}.report-section-no{border-radius:8px;background:#edf3ef;color:#557e6d}.report-method{border-radius:12px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #9dbcae;outline-offset:3px}
+@media(max-width:850px){header{padding:15px 18px;min-height:68px}aside{padding:0 12px}nav{gap:1px}nav button{padding:12px 13px;font-size:11px}nav button.active:after{left:12px;right:12px}main{padding:25px 18px 45px}h1,.page:not(#overview)>.head h1{font-size:25px}.kpis{gap:10px}.kpis .card{padding:15px}.kvalue{font-size:24px}}
+@media(max-width:520px){body{font-size:13px}header{padding:13px 14px;gap:8px}.brand{font-size:11px;letter-spacing:1px}.brand small{font-size:8px;letter-spacing:1.3px}.status{font-size:9px;padding:5px 8px}aside{padding:0 7px}nav button{padding:11px 10px;font-size:10px}main{padding:21px 12px 36px}.head,.page:not(#overview)>.head{align-items:flex-start;padding-bottom:13px;margin-bottom:16px}h1,.page:not(#overview)>.head h1{font-size:23px}.sub{font-size:11px;max-width:290px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.kpis .card{padding:13px 13px 12px}.kvalue{font-size:22px;margin:6px 0 3px}.kfoot{font-size:9px}.card{padding:15px}.two{grid-template-columns:1fr}.note{font-size:10px;padding:10px 12px}.subpage-stats{gap:8px}.subpage-stat{padding:12px}.theme-card{padding:15px}.report-hero{padding:18px}.report-hero h2{font-size:21px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style></head>
 <body>
 <header><div class="brand">A-SHARE ALPHA RADAR<small>MARKET INTELLIGENCE · GITHUB CLOUD</small></div><span class="status" id="status">正在读取公开快照</span></header>
-<div class="layout"><aside><nav>
+<div class="layout"><aside><nav aria-label="主要栏目">
 <button class="active" data-page="overview">▦　市场总览</button><button data-page="themes">⌁　主线预判</button><button data-page="rotation">◷　行业轮动</button><button data-page="capital">⇄　资金监测</button><button data-page="news">☷　A股新闻</button><button data-page="report">▤　研究日报</button>
 </nav></aside><main>
 <section class="page active" id="overview"><div class="head"><div><div class="eyebrow">MARKET DASHBOARD</div><h1>市场总览</h1><div class="sub">基于经过日期与覆盖率校验的公开A股日终快照</div></div><div class="date" id="tradeDate">等待数据</div></div>
