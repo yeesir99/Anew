@@ -11,11 +11,13 @@ import json
 import logging
 import os
 import sys
+from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
+import requests
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -86,6 +88,79 @@ def _snapshot_history() -> tuple[pd.DataFrame, int]:
     history["volatility20"] = g.transform(
         lambda x: x.pct_change().rolling(20, min_periods=20).std() * (252 ** 0.5) * 100)
     return history[history["trade_date"] == _day_key(pd.read_csv(LATEST, encoding="utf-8-sig").iloc[0]["trade_date"])].copy(), sessions
+
+
+def _archive_history(day: str) -> tuple[pd.DataFrame, dict]:
+    """Download recent bulk daily quotes for the full A-share universe.
+
+    Public archive is sourced from modi-hu/stock-data (EastMoney-derived).
+    Daily close is stored in fen; change_percent is used to construct a
+    backward-adjusted close series anchored to each stock's latest raw close.
+    """
+    day_obj = datetime.strptime(day, "%Y%m%d").date()
+    month_keys = []
+    for offset in range(3, -1, -1):
+        total = day_obj.year * 12 + day_obj.month - 1 - offset
+        year, month = divmod(total, 12)
+        month_keys.append(f"{year:04d}-{month + 1:02d}")
+    columns = ["symbol", "trade_date", "close", "volume", "change_percent"]
+    parts = []
+    failed_months = []
+    for month in month_keys:
+        url = f"https://raw.githubusercontent.com/modi-hu/stock-data/master/monthly/daily_quotes/{month}.csv"
+        frame = None
+        last_error = None
+        for attempt in range(2):
+            try:
+                response = requests.get(url, timeout=(10, 45),
+                    headers={"User-Agent":"A-Share-Alpha-Radar/2.0"})
+                response.raise_for_status()
+                if len(response.content) < 100:
+                    raise RuntimeError("monthly archive is unexpectedly small")
+                frame = pd.read_csv(BytesIO(response.content), usecols=columns,
+                    dtype={"symbol": str}, skipinitialspace=True, low_memory=False)
+                frame.columns = frame.columns.astype(str).str.strip()
+                break
+            except Exception as exc:
+                last_error = str(exc)
+                if attempt == 0:
+                    time.sleep(2)
+        if frame is None:
+            failed_months.append({"month":month,"error":(last_error or "unknown")[:180]})
+        else:
+            parts.append(frame)
+    if not parts:
+        return pd.DataFrame(), {"status":"failed","months":month_keys,"failed_months":failed_months}
+    raw = pd.concat(parts, ignore_index=True)
+    raw["symbol"] = raw["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
+    raw["trade_date"] = raw["trade_date"].astype(str).str.replace("-", "", regex=False).str.replace(r"\.0$", "", regex=True).str[:8]
+    raw["close_raw"] = pd.to_numeric(raw["close"], errors="coerce") / 100.0
+    raw["volume"] = pd.to_numeric(raw["volume"], errors="coerce")
+    raw["change_percent"] = pd.to_numeric(
+        raw["change_percent"].astype(str).str.replace("%", "", regex=False), errors="coerce")
+    raw = raw.dropna(subset=["symbol","trade_date","close_raw","volume"])
+    raw = raw[(raw["close_raw"] > 0) & (raw["volume"] >= 0) & (raw["trade_date"] <= day)]
+    raw = raw.drop_duplicates(["symbol","trade_date"], keep="last").sort_values(["symbol","trade_date"])
+    raw["daily_factor"] = (1 + raw["change_percent"].fillna(0) / 100).clip(lower=0.01)
+    raw["cum_factor"] = raw.groupby("symbol")["daily_factor"].cumprod()
+    raw["last_factor"] = raw.groupby("symbol")["cum_factor"].transform("last")
+    raw["last_close"] = raw.groupby("symbol")["close_raw"].transform("last")
+    raw["close"] = raw["last_close"] * raw["cum_factor"] / raw["last_factor"]
+    raw["vol"] = raw["volume"]
+    raw["ts_code"] = raw["symbol"] + raw["symbol"].str[0].map(
+        lambda x: ".SH" if x in ("5","6","9") else ".BJ" if x in ("4","8") else ".SZ")
+    latest_archive_day = raw["trade_date"].max() if not raw.empty else None
+    sessions = int(raw["trade_date"].nunique()) if not raw.empty else 0
+    stats = {"status":"success" if latest_archive_day == day and sessions >= 60 and not failed_months else "partial",
+        "source":"modi-hu/stock-data monthly/daily_quotes (EastMoney-derived public archive)",
+        "months_downloaded":len(parts),"months_requested":len(month_keys),
+        "failed_months":failed_months,"records":len(raw),
+        "stocks":int(raw["symbol"].nunique()) if not raw.empty else 0,
+        "history_sessions":sessions,"latest_archive_trade_date":latest_archive_day,
+        "adjustment":"backward-adjusted from daily change_percent, anchored to latest raw close"}
+    if latest_archive_day != day or sessions < 60:
+        return pd.DataFrame(), stats
+    return raw[["ts_code","trade_date","close","vol"]].copy(), stats
 
 
 def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, dict]:
@@ -209,16 +284,41 @@ def main():
                 values = original.set_index("symbol")[col]
                 latest[col] = latest[col].where(latest[col].notna(), latest["symbol"].map(values))
     current_coverage = int(latest["ma20"].notna().sum()) if "ma20" in latest else 0
-    backfill_stats = {"requested": 0, "successful": 0, "failed": 0, "skipped": "coverage already sufficient"}
-    if current_coverage < min(100, len(latest)):
+    try:
+        archive_history, archive_stats = _archive_history(day)
+    except Exception as exc:
+        logging.warning("bulk daily quote archive failed; use per-symbol fallback: %s", str(exc)[:300])
+        archive_history = pd.DataFrame()
+        archive_stats = {"status":"failed","error":str(exc)[:300]}
+    backfill_stats = {"requested": 0, "successful": 0, "failed": 0, "skipped": "bulk archive supplied full-market history"}
+    archive_applied = False
+    if not archive_history.empty:
+        try:
+            archive_tech = _technical_history(archive_history, day)
+            if not archive_tech.empty:
+                archive_tech = archive_tech.copy()
+                archive_tech["symbol"] = archive_tech["ts_code"].astype(str).str.split(".").str[0].str.zfill(6)
+                by_symbol = archive_tech.set_index("symbol")
+                for col in METRICS:
+                    if col in by_symbol:
+                        latest[col] = latest["symbol"].map(by_symbol[col]).combine_first(
+                            latest[col] if col in latest else pd.Series(index=latest.index, dtype=float))
+                archive_applied = True
+        except Exception as exc:
+            logging.warning("bulk technical calculation failed; use per-symbol fallback: %s", str(exc)[:300])
+            archive_stats["calculation_error"] = str(exc)[:300]
+    if not archive_applied:
         latest, backfill_stats = _backfill_per_symbol(latest, day)
     latest.to_csv(LATEST, index=False, encoding="utf-8-sig")
     trade_date_iso = datetime.strptime(day, "%Y%m%d").date().isoformat()
     latest.to_csv(DATA / f"market_{trade_date_iso}.csv", index=False, encoding="utf-8-sig")
     coverage = {col: int(latest[col].notna().sum()) if col in latest else 0 for col in METRICS}
-    result = {"trade_date": day, "stocks": len(latest), "history_sessions": snapshot_sessions,
-        "coverage": coverage, "per_symbol_history": backfill_stats,
-        "method": "persisted full-market daily snapshots plus independent per-symbol bars for liquid stocks; no missing values fabricated"}
+    result = {"trade_date": day, "stocks": len(latest),
+        "history_sessions": archive_stats.get("history_sessions", snapshot_sessions),
+        "snapshot_history_sessions": snapshot_sessions,
+        "coverage": coverage, "bulk_archive": archive_stats,
+        "per_symbol_history": backfill_stats,
+        "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated"}
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False))
 
