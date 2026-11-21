@@ -151,7 +151,7 @@ def _archive_history(day: str) -> tuple[pd.DataFrame, dict]:
         lambda x: ".SH" if x in ("5","6","9") else ".BJ" if x in ("4","8") else ".SZ")
     latest_archive_day = raw["trade_date"].max() if not raw.empty else None
     sessions = int(raw["trade_date"].nunique()) if not raw.empty else 0
-    stats = {"status":"success" if latest_archive_day == day and sessions >= 60 else "partial",
+    stats = {"status":"success" if latest_archive_day == day and sessions >= 60 and not failed_months else "partial",
         "source":"modi-hu/stock-data monthly/daily_quotes (EastMoney-derived public archive)",
         "months_downloaded":len(parts),"months_requested":len(month_keys),
         "failed_months":failed_months,"records":len(raw),
