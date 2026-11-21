@@ -47,6 +47,9 @@ jobs:
           HISTORY_WORKERS: "2"
           TZ: Asia/Shanghai
         run: python -m src.main close
+      - name: Build broad-market technical indicators from persisted daily snapshots
+        if: steps.live.outcome == 'success'
+        run: python scripts/build_market_technicals.py
       - name: Collect validated archive fallback if live API is unavailable
         if: steps.live.outcome == 'failure'
         env:

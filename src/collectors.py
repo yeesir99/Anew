@@ -235,37 +235,48 @@ def collect_market(day: date) -> pd.DataFrame:
 
 
 def collect_news(max_records: int = 80) -> list[dict[str, Any]]:
+    """Collect Chinese-language A-share news; keep GDELT links for source verification."""
     end = datetime.utcnow()
-    start = end - timedelta(hours=30)
-    params = {
-        "query": '(finance OR economy OR markets OR central bank OR stocks OR China) sourcelang:english',
-        "mode": "ArtList", "format": "json", "sort": "HybridRel",
-        "maxrecords": str(max_records),
-        "startdatetime": start.strftime("%Y%m%d%H%M%S"),
-        "enddatetime": end.strftime("%Y%m%d%H%M%S"),
-    }
-    for attempt in range(3):
-        try:
-            response = requests.get(GDELT_URL, params=params, timeout=35)
-            response.raise_for_status()
-            articles = response.json().get("articles", []) or []
-            seen, result = set(), []
-            for item in articles:
-                url = item.get("url")
-                if not url or url in seen:
-                    continue
-                seen.add(url)
-                result.append({"title": item.get("title", ""), "url": url,
-                               "domain": item.get("domain", ""), "language": item.get("language", ""),
-                               "source_country": item.get("sourceCountry", ""),
-                               "published": item.get("seendate", "")})
-            return result
-        except Exception as exc:
-            if attempt == 2:
-                LOG.warning("GDELT 新闻采集失败：%s", exc)
-                return []
-            time.sleep(2 ** attempt)
-    return []
+    start = end - timedelta(hours=36)
+    queries = [
+        '(A股 OR 沪深股市 OR 上市公司 OR 证券市场 OR 股票 OR 交易所) sourcelang:Chinese',
+        '(半导体 OR 新能源 OR 机器人 OR 医药 OR 消费) (A股 OR 上市公司 OR 证券) sourcelang:Chinese',
+    ]
+    seen, result = set(), []
+    for query in queries:
+        params = {
+            "query": query, "mode": "ArtList", "format": "json",
+            "sort": "HybridRel", "maxrecords": str(max_records),
+            "startdatetime": start.strftime("%Y%m%d%H%M%S"),
+            "enddatetime": end.strftime("%Y%m%d%H%M%S"),
+        }
+        for attempt in range(3):
+            try:
+                response = requests.get(GDELT_URL, params=params, timeout=35)
+                response.raise_for_status()
+                articles = response.json().get("articles", []) or []
+                for item in articles:
+                    url = item.get("url")
+                    if not url or url in seen:
+                        continue
+                    seen.add(url)
+                    result.append({"title": item.get("title", ""), "url": url,
+                        "domain": item.get("domain", ""), "language": item.get("language", ""),
+                        "source_country": item.get("sourceCountry", ""),
+                        "published": item.get("seendate", ""),
+                        "query_scope": "chinese_a_share_news"})
+                break
+            except Exception as exc:
+                if attempt == 2:
+                    LOG.warning("中文A股新闻查询失败（%s）：%s", query[:45], exc)
+                else:
+                    time.sleep(2 ** attempt)
+        if len(result) >= max_records:
+            break
+    # Prefer Chinese-language articles and cap after de-duplication.
+    result.sort(key=lambda x: (str(x.get("language", "")).lower() not in ("chinese", "zh", "zh-cn"),
+                               x.get("published", "")), reverse=False)
+    return result[:max_records]
 
 
 def collect_announcements(day: date) -> list[dict[str, Any]]:
