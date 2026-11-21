@@ -8,6 +8,80 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 header{background:var(--navy);color:white;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-weight:700;letter-spacing:.5px}.brand small{display:block;color:#b8c7d1;font-size:10px;letter-spacing:1.3px;font-weight:400}.status{font-size:11px;color:#e5cb91;border:1px solid #718797;padding:4px 9px;border-radius:20px}
 .layout{display:flex;min-height:calc(100vh - 66px)}aside{width:210px;background:white;border-right:1px solid var(--line);padding:18px 12px;flex-shrink:0}nav button{display:block;width:100%;border:0;background:none;text-align:left;padding:11px 12px;margin:3px 0;border-radius:8px;color:#61717d;cursor:pointer;font-size:13px}nav button.active{background:#e8efec;color:var(--green);font-weight:700}nav button:hover{background:#f1f4f5}main{width:100%;max-width:1500px;margin:auto;padding:26px 28px 48px;min-width:0}.page{display:none}.page.active{display:block}.head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:18px}.eyebrow{font-size:10px;color:var(--green);letter-spacing:1.5px;font-weight:700}h1{font-size:23px;margin:3px 0;color:#203749}.sub{font-size:12px;color:var(--muted)}.date{font-size:11px;color:var(--muted);background:white;border:1px solid var(--line);padding:7px 11px;border-radius:7px;white-space:nowrap}.grid{display:grid;gap:13px}.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:14px}.two{grid-template-columns:1fr 1fr}.card{background:white;border:1px solid #e3e9ec;border-radius:11px;padding:15px 17px;min-width:0;box-shadow:0 4px 16px #19304408}.klabel{font-size:11px;color:var(--muted)}.kvalue{font-size:25px;font-weight:700;margin:4px 0;color:#233c4e}.kfoot{font-size:11px;color:var(--muted)}.section{font-size:14px;font-weight:700;margin:0 0 11px;display:flex;justify-content:space-between;gap:10px}table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;background:#f7f9fa;color:#84929b;font-weight:500;padding:9px 8px;white-space:nowrap}td{padding:9px 8px;border-bottom:1px solid #edf0f2;white-space:nowrap}tr:last-child td{border-bottom:0}.up{color:var(--red)}.down{color:var(--green)}.note{margin-top:12px;background:#f5f8f7;border-left:3px solid var(--green);padding:10px 12px;border-radius:4px;font-size:12px;color:#586a74}.empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:12px;background:#fafbfb;border:1px dashed var(--line);border-radius:8px}.footer{font-size:10px;color:#9aa5ab;text-align:center;padding-top:20px}.error{color:var(--red)}.report-text{white-space:pre-wrap;line-height:1.8;font-size:12px;overflow-wrap:anywhere}
+.report-wrap{display:grid;gap:15px}
+.report-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:18px;padding:24px 26px;background:linear-gradient(118deg,#172b40 0%,#24465a 68%,#315e67 100%);border-radius:15px;color:#fff;box-shadow:0 10px 26px #172b401c}
+.report-hero:after{content:"";position:absolute;width:250px;height:250px;border:1px solid #ffffff18;border-radius:50%;right:12%;top:-155px;box-shadow:0 0 0 30px #ffffff08,0 0 0 62px #ffffff05;pointer-events:none}
+.report-hero-copy,.report-hero-meta{position:relative;z-index:1}
+.report-eyebrow{font-size:10px;letter-spacing:1.8px;color:#b8d1d0;font-weight:700}
+.report-hero h2{font-size:25px;line-height:1.25;margin:7px 0 7px;color:#fff}
+.report-lead{color:#d2dfe4;font-size:12px;max-width:700px}
+.report-hero-meta{display:grid;justify-items:end;gap:8px;white-space:nowrap}
+.report-date{font-size:17px;font-weight:700;letter-spacing:.3px}
+.report-meta-line{font-size:10px;color:#c2d0d7}
+.report-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:99px;font-size:10px;font-weight:700;background:#ffffff18;border:1px solid #ffffff25;color:#f3f7f8}
+.report-chip:before{content:"";width:6px;height:6px;background:#89b7a4;border-radius:50%}
+.report-chip.warn:before{background:#e2bb72}
+.report-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.report-kpi{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;min-width:0}
+.report-kpi-label{font-size:10px;color:var(--muted);letter-spacing:.3px}
+.report-kpi-value{font-size:23px;line-height:1.25;font-weight:750;color:#20384a;margin:5px 0 4px;font-variant-numeric:tabular-nums}
+.report-kpi-foot{font-size:10px;color:#8b989f}
+.report-top-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:13px}
+.report-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+.report-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
+.report-panel-title{font-size:13px;font-weight:750;color:#294253}
+.report-panel-sub{font-size:10px;color:#94a0a6}
+.report-breadth{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+.report-breadth-main{font-size:21px;font-weight:750;color:#243f50;font-variant-numeric:tabular-nums}
+.report-breadth-caption{font-size:10px;color:#89969e;margin-top:2px}
+.report-breadth-median{text-align:right}
+.report-breadth-median strong{display:block;font-size:20px;color:#a35f59;font-variant-numeric:tabular-nums}
+.report-breadth-median span{font-size:10px;color:#89969e}
+.report-bar{height:9px;display:flex;overflow:hidden;border-radius:99px;background:#edf1f2;margin:14px 0 9px}
+.report-bar-up{background:#c87970}.report-bar-down{background:#65927f}.report-bar-flat{background:#c7ced1}
+.report-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:10px;color:#85929a}
+.report-legend span{display:inline-flex;align-items:center;gap:5px}
+.report-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.report-sector-list{display:grid;gap:9px}
+.report-sector-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.report-sector-name{font-size:11px;color:#425966;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.report-sector-value{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.report-sector-track{height:4px;background:#eef1f2;border-radius:99px;margin-top:4px;overflow:hidden}
+.report-sector-fill{height:100%;background:#6b9886;border-radius:99px}
+.report-quality-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.report-quality-cell{padding:10px;background:#f7f9f9;border-radius:8px}
+.report-quality-cell strong{display:block;font-size:17px;color:#294456;font-variant-numeric:tabular-nums}
+.report-quality-cell span{font-size:9px;color:#88969e}
+.report-quality-note{font-size:10px;color:#89969e;margin-top:10px;line-height:1.55}
+.report-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:5px 1px 0}
+.report-section-head h3{font-size:15px;color:#294253;margin:0}
+.report-section-head span{font-size:10px;color:#929fa5}
+.report-section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.report-section-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:15px 17px;min-width:0;break-inside:avoid}
+.report-section-card.wide{grid-column:1/-1}
+.report-section-card-top{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.report-section-no{width:25px;height:25px;display:grid;place-items:center;border-radius:7px;background:#edf3f1;color:#527969;font-size:10px;font-weight:800;flex:none}
+.report-section-title{font-size:12px;font-weight:750;color:#294354}
+.report-section-body{font-size:11px;line-height:1.8;color:#5d6e77;overflow-wrap:anywhere}
+.report-section-body p{margin:0 0 8px}
+.report-section-body p:last-child{margin-bottom:0}
+.report-section-body ul{margin:3px 0 0;padding-left:17px}
+.report-section-body li{padding:2px 0}
+.report-section-body a{color:#537e70;text-decoration:none;border-bottom:1px solid #c6d6cf}
+.report-section-body a:hover{color:#315e50}
+.report-section-body strong{color:#344f5e}
+.report-table-wrap{overflow-x:auto;margin:8px 0}
+.report-table{font-size:10px;min-width:380px}
+.report-table th{background:#f5f8f8;padding:7px 8px}
+.report-table td{padding:7px 8px;white-space:normal}
+.report-method{background:#f9fbfb;border:1px solid var(--line);border-radius:11px;padding:13px 16px}
+.report-method summary{cursor:pointer;color:#536875;font-size:11px;font-weight:700}
+.report-method .report-section-body{margin-top:11px}
+.report-backtest{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:10px;color:#7b8a92}
+.report-backtest strong{font-size:13px;color:#294456}
+@media(max-width:850px){.report-hero{grid-template-columns:1fr;padding:20px}.report-hero-meta{justify-items:start}.report-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.report-top-grid{grid-template-columns:1fr}.report-section-grid{grid-template-columns:1fr}.report-section-card.wide{grid-column:auto}}
+@media(max-width:480px){.report-kpi{padding:11px 12px}.report-kpi-value{font-size:20px}.report-panel{padding:14px}.report-quality-grid{gap:6px}.report-quality-cell{padding:8px}.report-hero h2{font-size:22px}}
+@media print{body{background:#fff}.report-hero{print-color-adjust:exact;-webkit-print-color-adjust:exact}.report-section-card,.report-panel,.report-kpi{box-shadow:none;break-inside:avoid}.report-section-grid{gap:8px}aside,header,.footer{display:none!important}main{max-width:none;padding:0}.page{display:none!important}#report.page{display:block!important}}
 @media(max-width:850px){.layout{display:block}aside{width:100%;position:sticky;top:0;z-index:4;padding:6px 8px;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}nav{display:flex;gap:4px}nav button{width:auto;white-space:nowrap;padding:9px 10px;margin:0;font-size:11px}main{padding:18px 12px 32px}.kpis{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.head{margin-bottom:14px}.date{display:none}}
 </style></head>
 <body>
@@ -22,7 +96,7 @@ header{background:var(--navy);color:white;padding:18px 24px;display:flex;justify
 <section class="page" id="rotation"><div class="head"><div><div class="eyebrow">SECTOR ROTATION</div><h1>行业轮动</h1><div class="sub">历史轮动与实时行业快照分开呈现</div></div></div><div class="empty">等待行业轮动数据</div><div id="industry-live"></div></section>
 <section class="page" id="capital"><div class="head"><div><div class="eyebrow">CAPITAL MONITOR</div><h1>资金监测</h1><div class="sub">区分成交活跃度、公开资金流估算、ETF份额与机构披露</div></div></div><div class="empty">当前快照仅展示成交额和换手率类市场活动指标。未验证的主力资金估算、ETF份额或机构账户流向不会被展示为真实机构资金。</div></section>
 <section class="page" id="news"><div class="head"><div><div class="eyebrow">CHINESE A-SHARE NEWS</div><h1>A股新闻</h1><div class="sub">近36小时中文财经快讯与行业信息，显示来源和发布时间</div></div></div><div class="empty">等待新闻采集状态</div></section>
-<section class="page" id="report"><div class="head"><div><div class="eyebrow">DAILY RESEARCH</div><h1>研究日报</h1><div class="sub">保留数据证据、来源与更新时间，逐步扩展完整12栏目日报</div></div></div><div class="card"><div class="section">当前可验证结论</div><p id="dailySummary" class="sub">等待公开数据快照。</p><div class="note">当前云端版本只生成基于市场广度、涨跌幅分布和成交活跃度的客观快照；政策事件、订单、盈利预期和估值拥挤度仍需独立来源接入后才形成主线判断。</div></div></section>
+<section class="page" id="report"><div class="head"><div><div class="eyebrow">DAILY RESEARCH</div><h1>研究日报</h1><div class="sub">市场快照、行业观察、证据覆盖与12栏目研究正文</div></div><div class="date" id="reportTradeDate">等待日报数据</div></div><div id="reportContent"><div class="empty">正在读取日报及研究数据…</div></div></section>
 <div class="footer">A-SHARE ALPHA RADAR · 公共研究数据 · 不构成投资建议 · 个人持仓不在此站点存储或展示</div>
 </main></div>
 <script>
@@ -77,8 +151,85 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
       : '<div class="empty">'+(newsMeta.status==='empty'?'最近36小时没有取得符合筛选条件的中文A股新闻。':'新闻采集状态尚不可用。')+'</div>';
     newsPage.outerHTML=newsBody+'<div class="note">状态：'+esc(newsMeta.status||'missing')+'；检查时间：'+esc(newsMeta.checked_at||'—')+'；来源：'+esc((newsMeta.sources||[]).join('、')||'—')+'。'+esc(newsMeta.note||'空数据不以英文国际新闻替代。')+'</div>';
   }
-  const report=document.querySelector('#report .card');
-  if(report){const rep=items('reports')[0];const bt=s.backtest||{};report.innerHTML='<div class="section">12栏目公开研究日报</div><div class="note">回测状态：'+esc(bt.status||'尚无有效样本')+'；样本数：'+esc(bt.observations??0)+'；策略累计收益：'+esc(bt.cumulative_return_pct??'—')+'%；行业等权基准：'+esc(bt.benchmark_cumulative_return_pct??'—')+'%。'+esc(bt.reason||'回测仅在样本满足最低要求后计算。')+'</div>'+(rep?.markdown?'<div class="report-text">'+esc(rep.markdown)+'</div>':'<div class="empty">当前没有可发布的日报正文。数据源不可用时不会用演示内容替代。</div>')}
+  const reportRoot=document.getElementById('reportContent');
+  if(reportRoot){
+    const rep=items('reports')[0],bt=s.backtest||{},eq=d.evidence_quality||{},tc=s['technical-coverage']||{};
+    const tradeDate=s['market-breadth']?.item?.trade_date||d.trade_date||'—';
+    const generated=d.generated_at||'—',dataStatus=d.market_status||'unknown';
+    const statusLabel=dataStatus==='stale'?'行情滞后':dataStatus==='validated'?'行情已校验':'数据状态待确认';
+    const total=Number(b.total??((b.up||0)+(b.down||0)+(b.flat||0)))||0;
+    const up=Number(b.up)||0,down=Number(b.down)||0,flat=Number(b.flat)||0;
+    const ratio=(n)=>total?Math.max(0,Math.min(100,n/total*100)):0;
+    const turnover=b.turnover==null?null:Number(b.turnover);
+    const fmtBig=(v)=>v==null?'—':Number(v).toLocaleString('zh-CN',{maximumFractionDigits:2});
+    const sectorItems=industry.slice(0,5);
+    const maxSector=Math.max(1,...sectorItems.map(x=>Math.abs(Number(x.change_pct)||0)));
+    const sectorHtml=sectorItems.length?'<div class="report-sector-list">'+sectorItems.map(x=>{
+      const value=Number(x.change_pct)||0,positive=value>=0;
+      return '<div><div class="report-sector-row"><span class="report-sector-name">'+esc(x.industry_name||x.display_name||x.industry||'行业')+'</span><span class="report-sector-value '+(positive?'up':'down')+'">'+(positive?'+':'')+pct(value)+'</span></div><div class="report-sector-track"><div class="report-sector-fill" style="width:'+Math.max(2,Math.abs(value)/maxSector*100)+'%;background:'+(positive?'#6d9886':'#bc7770')+'"></div></div></div>';
+    }).join('')+'</div>':'<div class="empty">当前没有经过验证的行业快照</div>';
+    const breadthHtml='<div class="report-breadth"><div><div class="report-breadth-main">'+fmtBig(up)+' / '+fmtBig(down)+'</div><div class="report-breadth-caption">上涨家数 / 下跌家数</div></div><div class="report-breadth-median"><strong>'+(b.median_change_pct==null?'—':pct(b.median_change_pct))+'</strong><span>涨跌幅中位数</span></div></div><div class="report-bar"><span class="report-bar-up" style="width:'+ratio(up)+'%"></span><span class="report-bar-down" style="width:'+ratio(down)+'%"></span><span class="report-bar-flat" style="width:'+ratio(flat)+'%"></span></div><div class="report-legend"><span><i class="report-dot" style="background:#c87970"></i>上涨 '+fmtBig(up)+'</span><span><i class="report-dot" style="background:#65927f"></i>下跌 '+fmtBig(down)+'</span><span><i class="report-dot" style="background:#c7ced1"></i>平盘 '+fmtBig(flat)+'</span></div>';
+    const themes=items('themes');
+    const qualityHtml='<div class="report-quality-grid"><div class="report-quality-cell"><strong>'+fmtBig(eq.themes_with_constituents??0)+' / '+fmtBig(eq.themes_total??themes.length)+'</strong><span>主题成分覆盖</span></div><div class="report-quality-cell"><strong>'+fmtBig(eq.unique_constituents??0)+'</strong><span>关联成分股</span></div><div class="report-quality-cell"><strong>'+fmtBig(eq.failed_sources??0)+'</strong><span>失败数据源</span></div></div><div class="report-quality-note">主题证据状态：'+esc(eq.status||'尚未提供')+'；完整主线评分只在要求的证据维度齐备后启用。</div>';
+    const backtestHtml='<div class="report-backtest"><span>回测状态 <strong>'+esc(bt.status||'尚无有效样本')+'</strong></span><span>样本 '+esc(bt.observations??bt.sessions??0)+'</span><span>策略收益 <strong>'+esc(bt.cumulative_return_pct??'—')+'%</strong></span><span>行业基准 '+esc(bt.benchmark_cumulative_return_pct??'—')+'%</span></div>';
+    const md=String(rep?.markdown||'');
+    const lines=md.split(/\r?\n/);
+    const sections=[],methodLines=[];
+    let current=null,reportTitle='12栏目公开研究日报',reportDate=tradeDate,reportGenerated=generated;
+    for(const line of lines){
+      const titleMatch=line.match(/^#\s+(.+)$/);
+      if(titleMatch){reportTitle=titleMatch[1].replace(/\s+/g,' ').trim();continue;}
+      const dateMatch=line.match(/^>\s*交易日：([^；]+)；\s*生成时间：([^；]+)；\s*状态：(.+)$/);
+      if(dateMatch){reportDate=dateMatch[1].trim();reportGenerated=dateMatch[2].trim();continue;}
+      const heading=line.match(/^##\s+(\d{1,2})\.\s*(.+)$/);
+      if(heading){current={number:Number(heading[1]),title:heading[2].trim(),lines:[]};sections.push(current);continue;}
+      if(/^##\s+/.test(line)){current={number:null,title:line.replace(/^##\s+/,'').trim(),lines:[]};sections.push(current);continue;}
+      if(current)current.lines.push(line);else if(line.trim())methodLines.push(line);
+    }
+    const inline=(value)=>esc(value)
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,(all,label,url)=>'<a href="'+esc(url)+'" target="_blank" rel="noopener">'+label+'</a>');
+    const renderBody=(source)=>{
+      const rows=source||[],out=[];let paragraph=[],list=[],tableRows=[];
+      const flushP=()=>{if(paragraph.length){out.push('<p>'+paragraph.map(inline).join(' ')+'</p>');paragraph=[];}};
+      const flushL=()=>{if(list.length){out.push('<ul>'+list.map(x=>'<li>'+inline(x)+'</li>').join('')+'</ul>');list=[];}};
+      const flushT=()=>{
+        if(!tableRows.length)return;
+        const cleanRows=tableRows.map(line=>line.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim()));
+        const dataRows=cleanRows.filter(row=>!row.every(cell=>/^:?-{3,}:?$/.test(cell)));
+        if(dataRows.length){const head=dataRows[0];out.push('<div class="report-table-wrap"><table class="report-table"><thead><tr>'+head.map(x=>'<th>'+inline(x)+'</th>').join('')+'</tr></thead><tbody>'+dataRows.slice(1).map(row=>'<tr>'+head.map((_,i)=>'<td>'+inline(row[i]||'')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>');}
+        tableRows=[];
+      };
+      for(const raw of rows){
+        const line=raw.trim();
+        if(!line){flushP();flushL();flushT();continue;}
+        if(line.startsWith('|')){flushP();flushL();tableRows.push(line);continue;}
+        flushT();
+        if(/^[-*]\s+/.test(line)){flushP();list.push(line.replace(/^[-*]\s+/,''));continue;}
+        flushL();
+        if(/^###\s+/.test(line)){flushP();out.push('<p><strong>'+inline(line.replace(/^###\s+/,''))+'</strong></p>');continue;}
+        paragraph.push(line);
+      }
+      flushP();flushL();flushT();
+      return out.join('')||'<p class="report-panel-sub">本栏目暂无详细内容。</p>';
+    };
+    const sectionHtml=sections.filter(x=>x.number!==null).map(x=>{
+      const wide=[3,9,10,12].includes(x.number);
+      return '<article class="report-section-card'+(wide?' wide':'')+'"><div class="report-section-card-top"><span class="report-section-no">'+String(x.number).padStart(2,'0')+'</span><div class="report-section-title">'+esc(x.title)+'</div></div><div class="report-section-body">'+renderBody(x.lines)+'</div></article>';
+    }).join('');
+    const methodSection=sections.find(x=>x.number===null);
+    const researchDate=reportDate;
+    put('reportTradeDate','交易日 '+researchDate);
+    reportRoot.innerHTML='<div class="report-wrap">'
+      +'<div class="report-hero"><div class="report-hero-copy"><div class="report-eyebrow">A-SHARE ALPHA RADAR · RESEARCH NOTE</div><h2>'+esc(reportTitle.replace(/^A-Share Alpha Radar[｜|]/,''))+'</h2><div class="report-lead">以可验证行情、行业历史、资金估算和公开证据构建的日度研究视图。未取得的数据明确留空，不用推测值填补。</div></div><div class="report-hero-meta"><div class="report-date">'+esc(researchDate)+'</div><div class="report-meta-line">生成时间 '+esc(reportGenerated)+'</div><span class="report-chip'+(dataStatus==='stale'?' warn':'')+'">'+esc(statusLabel)+'</span></div></div>'
+      +'<div class="report-kpis"><div class="report-kpi"><div class="report-kpi-label">有效股票覆盖</div><div class="report-kpi-value">'+fmtBig(o.count??0)+'</div><div class="report-kpi-foot">全市场有效行情样本</div></div><div class="report-kpi"><div class="report-kpi-label">上涨 / 下跌</div><div class="report-kpi-value">'+fmtBig(up)+' / '+fmtBig(down)+'</div><div class="report-kpi-foot">平盘 '+fmtBig(flat)+' 只</div></div><div class="report-kpi"><div class="report-kpi-label">涨跌幅中位数</div><div class="report-kpi-value">'+(b.median_change_pct==null?'—':pct(b.median_change_pct))+'</div><div class="report-kpi-foot">全样本横截面统计</div></div><div class="report-kpi"><div class="report-kpi-label">全市场成交额</div><div class="report-kpi-value">'+(turnover==null?'—':fmtBig(turnover/1e12)+'万亿')+'</div><div class="report-kpi-foot">成交额不等同资金净流入</div></div></div>'
+      +'<div class="report-top-grid"><section class="report-panel"><div class="report-panel-head"><div class="report-panel-title">市场广度与风险偏好</div><div class="report-panel-sub">交易日 '+esc(researchDate)+'</div></div>'+breadthHtml+'</section><section class="report-panel"><div class="report-panel-head"><div class="report-panel-title">行业强弱观察</div><div class="report-panel-sub">前五项 · 行业数据按自身日期展示</div></div>'+sectorHtml+'</section></div>'
+      +'<div class="report-top-grid"><section class="report-panel"><div class="report-panel-head"><div class="report-panel-title">研究证据覆盖</div><div class="report-panel-sub">不以覆盖数量代替证据质量</div></div>'+qualityHtml+'</section><section class="report-panel"><div class="report-panel-head"><div class="report-panel-title">回测与策略验证</div><div class="report-panel-sub">样本不足时不展示虚构收益</div></div>'+backtestHtml+'<div class="report-quality-note">'+esc(bt.reason||'回测仅在样本满足最低要求后计算。')+'</div></section></div>'
+      +'<div class="report-section-head"><h3>研究正文 · 12 个栏目</h3><span>按市场、行业、资金、个股与风险组织</span></div>'
+      +'<div class="report-section-grid">'+(sectionHtml||'<div class="empty">当前没有可发布的12栏目日报正文。</div>')+'</div>'
+      +(methodSection?'<details class="report-method"><summary>数据口径与限制 · 展开查看</summary><div class="report-section-body">'+renderBody(methodSection.lines)+'</div></details>':'')
+      +'</div>';
+  }
   const status=document.querySelector('#status');if(status)status.textContent=d.market_status==='stale'?'行情滞后，仅供历史参考':'公开研究模块已载入';
  }catch(e){const status=document.querySelector('#status');if(status)status.textContent='研究模块暂不可用';}
 })();
