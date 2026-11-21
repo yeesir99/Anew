@@ -119,7 +119,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
   const put=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
   put('count',fmt(o.count??industry.length,0));put('updown',fmt(b.up,0)+' / '+fmt(b.down,0));
   put('advanceRatio','上涨占比 '+fmt(b.total?b.up/b.total*100:null)+'%');
-  put('median',fmt(b.median_change_pct)+'%');put('turnover',b.turnover==null?'—':fmt(b.turnover/1e12)+'万亿');
+  put('median',fmt(b.median_change_pct)+'%');const marketTurnover=b.aggregate_turnover_cny??b.turnover_cny??b.turnover;const turnoverValue=Number(marketTurnover);put('turnover',marketTurnover==null||!Number.isFinite(turnoverValue)||turnoverValue<=0?'—':fmt(turnoverValue/1e12,2)+'万亿');
   put('tradeDate','数据日 '+(s['market-breadth']?.item?.trade_date||'—'));
   const mkTable=(xs,cols)=>!xs?.length?'<div class="empty">暂无已验证数据</div>':'<div style="overflow:auto"><table><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr>'+xs.map(x=>'<tr>'+cols.map(c=>'<td>'+c[1](x)+'</td>').join('')+'</tr>').join('')+'</table></div>';
   const lead=document.getElementById('leaders');if(lead)lead.innerHTML=mkTable(industry.slice(0,20),[['行业',x=>{const n=String(x.industry_name||x.display_name||'').trim();return esc(n&&!n.startsWith('BK')?n:'行业名称待映射')}],['涨跌幅',x=>pct(x.change_pct)],['成交额',x=>x.turnover_cny==null?'—':fmt(Number(x.turnover_cny)/1e8)+'亿'],['代理分',x=>fmt(x.proxy_score)]])+'<div class="note">'+esc(s.industries?.note||'行业数据日期未提供')+'</div>';
