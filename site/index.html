@@ -297,6 +297,6 @@ load();
       +'</div>';
   }
   const status=document.querySelector('#status');if(status)status.textContent=d.market_status==='stale'?'行情滞后，仅供历史参考':'公开研究模块已载入';
- }catch(e){const status=document.querySelector('#status');if(status)status.textContent='研究模块暂不可用';}
+ }catch(e){console.error('Research dashboard rendering failed:',e);const status=document.querySelector('#status');if(status){status.textContent='研究数据部分加载失败：'+(e&&e.message?e.message:'未知错误');status.classList.add('error');}}
 })();
 </script></body></html>
