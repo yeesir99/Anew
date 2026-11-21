@@ -13,7 +13,7 @@ header{background:var(--navy);color:white;padding:18px 24px;display:flex;justify
 <body>
 <header><div class="brand">A-SHARE ALPHA RADAR<small>MARKET INTELLIGENCE · GITHUB CLOUD</small></div><span class="status" id="status">正在读取公开快照</span></header>
 <div class="layout"><aside><nav>
-<button class="active" data-page="overview">▦　市场总览</button><button data-page="themes">⌁　主线预判</button><button data-page="rotation">◷　行业轮动</button><button data-page="capital">⇄　资金监测</button><button data-page="report">▤　研究日报</button>
+<button class="active" data-page="overview">▦　市场总览</button><button data-page="themes">⌁　主线预判</button><button data-page="rotation">◷　行业轮动</button><button data-page="capital">⇄　资金监测</button><button data-page="news">☷　A股新闻</button><button data-page="report">▤　研究日报</button>
 </nav></aside><main>
 <section class="page active" id="overview"><div class="head"><div><div class="eyebrow">MARKET DASHBOARD</div><h1>市场总览</h1><div class="sub">基于经过日期与覆盖率校验的公开A股日终快照</div></div><div class="date" id="tradeDate">等待数据</div></div>
 <div class="grid kpis"><div class="card"><div class="klabel">有效股票覆盖</div><div class="kvalue" id="count">—</div><div class="kfoot">通过代码、价格、日期和字段校验</div></div><div class="card"><div class="klabel">上涨 / 下跌</div><div class="kvalue" id="updown">—</div><div class="kfoot" id="advanceRatio">市场涨跌家数</div></div><div class="card"><div class="klabel">涨跌幅中位数</div><div class="kvalue" id="median">—</div><div class="kfoot">全样本中位数</div></div><div class="card"><div class="klabel">全市场成交额</div><div class="kvalue" id="turnover">—</div><div class="kfoot">成交额合计，不代表资金净流入</div></div></div>
@@ -21,6 +21,7 @@ header{background:var(--navy);color:white;padding:18px 24px;display:flex;justify
 <section class="page" id="themes"><div class="head"><div><div class="eyebrow">THEME DISCOVERY</div><h1>主线预判</h1><div class="sub">只有具备行业层级、政策、产业与持续性证据后才输出主线评分</div></div></div><div class="empty">当前云端采集阶段尚未接入可交叉验证的行业主线评分数据。不会把个股涨幅榜直接冒充主线排行榜，也不会生成虚构的100分评分。</div></section>
 <section class="page" id="rotation"><div class="head"><div><div class="eyebrow">SECTOR ROTATION</div><h1>行业轮动</h1><div class="sub">行业强度、内部广度与多周期持续性</div></div></div><div class="empty">行业级连续历史数据适配尚未完成。现阶段不输出伪造的5 / 10 / 20日行业轮动结果。</div></section>
 <section class="page" id="capital"><div class="head"><div><div class="eyebrow">CAPITAL MONITOR</div><h1>资金监测</h1><div class="sub">区分成交活跃度、公开资金流估算、ETF份额与机构披露</div></div></div><div class="empty">当前快照仅展示成交额和换手率类市场活动指标。未验证的主力资金估算、ETF份额或机构账户流向不会被展示为真实机构资金。</div></section>
+<section class="page" id="news"><div class="head"><div><div class="eyebrow">CHINESE A-SHARE NEWS</div><h1>A股新闻</h1><div class="sub">近36小时中文财经快讯与行业信息，显示来源和发布时间</div></div></div><div class="empty">等待新闻采集状态</div></section>
 <section class="page" id="report"><div class="head"><div><div class="eyebrow">DAILY RESEARCH</div><h1>研究日报</h1><div class="sub">保留数据证据、来源与更新时间，逐步扩展完整12栏目日报</div></div></div><div class="card"><div class="section">当前可验证结论</div><p id="dailySummary" class="sub">等待公开数据快照。</p><div class="note">当前云端版本只生成基于市场广度、涨跌幅分布和成交活跃度的客观快照；政策事件、订单、盈利预期和估值拥挤度仍需独立来源接入后才形成主线判断。</div></div></section>
 <div class="footer">A-SHARE ALPHA RADAR · 公共研究数据 · 不构成投资建议 · 个人持仓不在此站点存储或展示</div>
 </main></div>
@@ -60,6 +61,18 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
   if(rot)rot.outerHTML='<div class="card"><div class="section">行业轮动观察</div>'+table(rotData,[['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['轮动强度',x=>fmt(x.rotation_strength_score)],['最新涨幅',x=>pct(x.latest_change)],['5日复合',x=>pct(x.return_5d_pct)],['10日复合',x=>pct(x.return_10d_pct)],['20日复合',x=>pct(x.return_20d_pct)],['历史交易日',x=>x.history_sessions??0]])+'</div>';
   const cap=document.querySelector('#capital .empty');
   if(cap)cap.outerHTML='<div class="card"><div class="section">公开资金流估算</div>'+table(items('capital-flows').slice(0,60),[['周期',x=>esc(x.indicator)],['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['涨跌幅',x=>pct(x.change_pct)],['估算净流入',x=>x.main_net_inflow==null?'—':fmt(Number(x.main_net_inflow)/1e8)+'亿'],['日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">ETF份额变化</div>'+table(items('etf-shares').slice(0,50),[['代码',x=>esc(x.code)],['名称',x=>esc(x.name)],['基金份额',x=>x.shares==null?'—':fmt(x.shares,0)],['份额变化',x=>pct(x.change_pct)],['对比日期',x=>esc(x.previous_date||'历史基准待积累')],['快照日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">数据源状态</div>'+table(items('data-sources'),[['数据源',x=>esc(x.source)],['状态',x=>esc(x.status)],['说明',x=>esc(x.detail)]])+'</div>';
+  const newsPage=document.querySelector('#news .empty');
+  const newsItems=items('news');
+  const newsMeta=s.news||{};
+  if(newsPage){
+    const newsBody=newsItems.length
+      ? '<div class="card"><div class="section">近36小时快讯 · '+newsItems.length+' 条</div><div style="display:grid;gap:12px">'+newsItems.map(x=>{
+          const url=String(x.url||'');const safeUrl=/^https?:\\/\\//i.test(url)?url:'';
+          return '<article style="padding:10px 0;border-bottom:1px solid #edf0f2"><b>'+esc(x.title)+'</b><div class="sub" style="margin:5px 0">'+esc(x.summary||'')+'</div><div class="sub">'+esc(x.source||x.domain||'')+' · '+esc(x.published||'时间未知')+' '+(safeUrl?'<a href="'+esc(safeUrl)+'" target="_blank" rel="noopener">查看来源</a>':'')+'</div></article>';
+        }).join('')+'</div></div>'
+      : '<div class="empty">'+(newsMeta.status==='empty'?'最近36小时没有取得符合筛选条件的中文A股新闻。':'新闻采集状态尚不可用。')+'</div>';
+    newsPage.outerHTML=newsBody+'<div class="note">状态：'+esc(newsMeta.status||'missing')+'；检查时间：'+esc(newsMeta.checked_at||'—')+'；来源：'+esc((newsMeta.sources||[]).join('、')||'—')+'。'+esc(newsMeta.note||'空数据不以英文国际新闻替代。')+'</div>';
+  }
   const report=document.querySelector('#report .card');
   if(report){const rep=items('reports')[0];const bt=s.backtest||{};report.innerHTML='<div class="section">12栏目公开研究日报</div><div class="note">回测状态：'+esc(bt.status||'尚无有效样本')+'；样本数：'+esc(bt.observations??0)+'；策略累计收益：'+esc(bt.cumulative_return_pct??'—')+'%；行业等权基准：'+esc(bt.benchmark_cumulative_return_pct??'—')+'%。'+esc(bt.reason||'回测仅在样本满足最低要求后计算。')+'</div>'+(rep?.markdown?'<div class="report-text">'+esc(rep.markdown)+'</div>':'<div class="empty">当前没有可发布的日报正文。数据源不可用时不会用演示内容替代。</div>')}
   const status=document.querySelector('#status');if(status)status.textContent=d.market_status==='stale'?'行情滞后，仅供历史参考':'公开研究模块已载入';
