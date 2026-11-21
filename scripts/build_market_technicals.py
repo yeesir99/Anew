@@ -284,19 +284,30 @@ def main():
                 values = original.set_index("symbol")[col]
                 latest[col] = latest[col].where(latest[col].notna(), latest["symbol"].map(values))
     current_coverage = int(latest["ma20"].notna().sum()) if "ma20" in latest else 0
-    archive_history, archive_stats = _archive_history(day)
+    try:
+        archive_history, archive_stats = _archive_history(day)
+    except Exception as exc:
+        logging.warning("bulk daily quote archive failed; use per-symbol fallback: %s", str(exc)[:300])
+        archive_history = pd.DataFrame()
+        archive_stats = {"status":"failed","error":str(exc)[:300]}
     backfill_stats = {"requested": 0, "successful": 0, "failed": 0, "skipped": "bulk archive supplied full-market history"}
+    archive_applied = False
     if not archive_history.empty:
-        archive_tech = _technical_history(archive_history, day)
-        if not archive_tech.empty:
-            archive_tech = archive_tech.copy()
-            archive_tech["symbol"] = archive_tech["ts_code"].astype(str).str.split(".").str[0].str.zfill(6)
-            by_symbol = archive_tech.set_index("symbol")
-            for col in METRICS:
-                if col in by_symbol:
-                    latest[col] = latest["symbol"].map(by_symbol[col]).combine_first(
-                        latest[col] if col in latest else pd.Series(index=latest.index, dtype=float))
-    else:
+        try:
+            archive_tech = _technical_history(archive_history, day)
+            if not archive_tech.empty:
+                archive_tech = archive_tech.copy()
+                archive_tech["symbol"] = archive_tech["ts_code"].astype(str).str.split(".").str[0].str.zfill(6)
+                by_symbol = archive_tech.set_index("symbol")
+                for col in METRICS:
+                    if col in by_symbol:
+                        latest[col] = latest["symbol"].map(by_symbol[col]).combine_first(
+                            latest[col] if col in latest else pd.Series(index=latest.index, dtype=float))
+                archive_applied = True
+        except Exception as exc:
+            logging.warning("bulk technical calculation failed; use per-symbol fallback: %s", str(exc)[:300])
+            archive_stats["calculation_error"] = str(exc)[:300]
+    if not archive_applied:
         latest, backfill_stats = _backfill_per_symbol(latest, day)
     latest.to_csv(LATEST, index=False, encoding="utf-8-sig")
     trade_date_iso = datetime.strptime(day, "%Y%m%d").date().isoformat()
