@@ -134,6 +134,14 @@ def main():
             "evidence": ["行业当日涨跌幅", "行业5日复合收益" if row["return_5d_pct"] is not None else "行业当日涨跌幅", "行业成交额"]})
     industry_names = {str(x.get("sector_code") or x.get("industry") or ""):
                       str(x.get("industry_name") or x.get("display_name") or "") for x in current}
+    ths_snapshot = {}
+    try:
+        ths_snapshot = json.loads((DATA / "industry_snapshot_ths.json").read_text(encoding="utf-8"))
+        if not isinstance(ths_snapshot, dict):
+            ths_snapshot = {}
+    except Exception:
+        ths_snapshot = {}
+    ths_live_items = ths_snapshot.get("items", []) if ths_snapshot.get("status") == "success" else []
     flow_items = []
     for row in flows:
         if row.get("trade_date") == day:
@@ -141,6 +149,7 @@ def main():
                 "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or SECTOR_NAMES.get(str(row.get("industry") or "")), "change_pct": num(row.get("change_pct")),
                 "main_net_inflow": num(row.get("main_net_inflow_cny")),
                 "main_net_ratio": num(row.get("main_net_ratio_pct")), "source": row.get("source")})
+    live_flow_count = len(flow_items)
     if not flow_items:
         for row in current:
             net = num(row.get("main_net_inflow_cny"))
@@ -187,6 +196,24 @@ def main():
                 "main_net_inflow": net_sum,
                 "main_net_ratio": round(net_sum / turnover_sum * 100, 4),
                 "source": f"sector_daily_quotes rolling {window}-session aggregate (EastMoney-derived archive)"})
+    # Use THS to replace stale archive "today" values only when no live
+    # EastMoney flow rows were available; keep rolling 5/10-session history separate.
+    if ths_live_items and live_flow_count == 0:
+        flow_items = [x for x in flow_items if x.get("indicator") != "今日"]
+    existing_today_names = {str(x.get("industry_name") or x.get("industry") or "")
+                            for x in flow_items if x.get("indicator") == "今日"}
+    for row in ths_live_items:
+        name = str(row.get("industry_name") or "").strip()
+        if not name or name in existing_today_names:
+            continue
+        net = num(row.get("main_net_inflow_cny"))
+        ratio = num(row.get("main_net_ratio_pct"))
+        if net is None:
+            continue
+        flow_items.append({"trade_date":ths_snapshot.get("trade_date"),"indicator":"今日",
+            "industry":name,"industry_name":name,"change_pct":num(row.get("change_pct")),
+            "main_net_inflow":net,"main_net_ratio":ratio,
+            "source":"AKShare/THS live industry summary"})
     flow_items.sort(key=lambda x: ({"今日":0,"5日":1,"10日":2}.get(x.get("indicator"), 3),
                                    -(x.get("main_net_inflow") or 0)))
     etf_items = []
@@ -203,6 +230,12 @@ def main():
             "previous_date": previous.get("trade_date") if previous else None, "source": row.get("source")})
     breadth = market.get("market_breadth", {})
     sections = research.setdefault("sections", {})
+    sections["industry-live"] = {"items": ths_live_items,
+        "status": ths_snapshot.get("status", "missing"),
+        "trade_date": ths_snapshot.get("trade_date"),
+        "captured_at": ths_snapshot.get("captured_at"),
+        "provider": ths_snapshot.get("provider"),
+        "note": ths_snapshot.get("note", "同花顺备用行业榜单独展示，不与申万历史轮动序列混合。")}
     news_items = []
     news_status = {}
     try:

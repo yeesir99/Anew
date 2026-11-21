@@ -87,7 +87,12 @@ def main():
 
     checked = datetime.now(TZ).isoformat(timespec="seconds")
     statuses = []
-    # Industry snapshot: the source is an EastMoney-backed public ranking.
+    # Industry snapshot: prefer EastMoney, but retain a THS live ranking as
+    # an explicitly separate fallback so taxonomies are not mixed into the
+    # six-month Shenwan rotation history.
+    ths_snapshot_path = DATA / "industry_snapshot_ths.json"
+    if ths_snapshot_path.exists():
+        ths_snapshot_path.unlink()
     try:
         frame = ak.stock_board_industry_name_em()
         if frame is None or frame.empty:
@@ -108,12 +113,62 @@ def main():
                          "change_pct": change, "turnover_cny": amount,
                          "source": "AKShare/EastMoney public industry ranking",
                          "captured_at": checked})
-        count = append_rows(DATA / "industry_history.csv", rows, ("trade_date", "industry"))
+        append_rows(DATA / "industry_history.csv", rows, ("trade_date", "industry"))
         statuses.append({"source": "industry_snapshot", "status": "success", "records": len(rows),
+                         "provider": "EastMoney",
                          "detail": "行业涨跌幅及成交额快照；代理分不等同产业基本面评分"})
     except Exception as exc:
-        LOG.exception("行业快照采集失败")
+        LOG.warning("EastMoney industry snapshot failed; trying THS fallback: %s", str(exc)[:240])
         statuses.append({"source": "industry_snapshot", "status": "failed", "detail": str(exc)[:500]})
+        try:
+            ths_fn = getattr(ak, "stock_board_industry_summary_ths", None)
+            if ths_fn is None:
+                raise RuntimeError("stock_board_industry_summary_ths unavailable")
+            ths_frame = ths_fn()
+            if ths_frame is None or ths_frame.empty:
+                raise RuntimeError("THS industry summary returned empty")
+            name_col = next((x for x in ("板块", "行业", "板块名称") if x in ths_frame.columns), None)
+            change_col = next((x for x in ("涨跌幅", "涨跌幅(%)") if x in ths_frame.columns), None)
+            amount_col = next((x for x in ("总成交额", "成交额") if x in ths_frame.columns), None)
+            net_col = next((x for x in ("净流入", "主力净流入") if x in ths_frame.columns), None)
+            up_col = next((x for x in ("上涨家数", "上涨股票数") if x in ths_frame.columns), None)
+            down_col = next((x for x in ("下跌家数", "下跌股票数") if x in ths_frame.columns), None)
+            leader_col = next((x for x in ("领涨股", "领涨股票") if x in ths_frame.columns), None)
+            leader_change_col = next((x for x in ("领涨股-涨跌幅", "领涨股涨跌幅") if x in ths_frame.columns), None)
+            if not name_col or not change_col:
+                raise RuntimeError("THS industry fields changed: " + str(list(ths_frame.columns)))
+            ths_rows = []
+            for _, item in ths_frame.iterrows():
+                name = str(item.get(name_col, "")).strip()
+                change = number(item.get(change_col))
+                if not name or name == "nan" or change is None:
+                    continue
+                amount_yi = number(item.get(amount_col)) if amount_col else None
+                net_yi = number(item.get(net_col)) if net_col else None
+                amount_cny = amount_yi * 1e8 if amount_yi is not None else None
+                net_cny = net_yi * 1e8 if net_yi is not None else None
+                ratio = net_cny / amount_cny * 100 if net_cny is not None and amount_cny else None
+                leader_value = item.get(leader_col) if leader_col else None
+                leader_name = "" if leader_value is None or pd.isna(leader_value) else str(leader_value).strip()
+                ths_rows.append({"trade_date":trade_day.isoformat(),"industry_name":name,
+                    "change_pct":change,"turnover_cny":amount_cny,"main_net_inflow_cny":net_cny,
+                    "main_net_ratio_pct":ratio,"up_count":number(item.get(up_col)) if up_col else None,
+                    "down_count":number(item.get(down_col)) if down_col else None,
+                    "leader_name":leader_name,
+                    "leader_change_pct":number(item.get(leader_change_col)) if leader_change_col else None,
+                    "source":"AKShare/THS live industry summary","captured_at":checked})
+            if not ths_rows:
+                raise RuntimeError("THS industry summary has no valid rows")
+            ths_snapshot = {"trade_date":trade_day.isoformat(),"status":"success",
+                "provider":"THS","records":len(ths_rows),"captured_at":checked,"items":ths_rows,
+                "note":"同花顺实时行业榜备用源；独立展示，不混入申万历史轮动序列。"}
+            ths_snapshot_path.write_text(json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            statuses.append({"source":"industry_snapshot_ths","status":"success",
+                "records":len(ths_rows),"provider":"THS",
+                "detail":"EastMoney限流时使用同花顺行业实时榜；独立展示，金额单位已由亿元转换为元"})
+        except Exception as ths_exc:
+            LOG.exception("THS industry fallback failed")
+            statuses.append({"source":"industry_snapshot_ths","status":"failed","detail":str(ths_exc)[:500]})
 
     # Sector capital-flow estimates. They are not institution-specific account flows.
     flow_rows = []

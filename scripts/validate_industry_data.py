@@ -46,6 +46,20 @@ def main():
             score = item.get("proxy_score", item.get("rotation_strength_score"))
             if score is not None and not finite_number(score):
                 raise RuntimeError(f"{section_name}: non-finite proxy score")
+    live_section = sections.get("industry-live", {})
+    live_items = live_section.get("items", [])
+    if live_section.get("status") == "success":
+        if not isinstance(live_items, list) or not live_items:
+            raise RuntimeError("THS live industry status is success but items are empty")
+        if str(live_section.get("trade_date") or "") != str(market.get("trade_date") or ""):
+            raise RuntimeError("THS live industry date does not match the latest market trade date")
+        for item in live_items:
+            if not str(item.get("industry_name") or "").strip():
+                raise RuntimeError("THS live industry row missing industry name")
+            if not finite_number(item.get("change_pct")):
+                raise RuntimeError("THS live industry row has invalid change percentage")
+            if item.get("turnover_cny") is not None and not finite_number(item.get("turnover_cny")):
+                raise RuntimeError("THS live industry row has invalid turnover")
     industries = sections.get("industries", {}).get("items", [])
     if len(industries) > 20:
         raise RuntimeError("Industry ranking exceeds TOP 20")
