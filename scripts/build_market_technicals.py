@@ -115,7 +115,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     if not cache.empty:
         cache = cache[required].copy()
         cache["ts_code"] = cache["ts_code"].astype(str)
-        cache["trade_date"] = cache["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str[:8]
+        cache["trade_date"] = cache["trade_date"].astype(str).str.replace(r"\.0$", "", regex=True).str[:8]
         cache["close"] = pd.to_numeric(cache["close"], errors="coerce")
         cache["vol"] = pd.to_numeric(cache["vol"], errors="coerce")
         cache = cache.dropna(subset=["ts_code", "trade_date", "close", "vol"])
