@@ -210,7 +210,7 @@ def collect_market(day: date) -> pd.DataFrame:
                 if not code_col or not rate_col:
                     raise RuntimeError(f"换手率接口字段不完整：{list(turnover_frame.columns)}")
                 turnover = turnover_frame[[code_col, rate_col]].copy()
-                turnover["symbol"] = turnover[code_col].astype(str).str.extract(r"(\\d{6})", expand=False)
+                turnover["symbol"] = turnover[code_col].astype(str).str.extract(r"(\d{6})", expand=False)
                 turnover["turnover_rate"] = pd.to_numeric(
                     turnover[rate_col].astype(str).str.replace("%", "", regex=False).str.replace(",", "", regex=False),
                     errors="coerce")
