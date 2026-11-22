@@ -190,6 +190,47 @@ def collect_market(day: date) -> pd.DataFrame:
         raise RuntimeError("全市场行情源全部失败：" + "；".join(errors))
     LOG.info("全市场行情来源：%s", spot_source)
     latest = _normalise_spot(spot, day)
+
+    # Sina's full-market quote feed may omit turnover rate entirely. Enrich the
+    # snapshot from AKShare's explicit EastMoney spot endpoint instead of
+    # silently publishing null turnover_rate values for every stock.
+    turnover_coverage = (
+        float(latest["turnover_rate"].notna().mean())
+        if "turnover_rate" in latest and len(latest) else 0.0
+    )
+    if turnover_coverage < 0.80 and spot_source != "stock_zh_a_spot_em":
+        turnover_fn = getattr(ak, "stock_zh_a_spot_em", None)
+        if turnover_fn is not None:
+            try:
+                turnover_frame = turnover_fn()
+                if turnover_frame is None or turnover_frame.empty:
+                    raise RuntimeError("东方财富换手率接口返回空数据")
+                code_col = next((c for c in ("代码", "证券代码", "symbol") if c in turnover_frame.columns), None)
+                rate_col = next((c for c in ("换手率", "turnover_rate", "turnover") if c in turnover_frame.columns), None)
+                if not code_col or not rate_col:
+                    raise RuntimeError(f"换手率接口字段不完整：{list(turnover_frame.columns)}")
+                turnover = turnover_frame[[code_col, rate_col]].copy()
+                turnover["symbol"] = turnover[code_col].astype(str).str.extract(r"(\d{6})", expand=False)
+                turnover["turnover_rate"] = pd.to_numeric(
+                    turnover[rate_col].astype(str).str.replace("%", "", regex=False).str.replace(",", "", regex=False),
+                    errors="coerce")
+                turnover = turnover.dropna(subset=["symbol", "turnover_rate"])
+                turnover = turnover.drop_duplicates("symbol", keep="last")
+                if "turnover_rate" not in latest:
+                    latest["turnover_rate"] = float("nan")
+                rates = turnover.set_index("symbol")["turnover_rate"]
+                latest["turnover_rate"] = latest["turnover_rate"].fillna(
+                    latest["symbol"].map(rates))
+                enriched = int(latest["turnover_rate"].notna().sum())
+                LOG.info("换手率补充来源：stock_zh_a_spot_em；覆盖 %s/%s 只（%.1f%%）",
+                         enriched, len(latest), enriched / max(1, len(latest)) * 100)
+            except Exception as exc:
+                LOG.warning("东方财富换手率补充失败，保留真实缺失值：%s", str(exc)[:220])
+        else:
+            LOG.warning("当前AKShare版本不含 stock_zh_a_spot_em，无法补充换手率")
+    elif turnover_coverage >= 0.80:
+        LOG.info("主行情源换手率覆盖 %.1f%%", turnover_coverage * 100)
+
     # The Eastmoney spot endpoint may show the latest session, not the requested day.
     # Refuse to silently label a stale trading-day snapshot as today's close.
     if latest.empty:
