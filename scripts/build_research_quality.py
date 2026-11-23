@@ -7,6 +7,11 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from theme_mapping_rules import has_mapping_provenance
+except ModuleNotFoundError:
+    from scripts.theme_mapping_rules import has_mapping_provenance
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SITE_DATA = ROOT / "site" / "data"
@@ -108,11 +113,7 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         item = themes.get(name) or {}
         codes = item.get("constituent_codes") or []
         mapping = item.get("mapping") or {}
-        has_provenance = bool(
-            (mapping.get("mapping_source") or mapping.get("source"))
-            and (mapping.get("matched_symbol") or mapping.get("matched_name"))
-            and (mapping.get("mapping_date") or mapping.get("checked_at") or mapping.get("fetched_at"))
-        )
+        has_provenance = has_mapping_provenance(mapping)
         if codes and has_provenance:
             mapped.append(name)
         else:
