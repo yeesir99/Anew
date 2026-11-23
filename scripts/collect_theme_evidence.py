@@ -493,7 +493,9 @@ def main():
                     return [], {"source":"constituents:"+name,"status":"pending_components",
                         "provider":"THS","taxonomy":"separate exact concept components",
                         "mapping_source":"THS exact concept taxonomy; both components required",
-                        "matched_symbol":"烟草 + 工业大麻","components":components,
+                        "matched_symbol":"烟草 + 工业大麻",
+                        "components":{key:{k:v for k,v in value.items() if k != "members"}
+                                     for key,value in components.items()},
                         "detail":"烟草与工业大麻必须分别精确命中；任一组件缺失则不合并"}
             members = merge_exact_components(components)
             if not members:
@@ -592,7 +594,7 @@ def main():
         if cached_members and cached_at and cache_provenance_ok and cached.get("sector_code") == code:
             try:
                 age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(cached_at.replace("Z","+00:00"))).days
-                if age_days <= 30:
+                if 0 <= age_days <= 30:
                     return cached_members, {"source":"constituents:"+name,"status":"cached",
                         "records":len(cached_members),"provider":cached.get("source"),
                         "mapping_source":cached.get("mapping_source"),"taxonomy":cached.get("taxonomy"),
