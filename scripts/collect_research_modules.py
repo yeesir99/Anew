@@ -220,7 +220,7 @@ def main():
             name_col = next((x for x in ("板块", "行业", "板块名称") if x in ths_frame.columns), None)
             change_col = next((x for x in ("涨跌幅", "涨跌幅(%)") if x in ths_frame.columns), None)
             amount_col = next((x for x in ("总成交额", "成交额") if x in ths_frame.columns), None)
-            net_col = next((x for x in ("净流入", "主力净流入") if x in ths_frame.columns), None)
+            net_col = next((x for x in ("净额", "净流入", "主力净流入") if x in ths_frame.columns), None)
             up_col = next((x for x in ("上涨家数", "上涨股票数") if x in ths_frame.columns), None)
             down_col = next((x for x in ("下跌家数", "下跌股票数") if x in ths_frame.columns), None)
             leader_col = next((x for x in ("领涨股", "领涨股票") if x in ths_frame.columns), None)
@@ -241,20 +241,32 @@ def main():
                 leader_value = item.get(leader_col) if leader_col else None
                 leader_name = "" if leader_value is None or pd.isna(leader_value) else str(leader_value).strip()
                 ths_rows.append({"trade_date":trade_day.isoformat(),"industry_name":name,
-                    "change_pct":change,"turnover_cny":amount_cny,"main_net_inflow_cny":net_cny,
-                    "main_net_ratio_pct":ratio,"up_count":number(item.get(up_col)) if up_col else None,
+                    "change_pct":change,"turnover_cny":amount_cny,
+                    "net_inflow_cny":net_cny,"net_inflow_ratio_pct":ratio,
+                    "main_net_inflow_cny":None,"main_net_ratio_pct":None,
+                    "metric_definition":"THS industry-summary net amount; source unit 亿元 converted to CNY; not EastMoney main-net flow",
+                    "up_count":number(item.get(up_col)) if up_col else None,
                     "down_count":number(item.get(down_col)) if down_col else None,
                     "leader_name":leader_name,
                     "leader_change_pct":number(item.get(leader_change_col)) if leader_change_col else None,
                     "source":"AKShare/THS live industry summary","captured_at":checked})
             if not ths_rows:
                 raise RuntimeError("THS industry summary has no valid rows")
+            ths_universe_count = ths_industry_universe_count(ak)
+            ths_coverage = (len({x["industry_name"] for x in ths_rows}) / ths_universe_count * 100.0
+                            if ths_universe_count else None)
             ths_snapshot = {"trade_date":trade_day.isoformat(),"status":"success",
-                "provider":"THS","records":len(ths_rows),"captured_at":checked,"items":ths_rows,
+                "provider":"THS","records":len(ths_rows),
+                "coverage_pct":round(min(100.0, ths_coverage), 2) if ths_coverage is not None else None,
+                "expected_industries":ths_universe_count,
+                "metric_definition":"THS industry-summary net amount; not EastMoney main-net flow",
+                "captured_at":checked,"items":ths_rows,
                 "note":"同花顺实时行业榜备用源；独立展示，不混入申万历史轮动序列。"}
             ths_snapshot_path.write_text(json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             statuses.append({"source":"industry_snapshot_ths","status":"success",
                 "records":len(ths_rows),"provider":"THS",
+                "coverage_pct":round(min(100.0, ths_coverage), 2) if ths_coverage is not None else None,
+                "expected_industries":ths_universe_count,
                 "detail":"EastMoney限流时使用同花顺行业实时榜；独立展示，金额单位已由亿元转换为元"})
         except Exception as ths_exc:
             LOG.exception("THS industry fallback failed")
