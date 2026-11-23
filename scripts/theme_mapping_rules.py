@@ -7,10 +7,18 @@ import math
 
 def has_mapping_provenance(mapping):
     mapping = mapping or {}
+    status_ok = mapping.get("status") in {"success", "cached"}
+    date_value = mapping.get("mapping_date") or mapping.get("checked_at") or mapping.get("fetched_at")
+    try:
+        datetime.fromisoformat(str(date_value).replace("Z", "+00:00"))
+        date_ok = True
+    except (TypeError, ValueError):
+        date_ok = False
     return bool(
-        (mapping.get("mapping_source") or mapping.get("source"))
+        status_ok
+        and (mapping.get("mapping_source") or mapping.get("source"))
         and (mapping.get("matched_symbol") or mapping.get("matched_name"))
-        and (mapping.get("mapping_date") or mapping.get("checked_at") or mapping.get("fetched_at"))
+        and date_ok
     )
 
 
