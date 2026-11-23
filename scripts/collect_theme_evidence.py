@@ -258,8 +258,13 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
 def flow_ratio_for_theme(flow_rows, theme, period):
     name = _score_key(theme.get("industry_name") or theme.get("industry"))
     code = _score_key(theme.get("sector_code"))
+    target_day = str(theme.get("trade_date") or "")
+    if not target_day:
+        return None
     matches = []
     for row in flow_rows:
+        if str(row.get("trade_date") or "") != target_day:
+            continue
         if str(row.get("indicator") or "").strip() != period:
             continue
         row_keys = {_score_key(row.get("industry_name")), _score_key(row.get("industry")),
