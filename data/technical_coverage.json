@@ -1,19 +1,19 @@
 {
-  "trade_date": "20261120",
+  "trade_date": "20261123",
   "stocks": 5575,
   "status": "validated",
   "history_sessions": 41,
-  "snapshot_history_sessions": 3,
+  "snapshot_history_sessions": 4,
   "coverage": {
-    "ma5": 1385,
-    "ma10": 1385,
-    "ma20": 1384,
-    "ma60": 1382,
-    "rsi14": 1384,
-    "macd_dif": 1384,
-    "macd_dea": 1382,
-    "macd_hist": 1382,
-    "volatility20": 1384
+    "ma5": 347,
+    "ma10": 347,
+    "ma20": 347,
+    "ma60": 346,
+    "rsi14": 347,
+    "macd_dif": 347,
+    "macd_dea": 346,
+    "macd_hist": 346,
+    "volatility20": 347
   },
   "bulk_archive": {
     "status": "partial",
@@ -28,19 +28,19 @@
     "adjustment": "backward-adjusted from daily change_percent, anchored to latest raw close"
   },
   "per_symbol_history": {
-    "requested": 248,
-    "successful": 248,
+    "requested": 250,
+    "successful": 250,
     "failed": 0,
-    "cache_hits": 2,
+    "cache_hits": 0,
     "universe": 250,
     "universe_total": 5575,
-    "cursor_start": 1050,
-    "cursor_next": 1300,
+    "cursor_start": 1300,
+    "cursor_next": 1550,
     "workers": 3,
     "window_days": 170,
     "history_sessions_median": 116.0,
     "history_sessions_min": 14,
-    "history_sessions_max": 116
+    "history_sessions_max": 117
   },
   "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated"
 }

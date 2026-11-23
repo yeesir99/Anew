@@ -1,6 +1,6 @@
 {
-  "trade_date": "2026-11-20",
-  "checked_at": "2026-11-23T12:00:43+08:00",
+  "trade_date": "2026-11-23",
+  "checked_at": "2026-11-24T06:58:51+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -20,23 +20,23 @@
     {
       "source": "sector_flow_5日",
       "status": "failed",
-      "detail": "HTTPSConnectionPool(host='push2delay.eastmoney.com', port=443): Read timed out. (read timeout=10)"
+      "detail": "Expecting value: line 1 column 1 (char 0)"
     },
     {
       "source": "sector_flow_10日",
       "status": "failed",
-      "detail": "HTTPSConnectionPool(host='push2.eastmoney.com', port=443): Read timed out. (read timeout=10)"
+      "detail": "Expecting value: line 1 column 1 (char 0)"
     },
     {
       "source": "etf_shares_sse",
       "status": "success",
-      "records": 927,
+      "records": 936,
       "detail": "上交所官方指定交易日份额快照"
     },
     {
       "source": "etf_shares_szse",
       "status": "success",
-      "records": 83929,
+      "records": 82722,
       "detail": "SZSE official ETF daily share history; 60-day chunks; failed_ranges=[]"
     },
     {
