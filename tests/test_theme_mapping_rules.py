@@ -41,11 +41,12 @@ class SpecialThemeMappingTests(unittest.TestCase):
 
     def test_mapping_provenance_requires_source_symbol_and_date(self):
         self.assertTrue(has_mapping_provenance({
+            "status": "success",
             "mapping_source": "Sina taxonomy",
             "matched_symbol": "某主题",
             "mapping_date": "2026-11-20",
         }))
-        self.assertFalse(has_mapping_provenance({"mapping_source": "Sina taxonomy"}))
+        self.assertFalse(has_mapping_provenance({"status": "success", "mapping_source": "Sina taxonomy"}))
 
 
 if __name__ == "__main__":
