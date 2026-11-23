@@ -64,8 +64,8 @@ jobs:
         continue-on-error: true
         timeout-minutes: 15
         env:
-          MAX_HISTORY_STOCKS: "100"
-          HISTORY_WORKERS: "1"
+          MAX_HISTORY_STOCKS: "250"
+          HISTORY_WORKERS: "3"
         run: |
           if ! python scripts/build_market_technicals.py; then
             python -c 'import json; from datetime import datetime, timezone; from pathlib import Path; p=Path("data/technical_coverage.json"); r=json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}; r["status"]="degraded"; r["last_attempt_at"]=datetime.now(timezone.utc).isoformat(timespec="seconds"); r["last_attempt_error"]="technical builder exited abnormally; previous values retained and not relabelled as fresh"; p.write_text(json.dumps(r, ensure_ascii=False, indent=2)+"\\n", encoding="utf-8"); print(json.dumps({"technical_status":"degraded","last_attempt_error":r["last_attempt_error"]}))'

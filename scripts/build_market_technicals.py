@@ -34,6 +34,18 @@ METRICS = ["ma5", "ma10", "ma20", "ma60", "rsi14",
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
+def _ts_code_for_symbol(value: str) -> str:
+    """Map A-share symbol to an exchange-qualified code, including BJ 920xxx."""
+    code = str(value).strip().zfill(6)
+    if code.startswith(("4", "8", "920")):
+        suffix = "BJ"
+    elif code.startswith(("5", "6", "9")):
+        suffix = "SH"
+    else:
+        suffix = "SZ"
+    return f"{code}.{suffix}"
+
+
 def _day_key(value) -> str:
     raw = str(value or "").strip()
     digits = "".join(ch for ch in raw if ch.isdigit())
@@ -148,8 +160,7 @@ def _archive_history(day: str) -> tuple[pd.DataFrame, dict]:
     raw["last_close"] = raw.groupby("symbol")["close_raw"].transform("last")
     raw["close"] = raw["last_close"] * raw["cum_factor"] / raw["last_factor"]
     raw["vol"] = raw["volume"]
-    raw["ts_code"] = raw["symbol"] + raw["symbol"].str[0].map(
-        lambda x: ".SH" if x in ("5","6","9") else ".BJ" if x in ("4","8") else ".SZ")
+    raw["ts_code"] = raw["symbol"].map(_ts_code_for_symbol)
     latest_archive_day = raw["trade_date"].max() if not raw.empty else None
     sessions = int(raw["trade_date"].nunique()) if not raw.empty else 0
     stats = {"status":"success" if latest_archive_day == day and sessions >= 60 and not failed_months else "partial",
@@ -211,8 +222,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     requests_needed = []
     for _, row in universe.iterrows():
         code = str(row["symbol"]).zfill(6)
-        ts_code = f"{code}.SH" if code.startswith(("5", "6", "9")) else (
-            f"{code}.BJ" if code.startswith(("4", "8")) else f"{code}.SZ")
+        ts_code = _ts_code_for_symbol(code)
         old = cache[cache["ts_code"] == ts_code] if not cache.empty else pd.DataFrame()
         if not old.empty:
             last = pd.to_datetime(old["trade_date"], format="%Y%m%d", errors="coerce").max()
@@ -228,7 +238,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
         else:
             start = full_start
         requests_needed.append((code, start))
-    workers = max(1, min(int(os.getenv("HISTORY_WORKERS", "1")), 2))
+    workers = max(1, min(int(os.getenv("HISTORY_WORKERS", "1")), 3))
     ak = _ak()
     histories = []
     failures = 0
