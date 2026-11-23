@@ -51,7 +51,7 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         rows = [row for row in flow_rows
                 if str(row.get("trade_date") or "") == trade_day
                 and str(row.get("indicator") or "") == period
-                and finite(row.get("main_net_inflow_cny"))
+                and (finite(row.get("main_net_inflow_cny")) or finite(row.get("net_inflow_cny")))
                 and str(row.get("source") or "").strip()]
         if period == "今日" and str((ths_snapshot or {}).get("trade_date") or "") == trade_day:
             ths_rows = [row for row in (ths_snapshot or {}).get("items", [])
@@ -84,6 +84,9 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
             "fallback_provider": "THS" if ths_fallback else None,
             "minimum_records": MIN_FLOW_ROWS,
             "providers": providers,
+            "metric_definitions": sorted({str(row.get("metric_definition") or
+                ("EastMoney main-net estimate" if row.get("main_net_inflow_cny") is not None else "provider net amount"))
+                for row in rows}),
             "note": "记录存在且本次采集成功仅代表可用；只有来源明确提供覆盖率且达到95%才计为完整。THS当日快照独立展示，不与5日/10日混口径。",
         }
 
@@ -99,7 +102,11 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         item = themes.get(name) or {}
         codes = item.get("constituent_codes") or []
         mapping = item.get("mapping") or {}
-        has_provenance = bool(mapping.get("mapping_source") or mapping.get("source"))
+        has_provenance = bool(
+            (mapping.get("mapping_source") or mapping.get("source"))
+            and (mapping.get("matched_symbol") or mapping.get("matched_name"))
+            and (mapping.get("mapping_date") or mapping.get("checked_at") or mapping.get("fetched_at"))
+        )
         if codes and has_provenance:
             mapped.append(name)
         else:
