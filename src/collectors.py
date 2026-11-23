@@ -92,7 +92,7 @@ def _sina_spot_turnover_rates(expected_symbols: set[str]) -> pd.Series:
     raw = pd.DataFrame(records)
     if raw.empty or not {"code", "turnoverratio"}.issubset(raw.columns):
         raise RuntimeError(f"新浪原始行情缺少换手率字段：{list(raw.columns)}")
-    raw["symbol"] = raw["code"].astype(str).str.extract(r"(\\d{6})", expand=False)
+    raw["symbol"] = raw["code"].astype(str).str.extract(r"(\d{6})", expand=False)
     raw["turnover_rate"] = pd.to_numeric(raw["turnoverratio"], errors="coerce")
     raw = raw.dropna(subset=["symbol", "turnover_rate"])
     raw = raw[raw["symbol"].isin(expected_symbols)].drop_duplicates("symbol", keep="last")
@@ -278,7 +278,7 @@ def collect_market(day: date) -> pd.DataFrame:
                 if not code_col or not rate_col:
                     raise RuntimeError(f"东方财富换手率字段不完整：{list(turnover_frame.columns)}")
                 rates_frame = turnover_frame[[code_col, rate_col]].copy()
-                rates_frame["symbol"] = rates_frame[code_col].astype(str).str.extract(r"(\\d{6})", expand=False)
+                rates_frame["symbol"] = rates_frame[code_col].astype(str).str.extract(r"(\d{6})", expand=False)
                 rates_frame["turnover_rate"] = pd.to_numeric(
                     rates_frame[rate_col].astype(str).str.replace("%", "", regex=False).str.replace(",", "", regex=False),
                     errors="coerce")
