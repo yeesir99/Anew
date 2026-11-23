@@ -55,7 +55,8 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
                 and str(row.get("source") or "").strip()]
         if period == "今日" and str((ths_snapshot or {}).get("trade_date") or "") == trade_day:
             ths_rows = [row for row in (ths_snapshot or {}).get("items", [])
-                        if finite(row.get("main_net_inflow_cny")) and row.get("industry_name")]
+                        if (finite(row.get("net_inflow_cny")) or finite(row.get("main_net_inflow_cny")))
+                        and row.get("industry_name")]
             rows_by_name = {str(row.get("industry") or row.get("industry_name")): row for row in rows}
             for row in ths_rows:
                 rows_by_name.setdefault(str(row.get("industry_name")), row)
@@ -65,6 +66,7 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         ths_fallback = period == "今日" and str((ths_snapshot or {}).get("trade_date") or "") == trade_day
         if ths_fallback and (ths_snapshot or {}).get("status") == "success":
             upstream = {"status": "success", "records": (ths_snapshot or {}).get("records"),
+                        "coverage_pct": (ths_snapshot or {}).get("coverage_pct"),
                         "provider": "THS", "detail": "separate live industry snapshot"}
         upstream_status = upstream.get("status", "not_recorded")
         coverage_pct = upstream.get("coverage_pct")
