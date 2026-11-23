@@ -100,6 +100,29 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(check["status"], "partial")
         self.assertIsNone(check["coverage_pct"])
 
+
+    def test_current_provider_excludes_retained_rows_from_previous_provider(self):
+        flows = [{
+            "trade_date": "2026-11-20", "indicator": "5日",
+            "main_net_inflow_cny": 10, "provider": "EastMoney",
+            "source": "AKShare/EastMoney public estimate",
+        } for _ in range(20)]
+        flows.extend({
+            "trade_date": "2026-11-20", "indicator": "5日",
+            "net_inflow_cny": 10, "provider": "THS",
+            "source": "AKShare/THS industry fund-flow ranking",
+        } for _ in range(90))
+        registry = {"trade_date": "2026-11-20", "sources": [{
+            "source": "sector_flow_5日", "status": "success",
+            "provider": "THS", "records": 90, "coverage_pct": 100,
+        }]}
+        report = evaluate_quality(self.market, self.research, flows, {}, {},
+                                  self.technical, {}, registry)
+        check = report["checks"]["capital_flow_5日"]
+        self.assertEqual(check["status"], "validated")
+        self.assertEqual(check["records"], 90)
+        self.assertEqual(check["providers"], ["AKShare/THS industry fund-flow ranking"])
+
     def test_mapping_requires_source_symbol_and_date(self):
         evidence = {"themes": {
             "主题甲": {"constituent_codes": ["600000"], "constituent_count": 1,
