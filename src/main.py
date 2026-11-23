@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from .collectors import (collect_announcements, collect_market, collect_news,
-                         is_open_day, write_json)
+                         latest_completed_trade_date, write_json)
 from .reporting import render_report
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,10 +26,7 @@ def setup() -> None:
 
 
 def close_run() -> None:
-    day = date.today()
-    if not is_open_day(day):
-        LOG.info("%s 非上交所交易日，跳过收盘采集。", day)
-        return
+    day = latest_completed_trade_date()
     LOG.info("开始采集 %s A股收盘数据（免费数据源）", day)
     market = collect_market(day)
     if market.empty:
