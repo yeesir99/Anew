@@ -26,7 +26,7 @@ class ResearchQualityTests(unittest.TestCase):
         } for i in range(60)]}
         evidence = {"themes": {"主题甲": {
             "constituent_codes": ["600000"],
-            "mapping": {"mapping_source": "Sina taxonomy"},
+            "mapping": {"mapping_source": "Sina taxonomy", "matched_symbol": "主题甲", "mapping_date": "2026-11-20"},
         }}}
         report = evaluate_quality(self.market, self.research, old_rows, ths, evidence, self.technical)
         self.assertEqual(report["quality_level"], "L2_RESEARCH_DEGRADED")
@@ -45,7 +45,7 @@ class ResearchQualityTests(unittest.TestCase):
             } for _ in range(50))
         evidence = {"themes": {
             name: {"constituent_codes": ["600000"],
-                   "mapping": {"mapping_source": "verified taxonomy"}}
+                   "mapping": {"mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
             for name in ("主题甲", "主题乙")
         }}
         valuation = {"status": "validated", "records": 5575}
