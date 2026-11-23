@@ -23,6 +23,7 @@ from pathlib import Path
 import akshare as ak
 import pandas as pd
 from import_sector_archive import is_concept_code
+from theme_mapping_rules import merge_exact_components, star_next_new_eligible
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -482,17 +483,21 @@ def main():
                 component_members[component] = members
                 components[component] = {"status": meta.get("status") if meta else "unresolved",
                                           "matched_symbol": meta.get("matched_symbol") if meta else None,
-                                          "records": len(members)}
+                                          "records": len(members), "members": members}
                 if not members:
                     return [], {"source":"constituents:"+name,"status":"pending_components",
                         "provider":"THS","taxonomy":"separate exact concept components",
                         "mapping_source":"THS exact concept taxonomy; both components required",
                         "matched_symbol":"烟草 + 工业大麻","components":components,
                         "detail":"烟草与工业大麻必须分别精确命中；任一组件缺失则不合并"}
-            merged = {x["code"]: x for component in ("烟草", "工业大麻")
-                      for x in component_members[component]}
+            members = merge_exact_components(components)
+            if not members:
+                return [], {"source":"constituents:"+name,"status":"pending_components",
+                    "mapping_source":"THS exact concept components; merge validation failed",
+                    "matched_symbol":"烟草 + 工业大麻","components":{
+                        key:{k:v for k,v in value.items() if k != "members"}
+                        for key,value in components.items()}}
             fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
-            members = list(merged.values())
             cache[name] = {"members":members,"fetched_at":fetched,"source":"THS",
                 "matched_symbol":"烟草 + 工业大麻","taxonomy":"separate exact THS concepts",
                 "mapping_source":"THS exact concept taxonomy; two components merged",
@@ -550,7 +555,7 @@ def main():
                         raise RuntimeError("listing date absent")
                     listed = datetime.strptime(str(listing_values.iloc[0])[:10], "%Y-%m-%d").date()
                     age = (as_of - listed).days
-                    if 0 <= age <= max_days:
+                    if star_next_new_eligible(stock_code, listed, as_of, max_days):
                         verified.append({**candidate,"listing_date":listed.isoformat(),
                                          "listing_age_days":age})
                 except Exception as exc:
