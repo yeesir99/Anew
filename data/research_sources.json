@@ -1,6 +1,6 @@
 {
   "trade_date": "2026-11-20",
-  "checked_at": "2026-11-23T09:01:35+08:00",
+  "checked_at": "2026-11-23T12:00:43+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -20,12 +20,12 @@
     {
       "source": "sector_flow_5日",
       "status": "failed",
-      "detail": "Expecting value: line 1 column 1 (char 0)"
+      "detail": "HTTPSConnectionPool(host='push2delay.eastmoney.com', port=443): Read timed out. (read timeout=10)"
     },
     {
       "source": "sector_flow_10日",
       "status": "failed",
-      "detail": "Expecting value: line 1 column 1 (char 0)"
+      "detail": "HTTPSConnectionPool(host='push2.eastmoney.com', port=443): Read timed out. (read timeout=10)"
     },
     {
       "source": "etf_shares_sse",
