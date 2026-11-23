@@ -165,6 +165,13 @@ def main():
         if (source_doc_day != str(day) or status.get("status") != "success"
                 or str(row.get("trade_date") or "") != str(day)):
             continue
+        expected_provider = status.get("provider")
+        row_provider = row.get("provider")
+        if not row_provider:
+            row_source = str(row.get("source") or "")
+            row_provider = "THS" if "THS" in row_source else "EastMoney" if "EastMoney" in row_source else None
+        if expected_provider and row_provider != expected_provider:
+            continue
         flow_items.append({"trade_date": row.get("trade_date"), "indicator": period,
             "industry": row.get("industry"),
             "industry_name": industry_names.get(str(row.get("industry") or "")) or SECTOR_NAMES.get(str(row.get("industry") or "")),
