@@ -567,7 +567,7 @@ def main():
         theme_member_meta[name] = status
         all_codes.update(x["code"] for x in members)
     if cache_dirty:
-        cache_path.write_text(json.dumps(cache,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
+        cache_path.write_text(json.dumps(cache,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 
     # Latest published quarterly financial report and forecast, each as a full-market
     # table. Keep the exact reporting period and source columns.
