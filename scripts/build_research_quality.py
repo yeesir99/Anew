@@ -53,21 +53,25 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
                 and str(row.get("indicator") or "") == period
                 and (finite(row.get("main_net_inflow_cny")) or finite(row.get("net_inflow_cny")))
                 and str(row.get("source") or "").strip()]
-        if period == "今日" and str((ths_snapshot or {}).get("trade_date") or "") == trade_day:
+        upstream = source_by_name.get("sector_flow_" + period, {})
+        ths_snapshot_current = (period == "今日"
+            and str((ths_snapshot or {}).get("trade_date") or "") == trade_day
+            and (ths_snapshot or {}).get("status") == "success")
+        ths_rows = []
+        if ths_snapshot_current:
             ths_rows = [row for row in (ths_snapshot or {}).get("items", [])
                         if (finite(row.get("net_inflow_cny")) or finite(row.get("main_net_inflow_cny")))
                         and row.get("industry_name")]
-            rows_by_name = {str(row.get("industry") or row.get("industry_name")): row for row in rows}
-            for row in ths_rows:
-                rows_by_name.setdefault(str(row.get("industry_name")), row)
-            rows = list(rows_by_name.values())
-        providers = sorted({str(row.get("source") or "") for row in rows})
-        upstream = source_by_name.get("sector_flow_" + period, {})
-        ths_fallback = period == "今日" and str((ths_snapshot or {}).get("trade_date") or "") == trade_day
-        if ths_fallback and (ths_snapshot or {}).get("status") == "success":
+        # Never merge EastMoney main-net estimates with THS provider-defined net
+        # amounts. Use the independent THS snapshot only when the current
+        # EastMoney period collection failed or was not recorded.
+        ths_fallback = bool(ths_snapshot_current and upstream.get("status") != "success")
+        if ths_fallback:
+            rows = ths_rows
             upstream = {"status": "success", "records": (ths_snapshot or {}).get("records"),
                         "coverage_pct": (ths_snapshot or {}).get("coverage_pct"),
                         "provider": "THS", "detail": "separate live industry snapshot"}
+        providers = sorted({str(row.get("source") or "") for row in rows})
         upstream_status = upstream.get("status", "not_recorded")
         coverage_pct = upstream.get("coverage_pct")
         period_available = len(rows) >= MIN_FLOW_ROWS and upstream_status == "success"
