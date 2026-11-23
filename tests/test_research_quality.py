@@ -57,6 +57,60 @@ class ResearchQualityTests(unittest.TestCase):
                                   self.technical, valuation, registry)
         self.assertEqual(report["quality_level"], "L3_RESEARCH_COMPLETE")
 
+
+    def test_ths_net_amount_fallback_is_available_but_not_main_net(self):
+        ths = {
+            "trade_date": "2026-11-20", "status": "success", "records": 90,
+            "coverage_pct": 100,
+            "items": [{
+                "industry_name": f"行业{i}", "net_inflow_cny": 100,
+                "main_net_inflow_cny": None, "metric_definition": "THS net amount",
+            } for i in range(90)],
+        }
+        registry = {"sources": [
+            {"source": "sector_flow_今日", "status": "failed", "detail": "EastMoney timeout"}
+        ]}
+        report = evaluate_quality(self.market, self.research, [], ths, {}, self.technical,
+                                  {}, registry)
+        today = report["checks"]["capital_flow_今日"]
+        self.assertEqual(today["status"], "validated")
+        self.assertTrue(today["available"])
+        self.assertEqual(today["fallback_provider"], "THS")
+        self.assertEqual(today["records"], 90)
+
+    def test_success_without_coverage_is_not_complete(self):
+        flows = [{
+            "trade_date": "2026-11-20", "indicator": "5日",
+            "net_inflow_cny": "100", "source": "THS",
+        } for _ in range(90)]
+        registry = {"sources": [
+            {"source": "sector_flow_5日", "status": "success", "records": 90}
+        ]}
+        report = evaluate_quality(self.market, self.research, flows, {}, {}, self.technical,
+                                  {}, registry)
+        check = report["checks"]["capital_flow_5日"]
+        self.assertTrue(check["available"])
+        self.assertEqual(check["status"], "partial")
+        self.assertIsNone(check["coverage_pct"])
+
+    def test_mapping_requires_source_symbol_and_date(self):
+        evidence = {"themes": {
+            "主题甲": {"constituent_codes": ["600000"],
+                       "mapping": {"mapping_source": "taxonomy only"}},
+            "主题乙": {"constituent_codes": ["000001"],
+                       "mapping": {"mapping_source": "taxonomy",
+                                   "matched_symbol": "主题乙",
+                                   "mapping_date": "2026-11-20"}},
+        }}
+        report = evaluate_quality(self.market, self.research, [], {}, evidence, self.technical)
+        self.assertEqual(report["checks"]["theme_mapping"]["mapped"], 1)
+        self.assertEqual(report["checks"]["theme_mapping"]["unresolved"], ["主题甲"])
+
+    def test_stale_market_snapshot_is_not_market_valid(self):
+        market = {**self.market, "data_status": "stale"}
+        report = evaluate_quality(market, self.research, [], {}, {}, self.technical)
+        self.assertEqual(report["quality_level"], "L0_INVALID")
+
     def test_invalid_market_is_l0(self):
         report = evaluate_quality({}, self.research, [], {}, {}, {}, {})
         self.assertEqual(report["quality_level"], "L0_INVALID")
