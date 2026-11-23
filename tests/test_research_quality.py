@@ -28,7 +28,11 @@ class ResearchQualityTests(unittest.TestCase):
             "constituent_codes": ["600000"],
             "mapping": {"mapping_source": "Sina taxonomy", "matched_symbol": "主题甲", "mapping_date": "2026-11-20"},
         }}}
-        report = evaluate_quality(self.market, self.research, old_rows, ths, evidence, self.technical)
+        registry = {"trade_date": "2026-11-20", "sources": [
+            {"source": "sector_flow_今日", "status": "failed", "detail": "EastMoney unavailable"}
+        ]}
+        report = evaluate_quality(self.market, self.research, old_rows, ths, evidence,
+                                  self.technical, {}, registry)
         self.assertEqual(report["quality_level"], "L2_RESEARCH_DEGRADED")
         self.assertEqual(report["checks"]["capital_flow_今日"]["status"], "partial")
         self.assertTrue(report["checks"]["capital_flow_今日"]["available"])
@@ -49,7 +53,7 @@ class ResearchQualityTests(unittest.TestCase):
             for name in ("主题甲", "主题乙")
         }}
         valuation = {"status": "validated", "records": 5575}
-        registry = {"sources": [
+        registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "sector_flow_" + period, "status": "success", "records": 50, "coverage_pct": 100}
             for period in ("今日", "5日", "10日")
         ]}
@@ -67,7 +71,7 @@ class ResearchQualityTests(unittest.TestCase):
                 "main_net_inflow_cny": None, "metric_definition": "THS net amount",
             } for i in range(90)],
         }
-        registry = {"sources": [
+        registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "sector_flow_今日", "status": "failed", "detail": "EastMoney timeout"}
         ]}
         report = evaluate_quality(self.market, self.research, [], ths, {}, self.technical,
@@ -83,7 +87,7 @@ class ResearchQualityTests(unittest.TestCase):
             "trade_date": "2026-11-20", "indicator": "5日",
             "net_inflow_cny": "100", "source": "THS",
         } for _ in range(90)]
-        registry = {"sources": [
+        registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "sector_flow_5日", "status": "success", "records": 90}
         ]}
         report = evaluate_quality(self.market, self.research, flows, {}, {}, self.technical,
