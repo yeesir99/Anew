@@ -12,6 +12,7 @@ on:
       - 'tests/test_research_quality.py'
       - 'tests/test_theme_mapping_rules.py'
       - '.github/workflows/research-quality-tests.yml'
+      - '.github/workflows/cloud-public.yml'
   push:
     branches: [fix/research-data-quality-gates]
     paths:
