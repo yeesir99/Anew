@@ -476,8 +476,10 @@ def main():
         # name-alias cache. Each requires its own explicit evidence contract.
         if name == "烟草与大麻":
             components = {}
+            component_members = {}
             for component in ("烟草", "工业大麻"):
                 members, meta = fetch_ths_concept_members({"sector_code": None}, component)
+                component_members[component] = members
                 components[component] = {"status": meta.get("status") if meta else "unresolved",
                                           "matched_symbol": meta.get("matched_symbol") if meta else None,
                                           "records": len(members)}
@@ -488,7 +490,7 @@ def main():
                         "matched_symbol":"烟草 + 工业大麻","components":components,
                         "detail":"烟草与工业大麻必须分别精确命中；任一组件缺失则不合并"}
             merged = {x["code"]: x for component in ("烟草", "工业大麻")
-                      for x in fetch_ths_concept_members({"sector_code": None}, component)[0]}
+                      for x in component_members[component]}
             fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
             members = list(merged.values())
             cache[name] = {"members":members,"fetched_at":fetched,"source":"THS",
