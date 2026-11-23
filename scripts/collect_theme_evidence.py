@@ -174,8 +174,40 @@ def _score_key(value):
     return re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
 
 
-def model_score(change_pct, flow_5d=None, flow_10d=None):
-    """Port the existing private scoring contract; never impute missing dimensions."""
+def _breadth_score(rows, code_set, value_candidates, min_coverage=0.25, min_names=3):
+    """Score cross-sectional operating breadth only when the sample is adequate."""
+    by_code = {}
+    for row in rows or []:
+        code = norm_code(row.get("股票代码") or row.get("证券代码"))
+        if not code or code not in code_set:
+            continue
+        col = find_col(row.keys(), value_candidates)
+        value = number(row.get(col)) if col else None
+        if value is not None:
+            by_code[code] = value
+    required = max(min_names, int(len(code_set) * min_coverage + 0.999)) if code_set else min_names
+    if len(by_code) < required:
+        return None, {"sample": len(by_code), "required": required, "coverage": len(by_code) / len(code_set) if code_set else 0}
+    positive = sum(1 for value in by_code.values() if value > 0)
+    breadth = positive / len(by_code) * 100.0
+    return round(breadth, 1), {"sample": len(by_code), "required": required,
+        "coverage": round(len(by_code) / len(code_set), 3), "positive": positive,
+        "positive_breadth": round(breadth, 1)}
+
+
+def _policy_score(policy):
+    rows = (policy or {}).get("records") or []
+    # Only successfully fetched official full text qualifies; index titles alone do not.
+    verified = [row for row in rows if row.get("body_status") == "success" and row.get("body_text")]
+    if not verified:
+        return None, {"verified_documents": 0, "reason": "no_matching_official_full_text"}
+    return min(95.0, 65.0 + 10.0 * min(len(verified), 3)), {
+        "verified_documents": len(verified), "source": "MIIT official full text"}
+
+
+def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
+    """Score only dimensions supported by sufficiently broad, attributable evidence."""
+    evidence = evidence or {}
     change = number(change_pct)
     f5, f10 = number(flow_5d), number(flow_10d)
     structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
@@ -187,10 +219,18 @@ def model_score(change_pct, flow_5d=None, flow_10d=None):
             persistence = 25.0
         else:
             persistence = 50.0
-    health_dims = {"industry_thesis": None, "policy_event": None,
+    codes = set(evidence.get("constituent_codes") or [])
+    revenue_score, revenue_meta = _breadth_score(
+        (evidence.get("financials") or {}).get("records") or [], codes,
+        ("营业收入-同比增长", "营业收入同比增长", "营业收入同比", "营业收入同比增长率"))
+    earnings_score, earnings_meta = _breadth_score(
+        (evidence.get("financials") or {}).get("records") or [], codes,
+        ("净利润-同比增长", "净利润同比增长", "净利润同比", "净利润同比增长率"))
+    policy_score, policy_meta = _policy_score(evidence.get("government_policy"))
+    health_dims = {"industry_thesis": revenue_score, "policy_event": policy_score,
         "capital_persistence": persistence,
         "trend_structure": round(structure, 1) if structure is not None else None,
-        "earnings_delivery": None, "valuation_crowding": None}
+        "earnings_delivery": earnings_score, "valuation_crowding": None}
     health_weights = {"industry_thesis":20,"policy_event":10,"capital_persistence":20,
         "trend_structure":20,"earnings_delivery":15,"valuation_crowding":15}
     available = [(health_dims[k], w) for k, w in health_weights.items()
@@ -207,7 +247,10 @@ def model_score(change_pct, flow_5d=None, flow_10d=None):
         "stage": "证据不足，暂不判定",
         "health": {"score": health_score, "coverage": health_coverage,
             "dimensions": health_dims,
-            "note": "资金持续性仅参考公开行业主力资金5日/10日净占比同向性，不代表机构专属资金；缺失维度不补值。"}}
+            "evidence_quality": {"industry_thesis": revenue_meta,
+                "earnings_delivery": earnings_meta, "policy_event": policy_meta},
+            "report_date": (evidence.get("financials") or {}).get("report_date"),
+            "note": "产业逻辑与业绩兑现分别采用成分股营收、净利润同比正增长广度；至少3家且覆盖成分股25%才计分。政策维度只计工信部官网匹配原文。估值拥挤度无可靠估值分位源，继续缺失；缺失维度不补值。"}}
 
 
 def flow_ratio_for_theme(flow_rows, theme, period):
@@ -744,7 +787,8 @@ def main():
             "业绩、预告和持仓按公开报告期披露，存在季度滞后；必须显示报告期。",
             "合同和公告是上市公司披露，不等于已确认收入或全行业订单总量。",
             "机构持仓与公募基金持仓分别统计，不等同实时机构净买入。",
-            "政府政策原文尚未接入，不从公司公告推断政策出台。",
+            "估值拥挤度暂缺可靠的全成分股估值分位数据，不以涨跌幅或换手率替代。",
+            "产业逻辑和业绩兑现按成分股最新季度营收、净利润同比正增长广度评分；样本不足时保持缺失。",
         ],
     }
     (DATA / "theme_evidence.json").write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -769,7 +813,7 @@ def main():
         flow_rows = research.get("sections", {}).get("capital-flows", {}).get("items", [])
         score_result = model_score(theme.get("change_pct"),
             flow_ratio_for_theme(flow_rows, theme, "5日"),
-            flow_ratio_for_theme(flow_rows, theme, "10日"))
+            flow_ratio_for_theme(flow_rows, theme, "10日"), item)
         theme["model"]["score"] = score_result["score"]
         theme["model"]["potential_score_coverage"] = score_result["coverage"]
         theme["model"]["dimensions"] = score_result["dimensions"]
