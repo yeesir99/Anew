@@ -72,6 +72,7 @@ class ResearchQualityTests(unittest.TestCase):
             "items": [{
                 "industry_name": f"行业{i}", "net_inflow_cny": 100,
                 "main_net_inflow_cny": None, "metric_definition": "THS net amount",
+                "source": "AKShare/THS live industry summary",
             } for i in range(90)],
         }
         registry = {"trade_date": "2026-11-20", "sources": [
