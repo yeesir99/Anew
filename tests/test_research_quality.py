@@ -13,7 +13,10 @@ class ResearchQualityTests(unittest.TestCase):
         self.research = {"sections": {"themes": {"items": [
             {"industry_name": "主题甲"}, {"industry_name": "主题乙"}
         ]}}}
-        self.technical = {"stocks": 5575, "coverage": {"ma5": 5575, "ma20": 5575}}
+        self.technical = {"stocks": 5575, "coverage": {
+            key: 5575 for key in ("ma5", "ma10", "ma20", "ma60", "rsi14",
+                                  "macd_dif", "macd_dea", "macd_hist", "volatility20")
+        }}
 
     def test_stale_flow_rows_do_not_satisfy_current_period(self):
         old_rows = [{
@@ -25,8 +28,8 @@ class ResearchQualityTests(unittest.TestCase):
             "source": "THS",
         } for i in range(60)]}
         evidence = {"themes": {"主题甲": {
-            "constituent_codes": ["600000"],
-            "mapping": {"mapping_source": "Sina taxonomy", "matched_symbol": "主题甲", "mapping_date": "2026-11-20"},
+            "constituent_codes": ["600000"], "constituent_count": 1,
+            "mapping": {"status": "success", "mapping_source": "Sina taxonomy", "matched_symbol": "主题甲", "mapping_date": "2026-11-20"},
         }}}
         registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "sector_flow_今日", "status": "failed", "detail": "EastMoney unavailable"}
@@ -48,8 +51,8 @@ class ResearchQualityTests(unittest.TestCase):
                 "main_net_inflow_cny": "100", "source": "verified-provider",
             } for _ in range(50))
         evidence = {"themes": {
-            name: {"constituent_codes": ["600000"],
-                   "mapping": {"mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
+            name: {"constituent_codes": ["600000"], "constituent_count": 1,
+                   "mapping": {"status": "success", "mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
             for name in ("主题甲", "主题乙")
         }}
         valuation = {"status": "validated", "records": 5575}
@@ -99,10 +102,10 @@ class ResearchQualityTests(unittest.TestCase):
 
     def test_mapping_requires_source_symbol_and_date(self):
         evidence = {"themes": {
-            "主题甲": {"constituent_codes": ["600000"],
-                       "mapping": {"mapping_source": "taxonomy only"}},
-            "主题乙": {"constituent_codes": ["000001"],
-                       "mapping": {"mapping_source": "taxonomy",
+            "主题甲": {"constituent_codes": ["600000"], "constituent_count": 1,
+                       "mapping": {"status": "success", "mapping_source": "taxonomy only"}},
+            "主题乙": {"constituent_codes": ["000001"], "constituent_count": 1,
+                       "mapping": {"status": "success", "mapping_source": "taxonomy",
                                    "matched_symbol": "主题乙",
                                    "mapping_date": "2026-11-20"}},
         }}
