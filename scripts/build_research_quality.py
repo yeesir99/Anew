@@ -93,7 +93,7 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
             "required_coverage_pct": REQUIRED_FLOW_COVERAGE_PCT,
             "latest_collection_status": upstream_status,
             "latest_collection_detail": upstream.get("detail"),
-            "fallback_provider": "THS" if ths_fallback else None,
+            "fallback_provider": "THS" if upstream.get("provider") == "THS" else None,
             "minimum_records": MIN_FLOW_ROWS,
             "providers": providers,
             "metric_definitions": sorted({str(row.get("metric_definition") or
