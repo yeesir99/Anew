@@ -49,7 +49,8 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
     market_valid = bool(trade_day and valid_stocks >= 2500 and (market or {}).get("data_status") == "validated")
     checks = {}
 
-    source_items = (source_registry or {}).get("sources", [])
+    registry_current = str((source_registry or {}).get("trade_date") or "") == trade_day
+    source_items = (source_registry or {}).get("sources", []) if registry_current else []
     source_by_name = {str(item.get("source") or ""): item for item in source_items}
     periods = ("今日", "5日", "10日")
     for period in periods:
@@ -59,7 +60,7 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
                 and (finite(row.get("main_net_inflow_cny")) or finite(row.get("net_inflow_cny")))
                 and str(row.get("source") or "").strip()]
         upstream = source_by_name.get("sector_flow_" + period, {})
-        ths_snapshot_current = (period == "今日"
+        ths_snapshot_current = (registry_current and period == "今日"
             and str((ths_snapshot or {}).get("trade_date") or "") == trade_day
             and (ths_snapshot or {}).get("status") == "success")
         ths_rows = []
