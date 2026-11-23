@@ -33,7 +33,7 @@ class SpecialThemeMappingTests(unittest.TestCase):
             "disclosure_date": "2026-03-31",
             "source_url": "https://example.com/annual-report",
             "source_type": "annual_report",
-            "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之五。",
+            "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之五，具体投资情况见年度报告附注。",
         }
         self.assertTrue(verified_private_bank_relationship(valid))
         self.assertFalse(verified_private_bank_relationship({**valid, "holding_pct": None}))
