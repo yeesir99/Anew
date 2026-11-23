@@ -503,16 +503,18 @@ def main():
                         key:{k:v for k,v in value.items() if k != "members"}
                         for key,value in components.items()}}
             fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            component_summary = {key:{k:v for k,v in value.items() if k != "members"}
+                                 for key,value in components.items()}
             cache[name] = {"members":members,"fetched_at":fetched,"source":"THS",
                 "matched_symbol":"烟草 + 工业大麻","taxonomy":"separate exact THS concepts",
                 "mapping_source":"THS exact concept taxonomy; two components merged",
-                "components":components,"sector_code":code}
+                "components":component_summary,"sector_code":code}
             cache_dirty = True
             return members, {"source":"constituents:"+name,"status":"success",
                 "records":len(members),"provider":"THS","taxonomy":"separate exact THS concepts",
                 "matched_symbol":"烟草 + 工业大麻",
                 "mapping_source":"THS exact concept taxonomy; two components merged",
-                "components":components,"mapping_date":fetched,"checked_at":fetched}
+                "components":component_summary,"mapping_date":fetched,"checked_at":fetched}
 
         if name == "参股民营银行":
             candidates, meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
@@ -544,7 +546,7 @@ def main():
                     "mapping_source":"THS candidate taxonomy; IPO listing-date endpoint unavailable",
                     "candidate_count":len(candidates)}
             verified, failures = [], []
-            as_of = date.today()
+            as_of = date.fromisoformat(str(theme.get("trade_date") or date.today().isoformat())[:10])
             for candidate in candidates:
                 stock_code = candidate["code"]
                 if not stock_code.startswith(("688", "689")):
