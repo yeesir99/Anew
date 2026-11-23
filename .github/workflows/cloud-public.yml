@@ -123,6 +123,12 @@ jobs:
       - name: Validate final industry data contract
         if: always() && !cancelled()
         run: python scripts/validate_industry_data.py
+      - name: Build explicit research-data quality contract
+        if: always() && !cancelled()
+        run: python scripts/build_research_quality.py
+      - name: Build explicit research-data quality contract
+        if: always() && !cancelled()
+        run: python scripts/build_research_quality.py
       - name: Validate privacy boundary and static data
         run: |
           python - <<'PY'

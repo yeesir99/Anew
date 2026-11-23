@@ -1,0 +1,32 @@
+name: Research quality contract tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/build_research_quality.py'
+      - 'tests/test_research_quality.py'
+      - '.github/workflows/research-quality-tests.yml'
+  push:
+    branches: [fix/research-data-quality-gates]
+    paths:
+      - 'scripts/build_research_quality.py'
+      - 'tests/test_research_quality.py'
+      - '.github/workflows/research-quality-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  quality-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile quality contract
+        run: python -m py_compile scripts/build_research_quality.py tests/test_research_quality.py
+      - name: Run quality contract unit tests
+        run: python -m unittest discover -s tests -p 'test_research_quality.py' -v
