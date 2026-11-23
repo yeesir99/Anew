@@ -141,6 +141,15 @@ def main():
             ths_snapshot = {}
     except Exception:
         ths_snapshot = {}
+    # Old THS snapshots must not be relabelled as today's live ranking.
+    if (ths_snapshot.get("status") == "success"
+            and str(ths_snapshot.get("trade_date") or "") != str(day)):
+        old_day = ths_snapshot.get("trade_date")
+        ths_snapshot["status"] = "stale"
+        ths_snapshot["items"] = []
+        ths_snapshot["note"] = f"同花顺行业快照日期为 {old_day}，与行情日期 {day} 不一致，已标记为历史数据。"
+        (DATA / "industry_snapshot_ths.json").write_text(
+            json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
     ths_live_items = ths_snapshot.get("items", []) if ths_snapshot.get("status") == "success" else []
     flow_items = []
     for row in flows:
