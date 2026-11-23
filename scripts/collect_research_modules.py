@@ -74,7 +74,8 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
             "main_net_ratio_pct": None,
             "provider": "THS",
             "source": "AKShare/THS industry fund-flow ranking",
-            "metric_definition": "THS provider-defined industry net amount; source unit 亿元 converted to CNY; not relabelled as EastMoney main-net flow",
+            "source_field": net_col,
+            "metric_definition": f"THS provider-defined industry net amount from {net_col}; source unit 亿元 converted to CNY; not relabelled as EastMoney main-net flow",
             "captured_at": captured_at,
         })
     if not rows:
@@ -244,7 +245,8 @@ def main():
                     "change_pct":change,"turnover_cny":amount_cny,
                     "net_inflow_cny":net_cny,"net_inflow_ratio_pct":ratio,
                     "main_net_inflow_cny":None,"main_net_ratio_pct":None,
-                    "metric_definition":"THS industry-summary net amount; source unit 亿元 converted to CNY; not EastMoney main-net flow",
+                    "source_field":net_col,
+                    "metric_definition":f"THS industry-summary net amount from {net_col}; source unit 亿元 converted to CNY; not EastMoney main-net flow",
                     "up_count":number(item.get(up_col)) if up_col else None,
                     "down_count":number(item.get(down_col)) if down_col else None,
                     "leader_name":leader_name,
