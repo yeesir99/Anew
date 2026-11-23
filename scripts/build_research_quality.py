@@ -114,8 +114,11 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         item = themes.get(name) or {}
         codes = item.get("constituent_codes") or []
         mapping = item.get("mapping") or {}
+        count_matches = int(item.get("constituent_count") or 0) == len(codes)
+        codes_valid = bool(codes) and all(
+            isinstance(code, str) and len(code) == 6 and code.isdigit() for code in codes)
         has_provenance = has_mapping_provenance(mapping)
-        if codes and has_provenance:
+        if codes_valid and count_matches and has_provenance:
             mapped.append(name)
         else:
             unresolved.append(name)
@@ -131,7 +134,9 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
 
     stock_total = int((technical or {}).get("stocks") or valid_stocks or 0)
     tech_coverage = (technical or {}).get("coverage") or {}
-    tech_values = [int(v) for v in tech_coverage.values() if isinstance(v, (int, float))]
+    required_indicators = ("ma5", "ma10", "ma20", "ma60", "rsi14",
+                           "macd_dif", "macd_dea", "macd_hist", "volatility20")
+    tech_values = [int(tech_coverage.get(key) or 0) for key in required_indicators]
     tech_min = min(tech_values) if tech_values else 0
     checks["technical_indicators"] = {
         "status": "validated" if stock_total and tech_min >= stock_total else "partial",
