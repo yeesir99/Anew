@@ -33,6 +33,55 @@ def number(value):
         return None
 
 
+def ths_industry_universe_count(ak):
+    """Return the THS industry taxonomy size; None means coverage is unknown."""
+    fn = getattr(ak, "stock_board_industry_name_ths", None)
+    if fn is None:
+        return None
+    frame = fn()
+    if frame is None or frame.empty:
+        return None
+    name_col = next((x for x in ("name", "行业", "行业名称") if x in frame.columns), None)
+    if not name_col:
+        return None
+    names = {str(x).strip() for x in frame[name_col].tolist()
+             if x is not None and str(x).strip() and str(x).lower() != "nan"}
+    return len(names) or None
+
+
+def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
+    """Normalize THS's provider-defined net amount; source unit is CNY 100m."""
+    if frame is None or frame.empty:
+        raise RuntimeError("THS industry flow returned no rows")
+    name_col = next((x for x in ("行业", "行业名称", "板块") if x in frame.columns), None)
+    net_col = next((x for x in ("净额", "净流入", "资金净流入") if x in frame.columns), None)
+    change_col = next((x for x in ("行业-涨跌幅", "阶段涨跌幅", "涨跌幅") if x in frame.columns), None)
+    if not name_col or not net_col:
+        raise RuntimeError("THS industry flow schema changed: " + str(list(frame.columns)))
+    rows = []
+    for _, item in frame.iterrows():
+        name = str(item.get(name_col, "")).strip()
+        net_yi = number(item.get(net_col))
+        if not name or name.lower() == "nan" or net_yi is None:
+            continue
+        rows.append({
+            "trade_date": trade_day.isoformat(),
+            "indicator": indicator,
+            "industry": name,
+            "change_pct": number(item.get(change_col)) if change_col else None,
+            "net_inflow_cny": net_yi * 1e8,
+            "main_net_inflow_cny": None,
+            "main_net_ratio_pct": None,
+            "provider": "THS",
+            "source": "AKShare/THS industry fund-flow ranking",
+            "metric_definition": "THS provider-defined industry net amount; source unit 亿元 converted to CNY; not relabelled as EastMoney main-net flow",
+            "captured_at": captured_at,
+        })
+    if not rows:
+        raise RuntimeError("THS industry flow contains no finite net-amount rows")
+    return rows
+
+
 def append_rows(path: Path, rows: list[dict], keys: tuple[str, ...]):
     if not rows:
         return 0
@@ -211,44 +260,94 @@ def main():
             LOG.exception("THS industry fallback failed")
             statuses.append({"source":"industry_snapshot_ths","status":"failed","detail":str(ths_exc)[:500]})
 
-    # Sector capital-flow estimates. They are not institution-specific account flows.
+    # Sector capital-flow estimates. EastMoney is preferred; THS is an
+    # independently labelled fallback for each failed period. Provider metrics
+    # remain distinct: THS "净额" is never relabelled as EastMoney "主力净流入".
     flow_rows = []
     try:
-        fn = getattr(ak, "stock_fund_flow_sector_rank_em", None)
-        if fn is None:
-            raise RuntimeError("当前 AkShare 不含 stock_fund_flow_sector_rank_em")
-        for indicator in ("今日", "5日", "10日"):
-            try:
-                frame = fn(indicator=indicator, sector_type="行业资金流")
-                if frame is None or frame.empty:
-                    raise RuntimeError("接口返回空数据")
-                name_col = next((x for x in ("名称", "板块名称", "行业", "板块") if x in frame.columns), None)
-                flow_col = next((x for x in (indicator + "主力净流入-净额", "主力净流入-净额") if x in frame.columns), None)
-                ratio_col = next((x for x in (indicator + "主力净流入-净占比", "主力净流入-净占比") if x in frame.columns), None)
-                change_col = next((x for x in (indicator + "涨跌幅", "涨跌幅") if x in frame.columns), None)
-                if not name_col or not flow_col:
-                    raise RuntimeError("资金流字段不匹配：" + str(list(frame.columns)))
-                for _, item in frame.iterrows():
-                    name = str(item.get(name_col, "")).strip()
-                    if name and name != "nan":
-                        flow_rows.append({"trade_date": trade_day.isoformat(), "indicator": indicator,
-                            "industry": name, "change_pct": number(item.get(change_col)) if change_col else None,
-                            "main_net_inflow_cny": number(item.get(flow_col)),
-                            "main_net_ratio_pct": number(item.get(ratio_col)) if ratio_col else None,
-                            "source": "AKShare/EastMoney public estimate", "captured_at": checked})
-            except Exception as exc:
-                statuses.append({"source": "sector_flow_" + indicator, "status": "failed", "detail": str(exc)[:400]})
-        if flow_rows:
-            append_rows(DATA / "capital_flows.csv", flow_rows, ("trade_date", "indicator", "industry"))
-        for indicator in ("今日", "5日", "10日"):
-            n = sum(x["indicator"] == indicator for x in flow_rows)
-            if not any(x.get("source") == "sector_flow_" + indicator for x in statuses):
-                statuses.append({"source": "sector_flow_" + indicator,
-                                 "status": "success" if n else "unavailable", "records": n,
-                                 "detail": "公开市场主力资金估算，不代表机构专属账户"})
+        ths_universe_count = ths_industry_universe_count(ak)
     except Exception as exc:
-        LOG.exception("行业资金流采集失败")
-        statuses.append({"source": "sector_flows", "status": "failed", "detail": str(exc)[:500]})
+        ths_universe_count = None
+        LOG.warning("THS industry taxonomy count unavailable: %s", str(exc)[:180])
+
+    for indicator in ("今日", "5日", "10日"):
+        period_rows = []
+        em_error = None
+        try:
+            fn = getattr(ak, "stock_fund_flow_sector_rank_em", None)
+            if fn is None:
+                raise RuntimeError("stock_fund_flow_sector_rank_em unavailable")
+            frame = fn(indicator=indicator, sector_type="行业资金流")
+            if frame is None or frame.empty:
+                raise RuntimeError("EastMoney sector-flow endpoint returned empty data")
+            name_col = next((x for x in ("名称", "板块名称", "行业", "板块") if x in frame.columns), None)
+            flow_col = next((x for x in (indicator + "主力净流入-净额", "主力净流入-净额") if x in frame.columns), None)
+            ratio_col = next((x for x in (indicator + "主力净流入-净占比", "主力净流入-净占比") if x in frame.columns), None)
+            change_col = next((x for x in (indicator + "涨跌幅", "涨跌幅") if x in frame.columns), None)
+            if not name_col or not flow_col:
+                raise RuntimeError("EastMoney sector-flow schema changed: " + str(list(frame.columns)))
+            for _, item in frame.iterrows():
+                name = str(item.get(name_col, "")).strip()
+                net = number(item.get(flow_col))
+                if name and name.lower() != "nan" and net is not None:
+                    period_rows.append({
+                        "trade_date": trade_day.isoformat(), "indicator": indicator,
+                        "industry": name, "change_pct": number(item.get(change_col)) if change_col else None,
+                        "main_net_inflow_cny": net, "net_inflow_cny": None,
+                        "main_net_ratio_pct": number(item.get(ratio_col)) if ratio_col else None,
+                        "provider": "EastMoney", "source": "AKShare/EastMoney public estimate",
+                        "metric_definition": "EastMoney sector main-net-inflow estimate",
+                        "captured_at": checked,
+                    })
+            if not period_rows:
+                raise RuntimeError("EastMoney sector-flow rows contain no finite net values")
+            coverage_pct = (len({x["industry"] for x in period_rows}) / ths_universe_count * 100.0
+                            if ths_universe_count else None)
+            statuses.append({
+                "source": "sector_flow_" + indicator, "status": "success",
+                "records": len(period_rows), "provider": "EastMoney",
+                "coverage_pct": round(min(100.0, coverage_pct), 2) if coverage_pct is not None else None,
+                "expected_industries": ths_universe_count,
+                "metric_definition": "EastMoney sector main-net-inflow estimate",
+                "detail": "EastMoney 行业资金流；覆盖率仅在取得同花顺行业名录分母时计算",
+            })
+        except Exception as exc:
+            em_error = str(exc)[:300]
+            LOG.warning("EastMoney %s sector flow failed; trying THS: %s", indicator, em_error)
+
+        if not period_rows:
+            try:
+                ths_fn = (getattr(ak, "stock_fund_flow_industry_ths", None)
+                          or getattr(ak, "stock_fund_flow_industry", None))
+                if ths_fn is None:
+                    raise RuntimeError("stock_fund_flow_industry_ths unavailable")
+                ths_symbol = {"今日": "即时", "5日": "5日排行", "10日": "10日排行"}[indicator]
+                frame = ths_fn(symbol=ths_symbol)
+                period_rows = ths_industry_flow_rows(frame, indicator, trade_day, checked)
+                coverage_pct = (len({x["industry"] for x in period_rows}) / ths_universe_count * 100.0
+                                if ths_universe_count else None)
+                statuses.append({
+                    "source": "sector_flow_" + indicator, "status": "success",
+                    "records": len(period_rows), "provider": "THS",
+                    "endpoint": "stock_fund_flow_industry_ths",
+                    "coverage_pct": round(min(100.0, coverage_pct), 2) if coverage_pct is not None else None,
+                    "expected_industries": ths_universe_count,
+                    "metric_definition": "THS provider-defined industry net amount (净额), CNY",
+                    "detail": "EastMoney unavailable; THS industry flow fallback succeeded"
+                             + ("; EastMoney error: " + em_error if em_error else ""),
+                })
+            except Exception as ths_exc:
+                statuses.append({
+                    "source": "sector_flow_" + indicator, "status": "failed",
+                    "records": 0, "provider": None,
+                    "detail": ("EastMoney: " + str(em_error or "not attempted")
+                               + "; THS: " + str(ths_exc))[:500],
+                })
+
+        flow_rows.extend(period_rows)
+
+    if flow_rows:
+        append_rows(DATA / "capital_flows.csv", flow_rows, ("trade_date", "indicator", "industry"))
 
     # Exchange-published ETF share snapshots. Prefer the SZSE daily history
     # endpoint (up to six months) so historical share changes are available
