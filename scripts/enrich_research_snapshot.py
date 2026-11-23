@@ -149,7 +149,7 @@ def main():
         ths_snapshot["items"] = []
         ths_snapshot["note"] = f"同花顺行业快照日期为 {old_day}，与行情日期 {day} 不一致，已标记为历史数据。"
         (DATA / "industry_snapshot_ths.json").write_text(
-            json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+            json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     ths_live_items = ths_snapshot.get("items", []) if ths_snapshot.get("status") == "success" else []
     flow_items = []
     for row in flows:
