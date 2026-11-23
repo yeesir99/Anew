@@ -77,6 +77,13 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
             upstream = {"status": "success", "records": (ths_snapshot or {}).get("records"),
                         "coverage_pct": (ths_snapshot or {}).get("coverage_pct"),
                         "provider": "THS", "detail": "separate live industry snapshot"}
+        expected_provider = upstream.get("provider")
+        if expected_provider == "THS":
+            rows = [row for row in rows if row.get("provider") == "THS"
+                    or "THS" in str(row.get("source") or "")]
+        elif expected_provider == "EastMoney":
+            rows = [row for row in rows if row.get("provider") == "EastMoney"
+                    or "EastMoney" in str(row.get("source") or "")]
         providers = sorted({str(row.get("source") or "") for row in rows})
         upstream_status = upstream.get("status", "not_recorded")
         coverage_pct = upstream.get("coverage_pct")
