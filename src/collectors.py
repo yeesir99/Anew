@@ -221,6 +221,19 @@ def _technical_history(history: pd.DataFrame, trade_date: str) -> pd.DataFrame:
     return hist[hist["trade_date"] == trade_date].copy()
 
 
+def _require_full_market_coverage(frame: pd.DataFrame, source: str,
+                                 minimum: int = 2500) -> pd.DataFrame:
+    """Reject partial spot responses before they can be published as a market snapshot."""
+    if frame is None or frame.empty:
+        raise RuntimeError(f"{source}: 行情源返回空数据")
+    if len(frame) < minimum:
+        raise RuntimeError(
+            f"{source}: 全市场行情覆盖不足 {len(frame)}/{minimum}；"
+            "拒绝将板块/抽样响应误标为全市场快照"
+        )
+    return frame
+
+
 def collect_market(day: date) -> pd.DataFrame:
     """Full-market snapshot plus technical indicators for the most liquid N stocks.
 
@@ -240,7 +253,14 @@ def collect_market(day: date) -> pd.DataFrame:
             candidate = fn()
             if candidate is None or candidate.empty:
                 raise RuntimeError("接口返回空数据")
-            spot, spot_source = candidate, name
+            # Validate the normalized security universe before accepting a provider.
+            # Some Sina responses can be syntactically valid but contain only a handful
+            # of rows; treating those as a complete market snapshot poisons downstream
+            # builders and archive joins.
+            normalized = _require_full_market_coverage(
+                _normalise_spot(candidate, day), name
+            )
+            spot, spot_source, latest = candidate, name, normalized
             break
         except Exception as exc:
             errors.append(f"{name}: {str(exc)[:180]}")
@@ -248,7 +268,6 @@ def collect_market(day: date) -> pd.DataFrame:
     if spot is None:
         raise RuntimeError("全市场行情源全部失败：" + "；".join(errors))
     LOG.info("全市场行情来源：%s", spot_source)
-    latest = _normalise_spot(spot, day)
 
     # AKShare's Sina spot wrapper omits Sina's raw turnoverratio field.
     # Fetch the original public Sina payload directly before trying the
