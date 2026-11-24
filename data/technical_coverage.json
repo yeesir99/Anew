@@ -1,19 +1,19 @@
 {
-  "trade_date": "20261123",
-  "stocks": 5575,
+  "trade_date": "20261124",
+  "stocks": 5579,
   "status": "validated",
   "history_sessions": 41,
-  "snapshot_history_sessions": 4,
+  "snapshot_history_sessions": 5,
   "coverage": {
-    "ma5": 347,
-    "ma10": 347,
-    "ma20": 347,
-    "ma60": 346,
-    "rsi14": 347,
-    "macd_dif": 347,
-    "macd_dea": 346,
-    "macd_hist": 346,
-    "volatility20": 347
+    "ma5": 5569,
+    "ma10": 346,
+    "ma20": 346,
+    "ma60": 345,
+    "rsi14": 346,
+    "macd_dif": 346,
+    "macd_dea": 345,
+    "macd_hist": 345,
+    "volatility20": 346
   },
   "bulk_archive": {
     "status": "partial",
@@ -33,14 +33,14 @@
     "failed": 0,
     "cache_hits": 0,
     "universe": 250,
-    "universe_total": 5575,
-    "cursor_start": 1300,
-    "cursor_next": 1550,
+    "universe_total": 5579,
+    "cursor_start": 1550,
+    "cursor_next": 1800,
     "workers": 3,
     "window_days": 170,
     "history_sessions_median": 116.0,
     "history_sessions_min": 14,
-    "history_sessions_max": 117
+    "history_sessions_max": 118
   },
   "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated"
 }
