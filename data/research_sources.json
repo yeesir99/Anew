@@ -1,6 +1,6 @@
 {
-  "trade_date": "2026-11-24",
-  "checked_at": "2026-11-25T05:35:17+08:00",
+  "trade_date": "2026-11-25",
+  "checked_at": "2026-11-26T04:42:23+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -19,9 +19,8 @@
     },
     {
       "source": "sector_flow_5日",
-      "status": "success",
-      "records": 496,
-      "detail": "公开市场主力资金估算，不代表机构专属账户"
+      "status": "failed",
+      "detail": "Expecting value: line 1 column 1 (char 0)"
     },
     {
       "source": "sector_flow_10日",
@@ -37,7 +36,7 @@
     {
       "source": "etf_shares_szse",
       "status": "success",
-      "records": 83503,
+      "records": 84284,
       "detail": "SZSE official ETF daily share history; 60-day chunks; failed_ranges=[]"
     },
     {
