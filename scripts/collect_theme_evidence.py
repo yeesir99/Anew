@@ -214,7 +214,8 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
     change = number(change_pct)
     f5, f10 = flow_5d, flow_10d
     structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
-    persistence = consistent_provider_flow_persistence(f5, f10)\n    codes = set(evidence.get("constituent_codes") or [])
+    persistence = consistent_provider_flow_persistence(f5, f10)
+    codes = set(evidence.get("constituent_codes") or [])
     revenue_score, revenue_meta = _breadth_score(
         (evidence.get("financials") or {}).get("records") or [], codes,
         ("营业收入-同比增长", "营业收入同比增长", "营业收入同比", "营业收入同比增长率"))
