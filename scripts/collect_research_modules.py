@@ -510,10 +510,21 @@ def main():
             previous = json.loads(status_path.read_text(encoding="utf-8"))
         except Exception:
             previous = {}
-    by_key = {x["source"]: x for x in previous.get("sources", [])}
-    by_key.update({x["source"]: x for x in statuses})
-    status_path.write_text(json.dumps({"trade_date": trade_day.isoformat(), "checked_at": checked,
-        "sources": list(by_key.values())}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    history = list(previous.get("history") or [])
+    if previous.get("sources"):
+        history.append({
+            "trade_date": previous.get("trade_date"),
+            "checked_at": previous.get("checked_at"),
+            "sources": previous.get("sources"),
+        })
+    # The top-level sources array is the current run only. Historical statuses
+    # stay in history and cannot satisfy current-trade-date quality gates.
+    status_path.write_text(json.dumps({
+        "trade_date": trade_day.isoformat(),
+        "checked_at": checked,
+        "sources": statuses,
+        "history": history[-30:],
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"trade_date": trade_day.isoformat(), "industry_rows": len(rows) if "rows" in locals() else 0,
         "capital_flow_rows": len(flow_rows), "etf_rows": len(etf_rows),
         "source_statuses": statuses}, ensure_ascii=False))
