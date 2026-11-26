@@ -84,13 +84,12 @@ def verified_private_bank_relationship(record):
 
 
 def private_bank_records_for_trade_date(records, trade_date):
-    """Accept only primary-source equity disclosures explicitly aligned to a report date."""
+    """Accept latest primary-source equity disclosure per issuer/bank as of a report date."""
     try:
         as_of = date.fromisoformat(str(trade_date)[:10])
     except (TypeError, ValueError):
         return []
-    accepted = []
-    seen = set()
+    selected = {}
     for record in records or []:
         if not verified_private_bank_relationship(record):
             continue
@@ -105,33 +104,9 @@ def private_bank_records_for_trade_date(records, trade_date):
         code = str(record["listed_company_code"]).strip()
         bank = str(record["investee_bank_name"]).strip()
         key = (code, bank)
-        if key in seen:
-            continue
-        seen.add(key)
-        accepted.append(dict(record))
-    return accepted
-
-
-def consistent_provider_flow_persistence(flow_5d, flow_10d):
-    """Score flow direction only when both periods use the same named provider."""
-    def unpack(value):
-        if not isinstance(value, (tuple, list)) or len(value) != 2:
-            return None, None
-        provider, amount = value
-        try:
-            amount = float(amount)
-        except (TypeError, ValueError):
-            return None, None
-        if not math.isfinite(amount) or not str(provider or "").strip():
-            return None, None
-        return str(provider).strip(), amount
-
-    provider5, amount5 = unpack(flow_5d)
-    provider10, amount10 = unpack(flow_10d)
-    if provider5 is None or provider10 is None or provider5 != provider10:
-        return None
-    if amount5 > 0 and amount10 > 0:
-        return 75.0
-    if amount5 < 0 and amount10 < 0:
-        return 25.0
-    return 50.0
+        previous = selected.get(key)
+        previous_date = date.min if previous is None else date.fromisoformat(
+            str(previous["disclosure_date"])[:10])
+        if previous is None or disclosed > previous_date:
+            selected[key] = dict(record)
+    return [selected[key] for key in sorted(selected)]
