@@ -24,7 +24,7 @@ import akshare as ak
 import pandas as pd
 from import_sector_archive import is_concept_code
 from theme_mapping_rules import (merge_exact_components, star_next_new_eligible,
-    private_bank_records_for_trade_date)
+    private_bank_records_for_trade_date, consistent_provider_flow_persistence)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
