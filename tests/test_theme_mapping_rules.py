@@ -5,6 +5,7 @@ from scripts.theme_mapping_rules import (
     merge_exact_components,
     star_next_new_eligible,
     verified_private_bank_relationship,
+    private_bank_records_for_trade_date,
 )
 
 
@@ -38,6 +39,26 @@ class SpecialThemeMappingTests(unittest.TestCase):
         self.assertTrue(verified_private_bank_relationship(valid))
         self.assertFalse(verified_private_bank_relationship({**valid, "holding_pct": None}))
         self.assertFalse(verified_private_bank_relationship({**valid, "source_type": "concept_tag"}))
+
+
+    def test_private_bank_evidence_must_match_report_trade_date(self):
+        record = {
+            "listed_company_code": "600001",
+            "investee_bank_name": "某民营银行",
+            "relationship_type": "equity_investment",
+            "holding_pct": 5.0,
+            "disclosure_date": "2026-03-31",
+            "as_of_trade_date": "2026-11-20",
+            "source_url": "https://example.com/annual-report",
+            "source_type": "annual_report",
+            "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之五，具体投资情况见年度报告附注。",
+        }
+        self.assertEqual(len(private_bank_records_for_trade_date([record], "2026-11-20")), 1)
+        self.assertEqual(private_bank_records_for_trade_date([record], "2026-11-21"), [])
+        self.assertEqual(private_bank_records_for_trade_date(
+            [{**record, "disclosure_date": "2026-12-01"}], "2026-11-20"), [])
+        self.assertEqual(private_bank_records_for_trade_date(
+            [{**record, "listed_company_code": "60001"}], "2026-11-20"), [])
 
     def test_mapping_provenance_requires_source_symbol_and_date(self):
         self.assertTrue(has_mapping_provenance({
