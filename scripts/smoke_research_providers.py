@@ -7,9 +7,8 @@ intended for an explicitly triggered network check, separate from offline CI.
 from __future__ import annotations
 
 import json
+import math
 import sys
-
-import pandas as pd
 
 
 PERIOD_SYMBOLS = {
@@ -21,26 +20,36 @@ INDUSTRY_COLUMNS = ("行业", "行业名称", "板块")
 NET_COLUMNS = ("净额", "净流入", "资金净流入")
 
 
+def _finite_number(value):
+    try:
+        number = float(str(value).replace(",", "").replace("亿元", "").strip())
+        return number if math.isfinite(number) else None
+    except (TypeError, ValueError):
+        return None
+
+
 def validate_ths_flow_frame(frame):
     """Return normalized contract facts or raise when the THS schema is unusable."""
-    if not isinstance(frame, pd.DataFrame) or frame.empty:
-        raise ValueError("provider returned an empty or non-DataFrame result")
-    industry_col = next((name for name in INDUSTRY_COLUMNS if name in frame.columns), None)
-    net_col = next((name for name in NET_COLUMNS if name in frame.columns), None)
+    if frame is None or getattr(frame, "empty", True):
+        raise ValueError("provider returned an empty result")
+    columns = list(getattr(frame, "columns", []))
+    industry_col = next((name for name in INDUSTRY_COLUMNS if name in columns), None)
+    net_col = next((name for name in NET_COLUMNS if name in columns), None)
     if not industry_col or not net_col:
-        raise ValueError("schema mismatch; columns=" + repr(list(frame.columns)))
-    names = frame[industry_col].astype(str).str.strip()
-    amounts = pd.to_numeric(
-        frame[net_col].astype(str).str.replace(",", "", regex=False).str.replace("亿元", "", regex=False),
-        errors="coerce",
-    )
-    valid = names.ne("") & names.str.lower().ne("nan") & amounts.notna()
-    count = int(valid.sum())
+        raise ValueError("schema mismatch; columns=" + repr(columns))
+    valid_names = set()
+    count = 0
+    for _, row in frame.iterrows():
+        name = str(row.get(industry_col, "")).strip()
+        amount = _finite_number(row.get(net_col))
+        if name and name.lower() != "nan" and amount is not None:
+            count += 1
+            valid_names.add(name)
     if count == 0:
         raise ValueError("no rows with both industry name and finite net amount")
     return {
         "records": count,
-        "unique_industries": int(names[valid].nunique()),
+        "unique_industries": len(valid_names),
         "industry_column": industry_col,
         "net_amount_column": net_col,
         "source_unit": "provider-returned value; expected 亿元 per AkShare THS endpoint contract",
