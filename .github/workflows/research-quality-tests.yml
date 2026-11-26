@@ -25,8 +25,12 @@ on:
       - 'scripts/collect_theme_evidence.py'
       - 'scripts/collect_research_modules.py'
       - 'scripts/enrich_research_snapshot.py'
+      - 'scripts/smoke_research_providers.py'
+      - 'scripts/research_provider_utils.py'
       - 'tests/test_research_quality.py'
       - 'tests/test_theme_mapping_rules.py'
+      - 'tests/test_research_provider_smoke.py'
+      - 'tests/test_research_provider_utils.py'
       - '.github/workflows/research-quality-tests.yml'
 
 permissions:
