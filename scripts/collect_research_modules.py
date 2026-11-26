@@ -339,14 +339,15 @@ def main():
                 ths_symbol = {"今日": "即时", "5日": "5日排行", "10日": "10日排行"}[indicator]
                 frame = call_with_retry(lambda: ths_fn(symbol=ths_symbol), operation=f"THS industry flow {indicator}")
                 period_rows = ths_industry_flow_rows(frame, indicator, trade_day, checked)
-                coverage_pct = (len({x["industry"] for x in period_rows}) / ths_universe_count * 100.0
-                                if ths_universe_count else None)
+                # The board-name endpoint is not asserted to be the exact ranking universe.
+                # Without a provider-native denominator, completeness remains unknown.
+                coverage_pct = None
                 statuses.append({
                     "source": "sector_flow_" + indicator, "status": "success",
                     "records": len(period_rows), "provider": "THS",
                     "endpoint": "stock_fund_flow_industry_ths",
-                    "coverage_pct": round(min(100.0, coverage_pct), 2) if coverage_pct is not None else None,
-                    "expected_industries": ths_universe_count,
+                    "coverage_pct": None,
+                    "expected_industries": None,
                     "metric_definition": "THS provider-defined industry net amount (净额), CNY",
                     "detail": "EastMoney unavailable; THS industry flow fallback succeeded"
                              + ("; EastMoney error: " + em_error if em_error else ""),
