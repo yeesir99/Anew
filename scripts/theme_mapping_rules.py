@@ -60,7 +60,8 @@ def verified_private_bank_relationship(record):
     relation = str(record.get("relationship_type") or "").lower()
     if relation not in {"equity_investment", "shareholding", "股权投资", "持股"}:
         return False
-    if not str(record.get("listed_company_code") or "").strip().isdigit():
+    company_code = str(record.get("listed_company_code") or "").strip()
+    if len(company_code) != 6 or not company_code.isdigit():
         return False
     if not str(record.get("investee_bank_name") or "").strip():
         return False
@@ -79,3 +80,33 @@ def verified_private_bank_relationship(record):
     }:
         return False
     return len(str(record.get("source_excerpt") or "").strip()) >= 30
+
+
+
+def private_bank_records_for_trade_date(records, trade_date):
+    """Accept only primary-source equity disclosures explicitly aligned to a report date."""
+    try:
+        as_of = date.fromisoformat(str(trade_date)[:10])
+    except (TypeError, ValueError):
+        return []
+    accepted = []
+    seen = set()
+    for record in records or []:
+        if not verified_private_bank_relationship(record):
+            continue
+        if str(record.get("as_of_trade_date") or "")[:10] != as_of.isoformat():
+            continue
+        try:
+            disclosed = date.fromisoformat(str(record.get("disclosure_date") or "")[:10])
+        except ValueError:
+            continue
+        if disclosed > as_of:
+            continue
+        code = str(record["listed_company_code"]).strip()
+        bank = str(record["investee_bank_name"]).strip()
+        key = (code, bank)
+        if key in seen:
+            continue
+        seen.add(key)
+        accepted.append(dict(record))
+    return accepted
