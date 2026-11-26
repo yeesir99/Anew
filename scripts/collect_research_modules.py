@@ -316,15 +316,15 @@ def main():
                     })
             if not period_rows:
                 raise RuntimeError("EastMoney sector-flow rows contain no finite net values")
-            coverage_pct = (len({x["industry"] for x in period_rows}) / ths_universe_count * 100.0
-                            if ths_universe_count else None)
+            # THS taxonomy is not a valid denominator for EastMoney's sector universe.
+            # Without an EastMoney-native expected-universe count, completeness is unknown.
             statuses.append({
                 "source": "sector_flow_" + indicator, "status": "success",
                 "records": len(period_rows), "provider": "EastMoney",
-                "coverage_pct": round(min(100.0, coverage_pct), 2) if coverage_pct is not None else None,
-                "expected_industries": ths_universe_count,
+                "coverage_pct": None,
+                "expected_industries": None,
                 "metric_definition": "EastMoney sector main-net-inflow estimate",
-                "detail": "EastMoney 行业资金流；覆盖率仅在取得同花顺行业名录分母时计算",
+                "detail": "EastMoney 行业资金流；缺少同口径行业总数，覆盖率保持未知",
             })
         except Exception as exc:
             em_error = str(exc)[:300]
