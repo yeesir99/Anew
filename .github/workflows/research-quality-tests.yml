@@ -8,9 +8,11 @@ on:
       - 'scripts/theme_mapping_rules.py'
       - 'scripts/collect_theme_evidence.py'
       - 'scripts/collect_research_modules.py'
+      - 'scripts/smoke_research_providers.py'
       - 'scripts/enrich_research_snapshot.py'
       - 'tests/test_research_quality.py'
       - 'tests/test_theme_mapping_rules.py'
+      - 'tests/test_research_provider_smoke.py'
       - '.github/workflows/research-quality-tests.yml'
       - '.github/workflows/cloud-public.yml'
   push:
@@ -43,3 +45,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_quality.py' -v
       - name: Run special-theme evidence rule tests
         run: python -m unittest discover -s tests -p 'test_theme_mapping_rules.py' -v
+      - name: Run provider contract tests
+        run: python -m unittest discover -s tests -p 'test_research_provider_smoke.py' -v
