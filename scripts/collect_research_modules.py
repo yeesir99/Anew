@@ -17,6 +17,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+from research_provider_utils import call_with_retry
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -291,7 +292,7 @@ def main():
             fn = getattr(ak, "stock_fund_flow_sector_rank_em", None)
             if fn is None:
                 raise RuntimeError("stock_fund_flow_sector_rank_em unavailable")
-            frame = fn(indicator=indicator, sector_type="行业资金流")
+            frame = call_with_retry(lambda: fn(indicator=indicator, sector_type="行业资金流"), operation=f"EastMoney sector flow {indicator}")
             if frame is None or frame.empty:
                 raise RuntimeError("EastMoney sector-flow endpoint returned empty data")
             name_col = next((x for x in ("名称", "板块名称", "行业", "板块") if x in frame.columns), None)
@@ -336,7 +337,7 @@ def main():
                 if ths_fn is None:
                     raise RuntimeError("stock_fund_flow_industry_ths unavailable")
                 ths_symbol = {"今日": "即时", "5日": "5日排行", "10日": "10日排行"}[indicator]
-                frame = ths_fn(symbol=ths_symbol)
+                frame = call_with_retry(lambda: ths_fn(symbol=ths_symbol), operation=f"THS industry flow {indicator}")
                 period_rows = ths_industry_flow_rows(frame, indicator, trade_day, checked)
                 coverage_pct = (len({x["industry"] for x in period_rows}) / ths_universe_count * 100.0
                                 if ths_universe_count else None)
