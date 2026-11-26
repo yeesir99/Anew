@@ -87,7 +87,10 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         providers = sorted({str(row.get("source") or "") for row in rows})
         upstream_status = upstream.get("status", "not_recorded")
         coverage_pct = upstream.get("coverage_pct")
-        period_available = len(rows) >= MIN_FLOW_ROWS and upstream_status == "success"
+        declared_records = int(upstream.get("records") or 0)
+        record_count_matches = declared_records > 0 and len(rows) == declared_records
+        period_available = (len(rows) >= MIN_FLOW_ROWS and upstream_status == "success"
+                            and record_count_matches)
         period_valid = (period_available and isinstance(coverage_pct, (int, float))
                         and coverage_pct >= REQUIRED_FLOW_COVERAGE_PCT)
         checks["capital_flow_" + period] = {
@@ -95,7 +98,8 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
             "available": period_available,
             "trade_date": trade_day,
             "records": len(rows) if period_available else 0,
-            "retained_historical_rows": len(rows),
+            "declared_records": declared_records,
+            "record_count_matches": record_count_matches,
             "coverage_pct": coverage_pct,
             "required_coverage_pct": REQUIRED_FLOW_COVERAGE_PCT,
             "latest_collection_status": upstream_status,
@@ -139,17 +143,21 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         "note": "只有具备成分股代码和映射来源证据的主题才计为已映射。",
     }
 
-    stock_total = int((technical or {}).get("stocks") or valid_stocks or 0)
+    technical_stocks = int((technical or {}).get("stocks") or 0)
+    stock_total = valid_stocks
+    technical_universe_matches_market = bool(stock_total and technical_stocks == stock_total)
     tech_coverage = (technical or {}).get("coverage") or {}
     required_indicators = ("ma5", "ma10", "ma20", "ma60", "rsi14",
                            "macd_dif", "macd_dea", "macd_hist", "volatility20")
     tech_values = [int(tech_coverage.get(key) or 0) for key in required_indicators]
     tech_min = min(tech_values) if tech_values else 0
     checks["technical_indicators"] = {
-        "status": "validated" if stock_total and tech_min >= stock_total else "partial",
+        "status": "validated" if technical_universe_matches_market and tech_min >= stock_total else "partial",
         "stocks": stock_total,
+        "technical_snapshot_stocks": technical_stocks,
+        "universe_matches_market": technical_universe_matches_market,
         "minimum_indicator_coverage": tech_min,
-        "coverage_pct": round(tech_min / stock_total * 100, 1) if stock_total else 0,
+        "coverage_pct": round(min(100.0, tech_min / stock_total * 100), 1) if stock_total else 0,
         "method": (technical or {}).get("method"),
     }
 
