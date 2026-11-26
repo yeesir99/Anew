@@ -212,20 +212,9 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
     """Score only dimensions supported by sufficiently broad, attributable evidence."""
     evidence = evidence or {}
     change = number(change_pct)
-    f5, f10 = number(flow_5d), number(flow_10d)
+    f5, f10 = flow_5d, flow_10d
     structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
-    persistence = None
-    provider5, amount5 = f5 if isinstance(f5, tuple) and len(f5) == 2 else (None, f5)
-    provider10, amount10 = f10 if isinstance(f10, tuple) and len(f10) == 2 else (None, f10)
-    if (amount5 is not None and amount10 is not None
-            and (provider5 is None or provider10 is None or provider5 == provider10)):
-        if amount5 > 0 and amount10 > 0:
-            persistence = 75.0
-        elif amount5 < 0 and amount10 < 0:
-            persistence = 25.0
-        else:
-            persistence = 50.0
-    codes = set(evidence.get("constituent_codes") or [])
+    persistence = consistent_provider_flow_persistence(f5, f10)\n    codes = set(evidence.get("constituent_codes") or [])
     revenue_score, revenue_meta = _breadth_score(
         (evidence.get("financials") or {}).get("records") or [], codes,
         ("营业收入-同比增长", "营业收入同比增长", "营业收入同比", "营业收入同比增长率"))
