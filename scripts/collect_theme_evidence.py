@@ -23,7 +23,8 @@ from pathlib import Path
 import akshare as ak
 import pandas as pd
 from import_sector_archive import is_concept_code
-from theme_mapping_rules import merge_exact_components, star_next_new_eligible
+from theme_mapping_rules import (merge_exact_components, star_next_new_eligible,
+    private_bank_records_for_trade_date)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -519,15 +520,45 @@ def main():
                 "components":component_summary,"mapping_date":fetched,"checked_at":fetched}
 
         if name == "参股民营银行":
-            candidates, meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
-            return [], {"source":"constituents:"+name,"status":"pending_relation_evidence",
-                "provider":"THS" if candidates else None,
-                "taxonomy":"THS concept candidates only" if candidates else None,
-                "matched_symbol":meta.get("matched_symbol") if meta else None,
-                "mapping_source":"candidate taxonomy only; not accepted as equity proof",
-                "candidate_codes":[x["code"] for x in candidates],
-                "candidate_count":len(candidates),
-                "detail":"需要上市公司披露的被投资银行名称、股权关系、持股比例和披露日期；概念标签不作为持股证明"}
+            # THS concept membership is discovery-only. Actual membership must
+            # come from manually reviewed primary disclosures in the evidence file.
+            evidence_path = DATA / "private_bank_equity_evidence.json"
+            try:
+                evidence_doc = json.loads(evidence_path.read_text(encoding="utf-8")) if evidence_path.exists() else {}
+            except Exception as evidence_exc:
+                evidence_doc = {}
+                LOG.warning("Private-bank evidence file unreadable: %s", str(evidence_exc)[:160])
+            evidence_records = private_bank_records_for_trade_date(
+                evidence_doc.get("records") or [], trade_day.isoformat())
+            members = []
+            for record in evidence_records:
+                members.append({
+                    "code": str(record["listed_company_code"]).strip(),
+                    "name": clean(record.get("listed_company_name")),
+                    "investee_bank_name": record.get("investee_bank_name"),
+                    "holding_pct": float(record["holding_pct"]),
+                    "disclosure_date": record["disclosure_date"],
+                })
+            if not members:
+                candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
+                return [], {"source":"constituents:"+name,"status":"pending_relation_evidence",
+                    "provider":"THS" if candidates else None,
+                    "taxonomy":"THS concept candidates only" if candidates else None,
+                    "matched_symbol":candidate_meta.get("matched_symbol") if candidate_meta else None,
+                    "mapping_source":"candidate taxonomy only; not accepted as equity proof",
+                    "candidate_codes":[x["code"] for x in candidates],
+                    "candidate_count":len(candidates),
+                    "verified_relationships":[],
+                    "detail":"需要在 data/private_bank_equity_evidence.json 中提供上市公司原始披露证据；概念标签不作为持股证明"}
+            fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            return members, {"source":"constituents:"+name,"status":"success",
+                "records":len(members),"provider":"reviewed primary disclosures",
+                "taxonomy":"listed-company equity disclosures",
+                "matched_symbol":"参股民营银行（逐条披露核验）",
+                "mapping_source":"data/private_bank_equity_evidence.json; primary disclosure fields validated",
+                "mapping_date":fetched,"checked_at":fetched,
+                "verified_relationships":evidence_records,
+                "detail":"成分仅来自日期匹配的年报、交易所公告或巨潮资讯披露记录"}
 
         if name == "科创次新股":
             candidates, meta = fetch_ths_concept_members({"sector_code": None}, "科创次新股")
@@ -869,6 +900,8 @@ def main():
             "sector_code": theme.get("sector_code"),
             "constituent_count": len(members),
             "mapping": theme_member_meta.get(name, {}),
+            "private_bank_equity_evidence": (theme_member_meta.get(name, {}).get("verified_relationships", [])
+                if name == "参股民营银行" else []),
             "constituent_codes": sorted(codes),
             "financials": {"report_date": report_date, "records": financial,
                 "coverage": len({re.sub(r"\D", "", str(r.get("股票代码") or r.get("证券代码") or "")) for r in financial})},
