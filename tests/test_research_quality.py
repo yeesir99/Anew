@@ -142,6 +142,35 @@ class ResearchQualityTests(unittest.TestCase):
         report = evaluate_quality(market, self.research, [], {}, {}, self.technical)
         self.assertEqual(report["quality_level"], "L0_INVALID")
 
+    def test_flow_rows_must_match_current_registry_record_count(self):
+        flows = [{
+            "trade_date": "2026-11-20", "indicator": "5日",
+            "main_net_inflow_cny": 100, "provider": "EastMoney",
+            "source": "AKShare/EastMoney public estimate",
+        }]
+        registry = {"trade_date": "2026-11-20", "sources": [{
+            "source": "sector_flow_5日", "status": "success",
+            "provider": "EastMoney", "records": 90, "coverage_pct": 100,
+        }]}
+        report = evaluate_quality(self.market, self.research, flows, {}, {}, self.technical,
+                                  {}, registry)
+        check = report["checks"]["capital_flow_5日"]
+        self.assertFalse(check["available"])
+        self.assertFalse(check["record_count_matches"])
+        self.assertEqual(check["records"], 0)
+
+    def test_technical_coverage_uses_market_universe_as_denominator(self):
+        technical = {"stocks": 100, "coverage": {
+            key: 100 for key in ("ma5", "ma10", "ma20", "ma60", "rsi14",
+                                 "macd_dif", "macd_dea", "macd_hist", "volatility20")
+        }}
+        report = evaluate_quality(self.market, self.research, [], {}, {}, technical)
+        check = report["checks"]["technical_indicators"]
+        self.assertEqual(check["status"], "partial")
+        self.assertEqual(check["stocks"], 5575)
+        self.assertFalse(check["universe_matches_market"])
+        self.assertEqual(check["coverage_pct"], 1.8)
+
     def test_invalid_market_is_l0(self):
         report = evaluate_quality({}, self.research, [], {}, {}, {}, {})
         self.assertEqual(report["quality_level"], "L0_INVALID")
