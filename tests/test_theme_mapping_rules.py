@@ -62,6 +62,24 @@ class SpecialThemeMappingTests(unittest.TestCase):
             [{**record, "listed_company_code": "60001"}], "2026-11-20"), [])
 
 
+
+    def test_private_bank_duplicate_relationship_uses_latest_disclosure(self):
+        base = {
+            "listed_company_code": "600001",
+            "investee_bank_name": "某民营银行",
+            "relationship_type": "equity_investment",
+            "holding_pct": 4.0,
+            "disclosure_date": "2025-03-31",
+            "as_of_trade_date": "2026-11-20",
+            "source_url": "https://example.com/annual-report",
+            "source_type": "annual_report",
+            "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之四，具体投资情况见年度报告附注。",
+        }
+        newer = {**base, "holding_pct": 5.0, "disclosure_date": "2026-03-31"}
+        rows = private_bank_records_for_trade_date([base, newer], "2026-11-20")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["holding_pct"], 5.0)
+
     def test_flow_persistence_requires_same_provider_for_both_periods(self):
         self.assertEqual(consistent_provider_flow_persistence(("THS", 10), ("THS", 20)), 75.0)
         self.assertEqual(consistent_provider_flow_persistence(("EastMoney", -10), ("EastMoney", -20)), 25.0)
