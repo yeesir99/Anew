@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "product": "A-Share Alpha Radar",
-  "trade_date": "2026-11-25",
-  "generated_at": "2026-11-25T20:42:22+00:00",
+  "trade_date": "2026-11-26",
+  "generated_at": "2026-11-26T20:31:57+00:00",
   "data_status": "validated",
   "freshness": {
     "calendar_age_days": 1,
@@ -10,566 +10,566 @@
     "max_allowed_weekday_gap": 2
   },
   "coverage": {
-    "valid_stock_count": 5050,
-    "up": 561,
-    "down": 4379,
-    "unchanged": 110
+    "valid_stock_count": 5579,
+    "up": 1766,
+    "down": 3641,
+    "unchanged": 172
   },
   "market_breadth": {
-    "up": 561,
-    "down": 4379,
-    "flat": 110,
-    "total": 5050,
-    "advance_ratio_pct": 11.11,
-    "decline_ratio_pct": 86.71,
-    "median_change_pct": -3.548,
-    "aggregate_turnover_cny": 1325052937156.0,
-    "advance_decline_ratio": 0.128
+    "up": 1766,
+    "down": 3641,
+    "flat": 172,
+    "total": 5579,
+    "advance_ratio_pct": 31.65,
+    "decline_ratio_pct": 65.26,
+    "median_change_pct": -0.792,
+    "aggregate_turnover_cny": 1325846146222.0,
+    "advance_decline_ratio": 0.485
   },
   "leaders": [
     {
+      "symbol": "301059",
+      "name": "金三江",
+      "change_pct": 20.043,
+      "amount_cny": 166598222.0,
+      "close_cny": 11.26,
+      "turnover_rate": 7.4101,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301190",
+      "name": "善水科技",
+      "change_pct": 20.0,
+      "amount_cny": 319652695.0,
+      "close_cny": 28.56,
+      "turnover_rate": 6.5284,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "300324",
+      "name": "旋极信息",
+      "change_pct": 20.0,
+      "amount_cny": 2531308081.0,
+      "close_cny": 5.04,
+      "turnover_rate": 30.8438,
+      "volume_ratio": 1.5671
+    },
+    {
+      "symbol": "301282",
+      "name": "金禄电子",
+      "change_pct": 19.386,
+      "amount_cny": 1291244472.0,
+      "close_cny": 34.98,
+      "turnover_rate": 21.8299,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301112",
+      "name": "信邦智能",
+      "change_pct": 19.054,
+      "amount_cny": 158063316.0,
+      "close_cny": 27.93,
+      "turnover_rate": 5.171,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "688820",
+      "name": "盛合晶微",
+      "change_pct": 18.941,
+      "amount_cny": 4148339058.0,
+      "close_cny": 101.1,
+      "turnover_rate": 22.8952,
+      "volume_ratio": 1.5473
+    },
+    {
+      "symbol": "301041",
+      "name": "金百泽",
+      "change_pct": 16.878,
+      "amount_cny": 560189920.0,
+      "close_cny": 27.63,
+      "turnover_rate": 26.199,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301107",
+      "name": "瑜欣电子",
+      "change_pct": 14.907,
+      "amount_cny": 94823393.0,
+      "close_cny": 18.5,
+      "turnover_rate": 6.6155,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301119",
+      "name": "正强股份",
+      "change_pct": 14.309,
+      "amount_cny": 175378835.0,
+      "close_cny": 21.33,
+      "turnover_rate": 7.3466,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301316",
+      "name": "慧博云通",
+      "change_pct": 13.415,
+      "amount_cny": 946426960.0,
+      "close_cny": 32.21,
+      "turnover_rate": 7.8171,
+      "volume_ratio": null
+    },
+    {
       "symbol": "300086",
       "name": "康芝药业",
-      "change_pct": 20.05,
-      "amount_cny": 312297013.0,
-      "close_cny": 4.85,
-      "turnover_rate": 15.1999,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300703",
-      "name": "创源股份",
-      "change_pct": 20.027,
-      "amount_cny": 695396055.0,
-      "close_cny": 17.8,
-      "turnover_rate": 24.3637,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "301089",
-      "name": "拓新药业",
-      "change_pct": 20.022,
-      "amount_cny": 144827149.0,
-      "close_cny": 21.34,
-      "turnover_rate": 7.8907,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "688066",
-      "name": "*ST航图",
-      "change_pct": 20.0,
-      "amount_cny": 93316090.0,
-      "close_cny": 4.14,
-      "turnover_rate": 7.9638,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300290",
-      "name": "ST荣科",
-      "change_pct": 20.0,
-      "amount_cny": 290366943.0,
-      "close_cny": 5.1,
-      "turnover_rate": 9.4405,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "301211",
-      "name": "亨迪药业",
-      "change_pct": 19.978,
-      "amount_cny": 208833853.0,
-      "close_cny": 11.11,
-      "turnover_rate": 4.6452,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "301066",
-      "name": "万事利",
-      "change_pct": 19.962,
-      "amount_cny": 355875132.0,
-      "close_cny": 12.74,
-      "turnover_rate": 12.3765,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300927",
-      "name": "江天化学",
-      "change_pct": 19.128,
-      "amount_cny": 452709764.0,
-      "close_cny": 21.86,
-      "turnover_rate": 15.7273,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300824",
-      "name": "北鼎股份",
-      "change_pct": 13.448,
-      "amount_cny": 420544566.0,
-      "close_cny": 9.87,
-      "turnover_rate": 14.4484,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "301139",
-      "name": "元道退",
-      "change_pct": 12.308,
-      "amount_cny": 8577375.0,
-      "close_cny": 0.73,
-      "turnover_rate": 16.3007,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "600180",
-      "name": "*ST瑞茂",
-      "change_pct": 10.909,
-      "amount_cny": 25287877.0,
-      "close_cny": 0.61,
-      "turnover_rate": 3.8928,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "000004",
-      "name": "国华退",
-      "change_pct": 10.87,
-      "amount_cny": 1779195.0,
-      "close_cny": 0.51,
-      "turnover_rate": 2.7624,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300237",
-      "name": "美晨科技",
-      "change_pct": 10.409,
-      "amount_cny": 510355140.0,
-      "close_cny": 2.97,
-      "turnover_rate": 12.353,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "000826",
-      "name": "*ST启环",
-      "change_pct": 10.377,
-      "amount_cny": 165257336.0,
-      "close_cny": 1.17,
-      "turnover_rate": 10.1969,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "000078",
-      "name": "ST海王",
-      "change_pct": 10.28,
-      "amount_cny": 139796222.0,
-      "close_cny": 1.18,
-      "turnover_rate": 4.5989,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300338",
-      "name": "*ST开元",
-      "change_pct": 10.204,
-      "amount_cny": 160809705.0,
-      "close_cny": 2.16,
-      "turnover_rate": 20.8503,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "600280",
-      "name": "中央商场",
-      "change_pct": 10.156,
-      "amount_cny": 179943870.0,
-      "close_cny": 2.82,
-      "turnover_rate": 5.7879,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "603030",
-      "name": "全筑股份",
-      "change_pct": 10.127,
-      "amount_cny": 388001341.0,
-      "close_cny": 2.61,
-      "turnover_rate": 11.2981,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "002122",
-      "name": "汇洲智能",
-      "change_pct": 10.123,
-      "amount_cny": 810188543.0,
-      "close_cny": 3.59,
-      "turnover_rate": 11.3588,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "002038",
-      "name": "双鹭药业",
-      "change_pct": 10.112,
-      "amount_cny": 283267103.0,
-      "close_cny": 4.9,
-      "turnover_rate": 6.8639,
-      "volume_ratio": null
-    }
-  ],
-  "laggards": [
-    {
-      "symbol": "300550",
-      "name": "和仁科技",
-      "change_pct": -20.0,
-      "amount_cny": 441572825.0,
-      "close_cny": 13.44,
-      "turnover_rate": 11.5191,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "688206",
-      "name": "概伦电子",
-      "change_pct": -17.573,
-      "amount_cny": 373205739.0,
-      "close_cny": 25.0,
-      "turnover_rate": 3.1619,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300844",
-      "name": "山水比德",
-      "change_pct": -16.337,
-      "amount_cny": 120549989.0,
-      "close_cny": 17.77,
-      "turnover_rate": 6.8737,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "301209",
-      "name": "联合化学",
-      "change_pct": -16.335,
-      "amount_cny": 575834396.0,
-      "close_cny": 39.9,
-      "turnover_rate": 9.9597,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "300029",
-      "name": "天龙退",
-      "change_pct": -14.286,
-      "amount_cny": 2658657.0,
-      "close_cny": 0.12,
-      "turnover_rate": 10.2786,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "688172",
-      "name": "燕东微",
-      "change_pct": -14.218,
-      "amount_cny": 1117738182.0,
-      "close_cny": 30.83,
-      "turnover_rate": 2.8144,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "688798",
-      "name": "艾为电子",
-      "change_pct": -14.186,
-      "amount_cny": 425683661.0,
-      "close_cny": 49.0,
-      "turnover_rate": 6.1288,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "301218",
-      "name": "华是科技",
-      "change_pct": -14.157,
-      "amount_cny": 1461073915.0,
-      "close_cny": 73.55,
-      "turnover_rate": 25.6358,
-      "volume_ratio": null
-    },
-    {
-      "symbol": "688347",
-      "name": "华虹宏力",
-      "change_pct": -13.893,
-      "amount_cny": 8086857126.0,
-      "close_cny": 180.3,
-      "turnover_rate": 10.5676,
-      "volume_ratio": 1.1503
-    },
-    {
-      "symbol": "688611",
-      "name": "杭州柯林",
-      "change_pct": -13.731,
-      "amount_cny": 283341987.0,
-      "close_cny": 54.91,
-      "turnover_rate": 3.1554,
+      "change_pct": 13.402,
+      "amount_cny": 626759560.0,
+      "close_cny": 5.5,
+      "turnover_rate": 27.0621,
       "volume_ratio": null
     },
     {
       "symbol": "688629",
       "name": "华丰科技",
-      "change_pct": -13.614,
-      "amount_cny": 2180783920.0,
-      "close_cny": 83.06,
-      "turnover_rate": 5.3543,
-      "volume_ratio": 0.8024
+      "change_pct": 11.365,
+      "amount_cny": 2896468011.0,
+      "close_cny": 92.5,
+      "turnover_rate": 6.9529,
+      "volume_ratio": 1.0564
     },
     {
-      "symbol": "301288",
-      "name": "清研环境",
-      "change_pct": -13.538,
-      "amount_cny": 164878188.0,
-      "close_cny": 18.33,
-      "turnover_rate": 10.9738,
+      "symbol": "300829",
+      "name": "金丹科技",
+      "change_pct": 11.187,
+      "amount_cny": 1251473051.0,
+      "close_cny": 32.4,
+      "turnover_rate": 23.7382,
       "volume_ratio": null
     },
     {
-      "symbol": "300852",
-      "name": "四会富仕",
-      "change_pct": -13.407,
-      "amount_cny": 714125103.0,
-      "close_cny": 46.76,
-      "turnover_rate": 9.3096,
+      "symbol": "300252",
+      "name": "金信诺",
+      "change_pct": 10.553,
+      "amount_cny": 379532035.0,
+      "close_cny": 8.59,
+      "turnover_rate": 8.1094,
       "volume_ratio": null
     },
     {
-      "symbol": "301321",
-      "name": "翰博高新",
-      "change_pct": -13.246,
-      "amount_cny": 252934217.0,
-      "close_cny": 29.93,
-      "turnover_rate": 5.3472,
+      "symbol": "000889",
+      "name": "中嘉博创",
+      "change_pct": 10.141,
+      "amount_cny": 893848066.0,
+      "close_cny": 3.91,
+      "turnover_rate": 26.8972,
       "volume_ratio": null
     },
     {
-      "symbol": "688409",
-      "name": "富创精密",
-      "change_pct": -13.091,
-      "amount_cny": 995730301.0,
-      "close_cny": 97.86,
-      "turnover_rate": 3.1551,
+      "symbol": "002453",
+      "name": "华软科技",
+      "change_pct": 10.123,
+      "amount_cny": 225188319.0,
+      "close_cny": 4.46,
+      "turnover_rate": 8.2683,
       "volume_ratio": null
     },
     {
-      "symbol": "300576",
-      "name": "容大感光",
-      "change_pct": -12.981,
-      "amount_cny": 571069632.0,
-      "close_cny": 21.05,
-      "turnover_rate": 9.7382,
+      "symbol": "000912",
+      "name": "泸天化",
+      "change_pct": 10.101,
+      "amount_cny": 96148911.0,
+      "close_cny": 3.27,
+      "turnover_rate": 1.9206,
       "volume_ratio": null
     },
     {
-      "symbol": "688371",
-      "name": "菲沃泰",
-      "change_pct": -12.794,
-      "amount_cny": 201358379.0,
-      "close_cny": 15.2,
-      "turnover_rate": 3.6849,
+      "symbol": "600963",
+      "name": "岳阳林纸",
+      "change_pct": 10.095,
+      "amount_cny": 241446317.0,
+      "close_cny": 3.49,
+      "turnover_rate": 4.0732,
       "volume_ratio": null
     },
     {
-      "symbol": "301189",
-      "name": "奥尼电子",
-      "change_pct": -12.786,
-      "amount_cny": 483070951.0,
-      "close_cny": 38.13,
-      "turnover_rate": 7.6125,
+      "symbol": "002470",
+      "name": "金正大",
+      "change_pct": 10.063,
+      "amount_cny": 319258849.0,
+      "close_cny": 1.75,
+      "turnover_rate": 5.6986,
       "volume_ratio": null
     },
     {
-      "symbol": "300637",
-      "name": "扬帆新材",
-      "change_pct": -12.749,
-      "amount_cny": 160347347.0,
-      "close_cny": 8.76,
-      "turnover_rate": 7.3268,
+      "symbol": "600814",
+      "name": "杭州解百",
+      "change_pct": 10.06,
+      "amount_cny": 1493135073.0,
+      "close_cny": 9.19,
+      "turnover_rate": 22.392,
+      "volume_ratio": null
+    }
+  ],
+  "laggards": [
+    {
+      "symbol": "920593",
+      "name": "鼎智科技",
+      "change_pct": -30.0,
+      "amount_cny": 178183475.0,
+      "close_cny": 13.02,
+      "turnover_rate": 7.9125,
       "volume_ratio": null
     },
     {
-      "symbol": "688585",
-      "name": "上纬新材",
-      "change_pct": -12.701,
-      "amount_cny": 2478055785.0,
-      "close_cny": 167.5,
-      "turnover_rate": 3.4728,
-      "volume_ratio": 1.1417
+      "symbol": "300044",
+      "name": "*ST赛为",
+      "change_pct": -20.093,
+      "amount_cny": 262903030.0,
+      "close_cny": 3.42,
+      "turnover_rate": 10.0111,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "300469",
+      "name": "信息发展",
+      "change_pct": -20.0,
+      "amount_cny": 427427969.0,
+      "close_cny": 28.28,
+      "turnover_rate": 5.4495,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "300670",
+      "name": "ST大烨",
+      "change_pct": -20.0,
+      "amount_cny": 83711638.0,
+      "close_cny": 3.6,
+      "turnover_rate": 10.1237,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301049",
+      "name": "超越科技",
+      "change_pct": -17.327,
+      "amount_cny": 139449060.0,
+      "close_cny": 16.27,
+      "turnover_rate": 12.2772,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "688066",
+      "name": "*ST航图",
+      "change_pct": -15.7,
+      "amount_cny": 116389292.0,
+      "close_cny": 3.49,
+      "turnover_rate": 10.0752,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "300550",
+      "name": "和仁科技",
+      "change_pct": -13.244,
+      "amount_cny": 292306655.0,
+      "close_cny": 11.66,
+      "turnover_rate": 9.4797,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "300301",
+      "name": "ST长方",
+      "change_pct": -13.072,
+      "amount_cny": 40035991.0,
+      "close_cny": 2.66,
+      "turnover_rate": 1.7747,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "300338",
+      "name": "*ST开元",
+      "change_pct": -12.963,
+      "amount_cny": 112218365.0,
+      "close_cny": 1.88,
+      "turnover_rate": 16.6116,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "300849",
+      "name": "锦盛新材",
+      "change_pct": -12.76,
+      "amount_cny": 151820988.0,
+      "close_cny": 15.93,
+      "turnover_rate": 6.3548,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "301066",
+      "name": "万事利",
+      "change_pct": -10.597,
+      "amount_cny": 365560824.0,
+      "close_cny": 11.39,
+      "turnover_rate": 13.8381,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "688078",
+      "name": "龙软科技",
+      "change_pct": -10.21,
+      "amount_cny": 111738054.0,
+      "close_cny": 24.8,
+      "turnover_rate": 6.0201,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "000820",
+      "name": "ST节能",
+      "change_pct": -10.112,
+      "amount_cny": 2021280.0,
+      "close_cny": 2.4,
+      "turnover_rate": 0.2836,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "605378",
+      "name": "野马电池",
+      "change_pct": -10.014,
+      "amount_cny": 195567570.0,
+      "close_cny": 13.3,
+      "turnover_rate": 5.4773,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "001278",
+      "name": "一彬科技",
+      "change_pct": -10.014,
+      "amount_cny": 155628771.0,
+      "close_cny": 12.76,
+      "turnover_rate": 14.1752,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "002685",
+      "name": "华东重机",
+      "change_pct": -10.011,
+      "amount_cny": 2939845909.0,
+      "close_cny": 8.09,
+      "turnover_rate": 35.9164,
+      "volume_ratio": 0.977
+    },
+    {
+      "symbol": "603391",
+      "name": "力聚热能",
+      "change_pct": -9.997,
+      "amount_cny": 52921440.0,
+      "close_cny": 56.54,
+      "turnover_rate": 4.1143,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "688670",
+      "name": "金迪克",
+      "change_pct": -9.982,
+      "amount_cny": 50385764.0,
+      "close_cny": 10.1,
+      "turnover_rate": 3.9697,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "920067",
+      "name": "华晟智能",
+      "change_pct": -9.896,
+      "amount_cny": 178556575.0,
+      "close_cny": 25.95,
+      "turnover_rate": 47.0707,
+      "volume_ratio": null
+    },
+    {
+      "symbol": "688033",
+      "name": "*ST天宜",
+      "change_pct": -9.788,
+      "amount_cny": 42760434.0,
+      "close_cny": 3.41,
+      "turnover_rate": 2.1504,
+      "volume_ratio": null
     }
   ],
   "most_active": [
     {
       "symbol": "300308",
       "name": "中际旭创",
-      "change_pct": -1.918,
-      "amount_cny": 17062838036.0,
-      "close_cny": 409.0,
-      "turnover_rate": 3.7036,
-      "volume_ratio": 0.8534
+      "change_pct": 5.178,
+      "amount_cny": 19706246304.0,
+      "close_cny": 430.18,
+      "turnover_rate": 4.1688,
+      "volume_ratio": 0.9425
     },
     {
       "symbol": "300502",
       "name": "新易盛",
-      "change_pct": 0.717,
-      "amount_cny": 16411046025.0,
-      "close_cny": 181.3,
-      "turnover_rate": 7.1887,
-      "volume_ratio": 0.8721
+      "change_pct": 4.264,
+      "amount_cny": 16315284157.0,
+      "close_cny": 189.03,
+      "turnover_rate": 7.039,
+      "volume_ratio": 0.8571
     },
     {
       "symbol": "300750",
       "name": "宁德时代",
-      "change_pct": -8.334,
-      "amount_cny": 15692171331.0,
-      "close_cny": 208.42,
-      "turnover_rate": 1.7141,
-      "volume_ratio": 1.5099
+      "change_pct": -2.015,
+      "amount_cny": 13156075944.0,
+      "close_cny": 204.22,
+      "turnover_rate": 1.5069,
+      "volume_ratio": 1.1949
     },
     {
       "symbol": "300394",
       "name": "天孚通信",
-      "change_pct": 7.65,
-      "amount_cny": 11715645790.0,
-      "close_cny": 130.87,
-      "turnover_rate": 8.2062,
-      "volume_ratio": 1.3344
+      "change_pct": 2.384,
+      "amount_cny": 9144883679.0,
+      "close_cny": 133.99,
+      "turnover_rate": 6.4096,
+      "volume_ratio": 0.9597
     },
     {
       "symbol": "688256",
       "name": "寒武纪",
-      "change_pct": -6.402,
-      "amount_cny": 10248958473.0,
-      "close_cny": 907.9,
-      "turnover_rate": 1.755,
-      "volume_ratio": 0.9052
+      "change_pct": 3.85,
+      "amount_cny": 8961265925.0,
+      "close_cny": 942.85,
+      "turnover_rate": 1.5333,
+      "volume_ratio": 0.8514
     },
     {
       "symbol": "002384",
       "name": "东山精密",
-      "change_pct": -3.989,
-      "amount_cny": 8701744499.0,
-      "close_cny": 69.8,
-      "turnover_rate": 8.7498,
-      "volume_ratio": 0.8832
+      "change_pct": 3.897,
+      "amount_cny": 8816622790.0,
+      "close_cny": 72.52,
+      "turnover_rate": 8.8354,
+      "volume_ratio": 0.8749
     },
     {
-      "symbol": "688347",
-      "name": "华虹宏力",
-      "change_pct": -13.893,
-      "amount_cny": 8086857126.0,
-      "close_cny": 180.3,
-      "turnover_rate": 10.5676,
-      "volume_ratio": 1.1503
-    },
-    {
-      "symbol": "688981",
-      "name": "中芯国际",
-      "change_pct": -3.565,
-      "amount_cny": 7131056114.0,
-      "close_cny": 122.0,
-      "turnover_rate": 2.9042,
-      "volume_ratio": 0.8389
-    },
-    {
-      "symbol": "600519",
-      "name": "贵州茅台",
-      "change_pct": 1.016,
-      "amount_cny": 6842335769.0,
-      "close_cny": 1474.84,
-      "turnover_rate": 0.3734,
-      "volume_ratio": 0.9099
-    },
-    {
-      "symbol": "002371",
-      "name": "北方华创",
-      "change_pct": -9.546,
-      "amount_cny": 6694980540.0,
-      "close_cny": 495.0,
-      "turnover_rate": 1.8177,
-      "volume_ratio": 1.127
+      "symbol": "688825",
+      "name": "长鑫科技",
+      "change_pct": -2.708,
+      "amount_cny": 8779981728.0,
+      "close_cny": 32.69,
+      "turnover_rate": 5.8831,
+      "volume_ratio": 0.9154
     },
     {
       "symbol": "600410",
       "name": "华胜天成",
-      "change_pct": 4.368,
-      "amount_cny": 6033223822.0,
-      "close_cny": 17.92,
-      "turnover_rate": 31.3322,
-      "volume_ratio": 1.037
-    },
-    {
-      "symbol": "300476",
-      "name": "胜宏科技",
-      "change_pct": -0.679,
-      "amount_cny": 5897579353.0,
-      "close_cny": 121.49,
-      "turnover_rate": 5.5313,
-      "volume_ratio": 1.1192
-    },
-    {
-      "symbol": "603986",
-      "name": "兆易创新",
-      "change_pct": -6.692,
-      "amount_cny": 5835895126.0,
-      "close_cny": 198.28,
-      "turnover_rate": 4.2702,
-      "volume_ratio": 0.9639
-    },
-    {
-      "symbol": "688012",
-      "name": "中微公司",
-      "change_pct": -7.457,
-      "amount_cny": 5686582996.0,
-      "close_cny": 239.9,
-      "turnover_rate": 2.46,
-      "volume_ratio": 0.9236
-    },
-    {
-      "symbol": "002463",
-      "name": "沪电股份",
-      "change_pct": -5.515,
-      "amount_cny": 5350824502.0,
-      "close_cny": 79.49,
-      "turnover_rate": 3.3918,
-      "volume_ratio": 0.772
+      "change_pct": 6.027,
+      "amount_cny": 6710980014.0,
+      "close_cny": 19.0,
+      "turnover_rate": 33.3616,
+      "volume_ratio": 1.0772
     },
     {
       "symbol": "601899",
       "name": "紫金矿业",
-      "change_pct": -1.034,
-      "amount_cny": 5292357246.0,
-      "close_cny": 22.97,
-      "turnover_rate": 1.1147,
-      "volume_ratio": 0.6765
+      "change_pct": 3.396,
+      "amount_cny": 6429124135.0,
+      "close_cny": 23.75,
+      "turnover_rate": 1.3196,
+      "volume_ratio": 0.879
     },
     {
-      "symbol": "601138",
-      "name": "工业富联",
-      "change_pct": -3.296,
-      "amount_cny": 4979379330.0,
-      "close_cny": 39.61,
-      "turnover_rate": 0.6255,
-      "volume_ratio": 0.8658
+      "symbol": "002371",
+      "name": "北方华创",
+      "change_pct": -3.143,
+      "amount_cny": 6405785960.0,
+      "close_cny": 479.44,
+      "turnover_rate": 1.8289,
+      "volume_ratio": 1.1191
     },
     {
       "symbol": "600183",
       "name": "生益科技",
-      "change_pct": -5.146,
-      "amount_cny": 4588431023.0,
-      "close_cny": 58.43,
-      "turnover_rate": 3.1798,
-      "volume_ratio": 0.8896
+      "change_pct": 5.853,
+      "amount_cny": 6325259842.0,
+      "close_cny": 61.85,
+      "turnover_rate": 4.2844,
+      "volume_ratio": 1.0956
     },
     {
-      "symbol": "688498",
-      "name": "源杰科技",
-      "change_pct": -4.722,
-      "amount_cny": 4518391579.0,
-      "close_cny": 571.0,
-      "turnover_rate": 6.2306,
-      "volume_ratio": 0.9261
+      "symbol": "688981",
+      "name": "中芯国际",
+      "change_pct": -4.508,
+      "amount_cny": 5953150388.0,
+      "close_cny": 116.5,
+      "turnover_rate": 2.5281,
+      "volume_ratio": 0.8176
     },
     {
-      "symbol": "601398",
-      "name": "工商银行",
-      "change_pct": -0.217,
-      "amount_cny": 4495209609.0,
-      "close_cny": 9.2,
-      "turnover_rate": 0.1819,
-      "volume_ratio": 1.0625
+      "symbol": "300476",
+      "name": "胜宏科技",
+      "change_pct": 1.819,
+      "amount_cny": 5911534830.0,
+      "close_cny": 123.7,
+      "turnover_rate": 5.4667,
+      "volume_ratio": 1.0095
+    },
+    {
+      "symbol": "002463",
+      "name": "沪电股份",
+      "change_pct": 2.013,
+      "amount_cny": 5524178424.0,
+      "close_cny": 81.09,
+      "turnover_rate": 3.4964,
+      "volume_ratio": 0.8185
+    },
+    {
+      "symbol": "601138",
+      "name": "工业富联",
+      "change_pct": 3.509,
+      "amount_cny": 5322015494.0,
+      "close_cny": 41.0,
+      "turnover_rate": 0.658,
+      "volume_ratio": 0.8602
+    },
+    {
+      "symbol": "688347",
+      "name": "华虹宏力",
+      "change_pct": -1.83,
+      "amount_cny": 5208347011.0,
+      "close_cny": 177.0,
+      "turnover_rate": 7.117,
+      "volume_ratio": 0.8362
+    },
+    {
+      "symbol": "002242",
+      "name": "九阳股份",
+      "change_pct": 8.662,
+      "amount_cny": 5175133433.0,
+      "close_cny": 41.9,
+      "turnover_rate": 16.6798,
+      "volume_ratio": 1.282
+    },
+    {
+      "symbol": "688012",
+      "name": "中微公司",
+      "change_pct": -6.524,
+      "amount_cny": 5021353453.0,
+      "close_cny": 224.25,
+      "turnover_rate": 2.3331,
+      "volume_ratio": 0.9124
+    },
+    {
+      "symbol": "603986",
+      "name": "兆易创新",
+      "change_pct": -0.353,
+      "amount_cny": 4838938441.0,
+      "close_cny": 197.58,
+      "turnover_rate": 3.6351,
+      "volume_ratio": 0.8082
+    },
+    {
+      "symbol": "600519",
+      "name": "贵州茅台",
+      "change_pct": -0.396,
+      "amount_cny": 4747727455.0,
+      "close_cny": 1469.0,
+      "turnover_rate": 0.2592,
+      "volume_ratio": 0.6581
     }
   ],
   "sources": [
