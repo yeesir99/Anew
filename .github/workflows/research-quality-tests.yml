@@ -9,10 +9,12 @@ on:
       - 'scripts/collect_theme_evidence.py'
       - 'scripts/collect_research_modules.py'
       - 'scripts/smoke_research_providers.py'
+      - 'scripts/research_provider_utils.py'
       - 'scripts/enrich_research_snapshot.py'
       - 'tests/test_research_quality.py'
       - 'tests/test_theme_mapping_rules.py'
       - 'tests/test_research_provider_smoke.py'
+      - 'tests/test_research_provider_utils.py'
       - '.github/workflows/research-quality-tests.yml'
       - '.github/workflows/cloud-public.yml'
   push:
@@ -47,3 +49,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_theme_mapping_rules.py' -v
       - name: Run provider contract tests
         run: python -m unittest discover -s tests -p 'test_research_provider_smoke.py' -v
+      - name: Run bounded retry tests
+        run: python -m unittest discover -s tests -p 'test_research_provider_utils.py' -v
