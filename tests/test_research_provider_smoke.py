@@ -1,8 +1,16 @@
 import unittest
 
-import pandas as pd
-
 from scripts.smoke_research_providers import PERIOD_SYMBOLS, validate_ths_flow_frame
+
+
+class FakeFrame:
+    def __init__(self, columns, rows):
+        self.columns = columns
+        self._rows = rows
+        self.empty = not rows
+
+    def iterrows(self):
+        return enumerate(self._rows)
 
 
 class ResearchProviderSmokeContractTests(unittest.TestCase):
@@ -12,10 +20,14 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         })
 
     def test_validates_provider_schema_and_counts_only_finite_rows(self):
-        frame = pd.DataFrame({
-            "行业": ["银行", "电子", "无效"],
-            "净额": ["12.5", "-3.2", "not-a-number"],
-        })
+        frame = FakeFrame(
+            ["行业", "净额"],
+            [
+                {"行业": "银行", "净额": "12.5"},
+                {"行业": "电子", "净额": "-3.2"},
+                {"行业": "无效", "净额": "not-a-number"},
+            ],
+        )
         result = validate_ths_flow_frame(frame)
         self.assertEqual(result["records"], 2)
         self.assertEqual(result["unique_industries"], 2)
@@ -23,13 +35,17 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
 
     def test_rejects_empty_or_schema_drift(self):
         with self.assertRaises(ValueError):
-            validate_ths_flow_frame(pd.DataFrame())
+            validate_ths_flow_frame(FakeFrame([], []))
         with self.assertRaises(ValueError):
-            validate_ths_flow_frame(pd.DataFrame({"板块": ["银行"], "主力净流入": [10]}))
+            validate_ths_flow_frame(FakeFrame(
+                ["板块", "主力净流入"], [{"板块": "银行", "主力净流入": 10}]
+            ))
 
     def test_rejects_rows_without_numeric_net_amount(self):
         with self.assertRaises(ValueError):
-            validate_ths_flow_frame(pd.DataFrame({"行业": ["银行"], "净额": ["--"]}))
+            validate_ths_flow_frame(FakeFrame(
+                ["行业", "净额"], [{"行业": "银行", "净额": "--"}]
+            ))
 
 
 if __name__ == "__main__":
