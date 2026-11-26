@@ -6,6 +6,7 @@ from scripts.theme_mapping_rules import (
     star_next_new_eligible,
     verified_private_bank_relationship,
     private_bank_records_for_trade_date,
+    consistent_provider_flow_persistence,
 )
 
 
@@ -59,6 +60,13 @@ class SpecialThemeMappingTests(unittest.TestCase):
             [{**record, "disclosure_date": "2026-12-01"}], "2026-11-20"), [])
         self.assertEqual(private_bank_records_for_trade_date(
             [{**record, "listed_company_code": "60001"}], "2026-11-20"), [])
+
+
+    def test_flow_persistence_requires_same_provider_for_both_periods(self):
+        self.assertEqual(consistent_provider_flow_persistence(("THS", 10), ("THS", 20)), 75.0)
+        self.assertEqual(consistent_provider_flow_persistence(("EastMoney", -10), ("EastMoney", -20)), 25.0)
+        self.assertIsNone(consistent_provider_flow_persistence(("THS", 10), ("EastMoney", 20)))
+        self.assertIsNone(consistent_provider_flow_persistence(("THS", 10), None))
 
     def test_mapping_provenance_requires_source_symbol_and_date(self):
         self.assertTrue(has_mapping_provenance({
