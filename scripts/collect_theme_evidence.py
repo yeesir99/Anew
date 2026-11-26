@@ -215,10 +215,13 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
     f5, f10 = number(flow_5d), number(flow_10d)
     structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
     persistence = None
-    if f5 is not None and f10 is not None:
-        if f5 > 0 and f10 > 0:
+    provider5, amount5 = f5 if isinstance(f5, tuple) and len(f5) == 2 else (None, f5)
+    provider10, amount10 = f10 if isinstance(f10, tuple) and len(f10) == 2 else (None, f10)
+    if (amount5 is not None and amount10 is not None
+            and (provider5 is None or provider10 is None or provider5 == provider10)):
+        if amount5 > 0 and amount10 > 0:
             persistence = 75.0
-        elif f5 < 0 and f10 < 0:
+        elif amount5 < 0 and amount10 < 0:
             persistence = 25.0
         else:
             persistence = 50.0
@@ -257,6 +260,7 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
 
 
 def flow_ratio_for_theme(flow_rows, theme, period):
+    """Return a provider-tagged signed flow amount; never compare mixed providers."""
     name = _score_key(theme.get("industry_name") or theme.get("industry"))
     code = _score_key(theme.get("sector_code"))
     target_day = str(theme.get("trade_date") or "")
@@ -271,11 +275,23 @@ def flow_ratio_for_theme(flow_rows, theme, period):
         row_keys = {_score_key(row.get("industry_name")), _score_key(row.get("industry")),
                     _score_key(row.get("sector_code"))}
         row_keys.discard("")
-        if name and name in row_keys or code and code in row_keys:
-            value = number(row.get("main_net_ratio"))
-            if value is not None:
-                matches.append((str(row.get("trade_date") or ""), value))
-    return max(matches, key=lambda x: x[0])[1] if matches else None
+        if not ((name and name in row_keys) or (code and code in row_keys)):
+            continue
+        provider = str(row.get("provider") or "")
+        if row.get("main_net_inflow_cny") not in (None, ""):
+            value = number(row.get("main_net_inflow_cny"))
+            provider = provider or "EastMoney"
+        else:
+            value = number(row.get("net_inflow_cny"))
+            provider = provider or ("THS" if "THS" in str(row.get("source") or "") else "")
+        if value is not None and provider:
+            matches.append((provider, value))
+    if not matches:
+        return None
+    providers = {provider for provider, _ in matches}
+    if len(providers) != 1:
+        return None
+    return matches[0]
 
 
 def main():
