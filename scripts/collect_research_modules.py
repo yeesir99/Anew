@@ -151,6 +151,16 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at,
     return (rows, diagnostics) if return_diagnostics else rows
 
 
+def flow_quality_status(diagnostics: dict, minimum_coverage_pct: float = 95.0) -> str:
+    coverage = diagnostics.get("coverage_pct")
+    return "partial" if (
+        diagnostics.get("conflicting_duplicates")
+        or coverage is None
+        or coverage < minimum_coverage_pct
+        or diagnostics.get("unexpected_industries")
+    ) else "success"
+
+
 def append_rows(path: Path, rows: list[dict], keys: tuple[str, ...]):
     if not rows:
         return 0
@@ -458,13 +468,7 @@ def main():
                 )
                 # Ambiguous duplicate names are excluded, while unaffected
                 # industries remain publishable with a partial source status.
-                period_status = (
-                    "partial" if (ths_diagnostics["conflicting_duplicates"]
-                                  or ths_diagnostics["coverage_pct"] is None
-                                  or ths_diagnostics["coverage_pct"] < 95.0
-                                  or ths_diagnostics["unexpected_industries"])
-                    else "success"
-                )
+                period_status = flow_quality_status(ths_diagnostics)
                 statuses.append({
                     "source": "sector_flow_" + indicator, "status": period_status,
                     "records": len(period_rows), "raw_records": ths_diagnostics["raw_records"],
