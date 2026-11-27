@@ -308,7 +308,7 @@ def main():
             "records": baidu_meta["records"],
             "failed_batches": baidu_meta["failed_batches"],
         })
-        normalize_concept = lambda value: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+        normalize_concept = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
         for theme_name in ("烟草", "工业大麻", "参股民营银行", "科创次新股"):
             matches = [
                 code for code, concepts in baidu_tags.items()
