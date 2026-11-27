@@ -564,7 +564,7 @@ def main():
                 tagged_members = [{
                     **member,
                     "theme_component": component,
-                    "membership_reason": f"returned by the exact THS constituent endpoint for component {component}",
+                    "membership_reason": f"returned by the exact {(meta or {}).get('provider') or 'unverified'} constituent source for component {component}",
                     "membership_evidence": {
                         "provider": (meta or {}).get("provider"),
                         "taxonomy": (meta or {}).get("taxonomy"),
@@ -577,6 +577,7 @@ def main():
                 } for member in members]
                 component_members[component] = tagged_members
                 components[component] = {"status": meta.get("status") if meta else "unresolved",
+                                          "provider": meta.get("provider") if meta else None,
                                           "matched_symbol": meta.get("matched_symbol") if meta else None,
                                           "taxonomy_node_id": meta.get("taxonomy_node_id") if meta else None,
                                           "taxonomy_node_name": meta.get("taxonomy_node_name") if meta else None,
@@ -645,6 +646,8 @@ def main():
                 })
             if not members:
                 candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
+                if not candidates:
+                    candidates, candidate_meta = fetch_eastmoney_exact_concept_members("参股民营银行")
                 return [], {"source":"constituents:"+name,"status":"pending_relation_evidence",
                     "provider":"THS" if candidates else None,
                     "taxonomy":"THS concept candidates only" if candidates else None,
