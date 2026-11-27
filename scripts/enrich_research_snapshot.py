@@ -278,7 +278,19 @@ def main():
         "note": "资金流按交易日、周期和实际来源分别展示；THS净额不改名为东方财富主力净流入，历史归档不补写本次采集失败的周期。各项均为公开行业估算，不代表机构专属账户流向或真实机构账户净买入。"}
     sections["etf-shares"] = {"items": etf_items,
         "note": "份额变化按相同代码、交易所和来源口径比较；份额变化不等于机构净买入。"}
-    sections["data-sources"] = {"items": source_doc.get("sources", [])}
+    valuation_source_status = {
+        "source": "broad_market_valuation",
+        "status": valuation_snapshot.get("status", "missing"),
+        "provider": valuation_snapshot.get("provider"),
+        "records": valuation_snapshot.get("records", 0),
+        "coverage_pct": valuation_snapshot.get("coverage_pct"),
+        "detail": valuation_snapshot.get("note", "全A股估值PE/PB历史分位；不代表主题估值。"),
+    }
+    sections["data-sources"] = {"items": [
+        *[item for item in source_doc.get("sources", [])
+          if str(item.get("source") or "") != "broad_market_valuation"],
+        valuation_source_status,
+    ]}
     # Build the active-stock list from the validated market snapshot. The market
     # snapshot schema uses symbol/amount_cny; the dashboard uses ticker/amount.
     leaders = []
