@@ -314,7 +314,7 @@ def main():
     for theme_name in ("烟草", "工业大麻", "科创次新股"):
         try:
             facts = validate_ths_theme_concept(
-                ak, theme_name, market_trade_day, max_ipo_checks=10
+                ak, theme_name, market_trade_day, max_ipo_checks=1
             )
             results.append({"period": "special_theme_" + theme_name,
                             "symbol": theme_name, **facts})
