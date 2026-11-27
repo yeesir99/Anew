@@ -38,7 +38,7 @@ class QFQSnapshotExtensionTests(unittest.TestCase):
              "close_raw": 10.2, "pre_close_raw": 10.0, "vol": 110},
             # 20261124 is absent; pre_close on 20261125 proves the gap.
             {"ts_code": "000001.SZ", "trade_date": "20261125",
-             "close_raw": 10.3, "pre_close_raw": 10.2, "vol": 130},
+             "close_raw": 10.3, "pre_close_raw": 10.1, "vol": 130},
             {"ts_code": "000001.SZ", "trade_date": "20261126",
              "close_raw": 10.5, "pre_close_raw": 10.3, "vol": 140},
         ])
