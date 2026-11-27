@@ -297,7 +297,7 @@ def main():
             universe_codes = [str(row.get("symbol") or "").zfill(6)
                               for row in csv.DictReader(handle)]
         baidu_tags, baidu_meta = fetch_baidu_concept_tags(
-            universe_codes, batch_size=20, max_workers=3, timeout_seconds=8.0
+            universe_codes, batch_size=30, max_workers=3, timeout_seconds=8.0
         )
         results.append({
             "period": "baidu_concept_tag_smoke",
