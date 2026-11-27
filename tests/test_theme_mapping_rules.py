@@ -20,10 +20,13 @@ class SpecialThemeMappingTests(unittest.TestCase):
         incomplete = {**complete, "工业大麻": {"status": "failed", "members": []}}
         self.assertEqual(merge_exact_components(incomplete), [])
 
-    def test_star_new_requires_explicit_positive_age_and_star_code(self):
+    def test_star_new_uses_ths_less_than_one_calendar_year_definition(self):
+        self.assertTrue(star_next_new_eligible("688001", "2025-11-27", "2026-11-26"))
+        self.assertFalse(star_next_new_eligible("688001", "2025-11-26", "2026-11-26"))
+        self.assertFalse(star_next_new_eligible("688001", "2026-11-27", "2026-11-26"))
+        self.assertFalse(star_next_new_eligible("600001", "2026-01-01", "2026-01-20"))
         self.assertTrue(star_next_new_eligible("688001", "2026-01-01", "2026-01-20", 30))
-        self.assertFalse(star_next_new_eligible("688001", "2025-01-01", "2026-01-20", 30))
-        self.assertFalse(star_next_new_eligible("600001", "2026-01-01", "2026-01-20", 30))
+        self.assertFalse(star_next_new_eligible("688001", "2025-12-21", "2026-01-20", 30))
         self.assertFalse(star_next_new_eligible("688001", "2026-01-01", "2026-01-20", 0))
 
     def test_private_bank_requires_primary_dated_equity_disclosure(self):
