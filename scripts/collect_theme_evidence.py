@@ -701,8 +701,8 @@ def main():
                 "components":component_summary,"mapping_date":fetched,"checked_at":fetched}
 
         if name == "参股民营银行":
-            # THS concept membership is discovery-only. Actual membership must
-            # come from manually reviewed primary disclosures in the evidence file.
+            # Taxonomy labels are discovery-only. Every included company must
+            # have a primary disclosure proving equity ownership in a named bank.
             evidence_path = DATA / "private_bank_equity_evidence.json"
             try:
                 evidence_doc = json.loads(evidence_path.read_text(encoding="utf-8")) if evidence_path.exists() else {}
@@ -711,85 +711,106 @@ def main():
                 LOG.warning("Private-bank evidence file unreadable: %s", str(evidence_exc)[:160])
             evidence_records = private_bank_records_for_trade_date(
                 evidence_doc.get("records") or [], trade_day.isoformat())
-            members = []
-            for record in evidence_records:
-                members.append({
-                    "code": str(record["listed_company_code"]).strip(),
-                    "name": clean(record.get("listed_company_name")),
-                    "investee_bank_name": record.get("investee_bank_name"),
-                    "holding_pct": float(record["holding_pct"]),
-                    "disclosure_date": record["disclosure_date"],
-                    "evidence_age_days": record.get("evidence_age_days"),
-                    "review_age_days": record.get("review_age_days"),
-                    "evidence_status": record.get("evidence_status"),
-                    "source_url": record.get("source_url"),
-                    "source_excerpt": record.get("source_excerpt"),
-                    "membership_reason": "listed-company primary disclosure confirms equity ownership in the named private bank",
-                })
-            if not members:
-                candidate_key = "参股民营银行_candidates"
-                cached_candidates = cache.get(candidate_key) or {}
-                cached_at = cached_candidates.get("fetched_at")
-                cache_valid = False
-                if (cached_candidates.get("candidate_only") is True
-                        and cached_candidates.get("mapping_policy_version") == THEME_MAPPING_POLICY_VERSION
-                        and cached_candidates.get("source_url") and cached_at):
-                    try:
-                        cached_dt = datetime.fromisoformat(str(cached_at).replace("Z", "+00:00"))
-                        if cached_dt.tzinfo is None:
-                            cached_dt = cached_dt.replace(tzinfo=timezone.utc)
-                        cache_valid = (datetime.now(timezone.utc) - cached_dt).total_seconds() <= CACHE_TTL_DAYS * 86400
-                    except Exception:
-                        cache_valid = False
-                if cache_valid:
-                    candidates = cached_candidates.get("members") or []
-                    candidate_meta = {
-                        "status":"success","provider":cached_candidates.get("source"),
-                        "taxonomy":cached_candidates.get("taxonomy"),
-                        "matched_symbol":cached_candidates.get("matched_symbol"),
-                        "mapping_source":cached_candidates.get("mapping_source"),
-                        "source_url":cached_candidates.get("source_url"),
-                        "checked_at":cached_at,
+            verified_members = [{
+                "code":str(record["listed_company_code"]).strip(),
+                "name":clean(record.get("listed_company_name")),
+                "investee_bank_name":record.get("investee_bank_name"),
+                "holding_pct":float(record["holding_pct"]),
+                "disclosure_date":record["disclosure_date"],
+                "evidence_age_days":record.get("evidence_age_days"),
+                "review_age_days":record.get("review_age_days"),
+                "evidence_status":record.get("evidence_status"),
+                "source_url":record.get("source_url"),
+                "source_excerpt":record.get("source_excerpt"),
+                "membership_reason":"listed-company primary disclosure confirms equity ownership in the named private bank",
+            } for record in evidence_records]
+
+            candidate_key = "参股民营银行_candidates"
+            cached_candidates = cache.get(candidate_key) or {}
+            cached_at = cached_candidates.get("fetched_at")
+            cache_valid = False
+            if (cached_candidates.get("candidate_only") is True
+                    and cached_candidates.get("mapping_policy_version") == THEME_MAPPING_POLICY_VERSION
+                    and cached_candidates.get("source_url") and cached_at):
+                try:
+                    cached_dt = datetime.fromisoformat(str(cached_at).replace("Z", "+00:00"))
+                    if cached_dt.tzinfo is None:
+                        cached_dt = cached_dt.replace(tzinfo=timezone.utc)
+                    cache_valid = (datetime.now(timezone.utc) - cached_dt).total_seconds() <= CACHE_TTL_DAYS * 86400
+                except Exception:
+                    cache_valid = False
+            if cache_valid:
+                candidates = cached_candidates.get("members") or []
+                candidate_meta = {
+                    "status":"success","provider":cached_candidates.get("source"),
+                    "taxonomy":cached_candidates.get("taxonomy"),
+                    "matched_symbol":cached_candidates.get("matched_symbol"),
+                    "mapping_source":cached_candidates.get("mapping_source"),
+                    "source_url":cached_candidates.get("source_url"),
+                    "checked_at":cached_at,
+                }
+            else:
+                candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
+                if not candidates:
+                    candidates, candidate_meta = fetch_eastmoney_exact_concept_members("参股民营银行")
+                if not candidates:
+                    candidates, candidate_meta = fetch_baidu_exact_concept_members("参股民营银行")
+                if candidates and candidate_meta and candidate_meta.get("status") == "success":
+                    fetched_candidates = candidate_meta.get("checked_at") or datetime.now(timezone.utc).isoformat(timespec="seconds")
+                    cache[candidate_key] = {
+                        "members":candidates,"fetched_at":fetched_candidates,
+                        "source":candidate_meta.get("provider"),
+                        "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
+                        "matched_symbol":"参股民营银行",
+                        "taxonomy":candidate_meta.get("taxonomy"),
+                        "source_url":candidate_meta.get("source_url"),
+                        "mapping_source":candidate_meta.get("mapping_source"),
+                        "candidate_only":True,
                     }
-                else:
-                    candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
-                    if not candidates:
-                        candidates, candidate_meta = fetch_eastmoney_exact_concept_members("参股民营银行")
-                    if not candidates:
-                        candidates, candidate_meta = fetch_baidu_exact_concept_members("参股民营银行")
-                    if candidates and candidate_meta and candidate_meta.get("status") == "success":
-                        fetched_candidates = candidate_meta.get("checked_at") or datetime.now(timezone.utc).isoformat(timespec="seconds")
-                        cache[candidate_key] = {
-                            "members":candidates,"fetched_at":fetched_candidates,
-                            "source":candidate_meta.get("provider"),
-                            "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
-                            "matched_symbol":"参股民营银行",
-                            "taxonomy":candidate_meta.get("taxonomy"),
-                            "source_url":candidate_meta.get("source_url"),
-                            "mapping_source":candidate_meta.get("mapping_source"),
-                            "candidate_only":True,
-                        }
-                        cache_dirty = True
-                return [], {"source":"constituents:"+name,"status":"pending_relation_evidence",
-                    "provider":candidate_meta.get("provider") if candidate_meta else None,
-                    "taxonomy":candidate_meta.get("taxonomy") if candidate_meta else None,
-                    "matched_symbol":candidate_meta.get("matched_symbol") if candidate_meta else None,
-                    "source_url":candidate_meta.get("source_url") if candidate_meta else None,
-                    "checked_at":candidate_meta.get("checked_at") if candidate_meta else None,
-                    "mapping_source":(candidate_meta.get("mapping_source") if candidate_meta and candidate_meta.get("mapping_source") else "candidate taxonomy only") + "; not accepted as equity proof",
-                    "candidate_codes":[x["code"] for x in candidates],
-                    "candidate_count":len(candidates),
-                    "verified_relationships":[],
-                    "detail":"需要在 data/private_bank_equity_evidence.json 中提供上市公司原始披露证据；概念标签不作为持股证明"}
-            fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
-            return members, {"source":"constituents:"+name,"status":"success",
-                "records":len(members),"provider":"reviewed primary disclosures",
-                "taxonomy":"listed-company equity disclosures",
+                    cache_dirty = True
+
+            candidate_codes = sorted({str(item.get("code") or "").zfill(6) for item in candidates})
+            verified_codes = sorted({str(item.get("code") or "").zfill(6) for item in verified_members})
+            unverified_codes = sorted(set(candidate_codes) - set(verified_codes))
+            candidate_source_valid = bool(candidate_meta and candidate_meta.get("status") == "success")
+            fully_verified = bool(candidate_source_valid and candidate_codes and not unverified_codes)
+            status = "success" if fully_verified else (
+                "pending_relation_evidence" if candidate_codes or verified_members else
+                candidate_meta.get("status", "unavailable") if candidate_meta else "unavailable"
+            )
+            checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            return verified_members, {
+                "source":"constituents:"+name,
+                "status":status,
+                "records":len(verified_members),
+                "provider":(
+                    (candidate_meta.get("provider") + " + reviewed primary disclosures")
+                    if candidate_meta and candidate_meta.get("provider")
+                    else "reviewed primary disclosures"
+                ),
+                "taxonomy":(
+                    (candidate_meta.get("taxonomy") or "candidate taxonomy")
+                    + " + listed-company equity disclosures"
+                ),
                 "matched_symbol":"参股民营银行（逐条披露核验）",
-                "mapping_source":"data/private_bank_equity_evidence.json; primary disclosure fields validated",
-                "mapping_date":fetched,"checked_at":fetched,
-                "verified_relationships":evidence_records,
-                "detail":"成分仅来自日期匹配的年报、交易所公告或巨潮资讯披露记录"}
+                "mapping_source":"primary disclosure required for every candidate; taxonomy is discovery-only",
+                "source_url":candidate_meta.get("source_url") if candidate_meta else (
+                    verified_members[0].get("source_url") if verified_members else None
+                ),
+                "candidate_source_url":candidate_meta.get("source_url") if candidate_meta else None,
+                "candidate_count":len(candidate_codes),
+                "verified_count":len(verified_codes),
+                "unverified_candidate_count":len(unverified_codes),
+                "unverified_candidate_codes":unverified_codes[:100],
+                "candidate_coverage_pct":candidate_meta.get("coverage_pct") if candidate_meta else None,
+                "verified_relationships":verified_members,
+                "mapping_date":checked_at,
+                "checked_at":checked_at,
+                "detail":(
+                    f"已核验 {len(verified_codes)}/{len(candidate_codes)} 个候选；"
+                    "未取得逐家公司原始披露的候选不会加入成分"
+                ),
+            }
 
         if name == "科创次新股":
             listing_fn = getattr(ak, "stock_info_sh_name_code", None)
