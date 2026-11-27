@@ -25,6 +25,10 @@ import pandas as pd
 from import_sector_archive import is_concept_code
 from theme_mapping_rules import (merge_exact_components, star_next_new_eligible,
     private_bank_records_for_trade_date, consistent_provider_flow_persistence)
+try:
+    from scripts.research_provider_utils import fetch_eastmoney_concept_members
+except ModuleNotFoundError:
+    from research_provider_utils import fetch_eastmoney_concept_members
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -494,59 +498,12 @@ def main():
         code = clean(theme.get("sector_code"))
 
         def fetch_eastmoney_exact_concept_members(component_name):
-            if push2_circuit_open:
-                return [], {"status":"skipped","provider":"EastMoney",
-                            "taxonomy":"EastMoney exact concept board",
-                            "detail":"EastMoney circuit breaker is open"}
-            name_fn = getattr(ak, "stock_board_concept_name_em", None)
-            cons_fn = getattr(ak, "stock_board_concept_cons_em", None)
-            if name_fn is None or cons_fn is None:
+            try:
+                return fetch_eastmoney_concept_members(component_name)
+            except LookupError as exc:
                 return [], {"status":"unresolved","provider":"EastMoney",
                             "taxonomy":"EastMoney exact concept board",
-                            "detail":"EastMoney exact concept endpoints unavailable"}
-            try:
-                names_frame = call_with_retry(name_fn, operation="EastMoney concept taxonomy")
-                name_col = find_col(names_frame.columns, ("板块名称","概念名称","名称","name"))
-                code_col = find_col(names_frame.columns, ("板块代码","概念代码","代码","code"))
-                if not name_col or not code_col:
-                    raise RuntimeError("EastMoney concept taxonomy schema changed")
-                normal = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
-                matched = names_frame[names_frame[name_col].astype(str).map(normal) == normal(component_name)]
-                if matched.empty:
-                    return [], {"status":"unresolved","provider":"EastMoney",
-                                "taxonomy":"EastMoney exact concept board",
-                                "detail":"exact EastMoney concept name not found"}
-                matched_name = str(matched.iloc[0][name_col]).strip()
-                board_code = str(matched.iloc[0][code_col]).strip()
-                frame = call_with_retry(
-                    lambda: cons_fn(symbol=matched_name),
-                    operation=f"EastMoney exact concept constituents {matched_name}",
-                )
-                rows = records(frame)
-                if not rows:
-                    raise RuntimeError("EastMoney exact concept constituents empty")
-                member_code_col = find_col(rows[0].keys(), ("代码","股票代码","证券代码","成分股代码"))
-                member_name_col = find_col(rows[0].keys(), ("名称","股票简称","证券简称","成分股名称"))
-                if not member_code_col:
-                    raise RuntimeError("EastMoney concept constituent code column missing")
-                members = list({
-                    norm_code(row.get(member_code_col)): {
-                        "code": norm_code(row.get(member_code_col)),
-                        "name": row.get(member_name_col),
-                    }
-                    for row in rows if norm_code(row.get(member_code_col))
-                }.values())
-                if not members:
-                    raise RuntimeError("EastMoney exact concept returned no valid six-digit codes")
-                source_url = f"https://quote.eastmoney.com/bk/90.{board_code}.html"
-                return members, {
-                    "status":"success","records":len(members),"provider":"EastMoney",
-                    "taxonomy":"EastMoney exact concept board",
-                    "taxonomy_node_id":board_code,"taxonomy_node_name":matched_name,
-                    "matched_symbol":matched_name,
-                    "mapping_source":"stock_board_concept_cons_em exact concept-name match",
-                    "source_url":source_url,
-                }
+                            "detail":str(exc)[:240]}
             except Exception as exc:
                 return [], {"status":"failed","provider":"EastMoney",
                             "taxonomy":"EastMoney exact concept board",
