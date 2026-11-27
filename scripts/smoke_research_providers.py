@@ -48,7 +48,8 @@ def validate_ths_flow_frame(frame):
         if name and name.lower() != "nan" and amount is not None:
             raw_count += 1
             if name in conflicts:
-                conflicts[name].append({str(key): str(value) for key, value in row.to_dict().items()})
+                row_data = row.to_dict() if hasattr(row, "to_dict") else dict(row)
+                conflicts[name].append({str(key): str(value) for key, value in row_data.items()})
                 continue
             previous = by_name.get(name)
             row_data = row.to_dict() if hasattr(row, "to_dict") else dict(row)
