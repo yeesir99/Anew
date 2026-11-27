@@ -17,6 +17,7 @@ class PrivateBankEvidenceDataTests(unittest.TestCase):
         self.assertEqual(record["listed_company_code"], "601933")
         self.assertEqual(record["investee_bank_name"], "福建华通银行股份有限公司")
         self.assertEqual(record["holding_pct"], 29.8)
+        self.assertEqual(record["source_type"], "semiannual_report")
         self.assertTrue(record["source_url"].startswith("https://static.cninfo.com.cn/"))
         self.assertTrue(record.get("cross_check_urls"))
 
