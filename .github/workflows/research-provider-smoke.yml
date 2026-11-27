@@ -22,7 +22,7 @@ concurrency:
 jobs:
   ths-industry-flow-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,7 +34,7 @@ jobs:
       - name: Compile provider smoke contract
         run: python -m py_compile scripts/smoke_research_providers.py
       - name: Check THS flows, special-theme taxonomy and broad-market valuation (read-only)
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
           TZ: Asia/Shanghai
         run: python scripts/smoke_research_providers.py
