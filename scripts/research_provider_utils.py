@@ -27,7 +27,9 @@ def call_with_retry(
     if delay_seconds < 0:
         raise ValueError("delay_seconds cannot be negative")
     errors = []
+    attempts_made = 0
     for attempt in range(1, attempts + 1):
+        attempts_made = attempt
         try:
             return operation_fn()
         except Exception as exc:
@@ -37,4 +39,4 @@ def call_with_retry(
                 sleep(delay_seconds * attempt)
             elif not retry_allowed:
                 break
-    raise RuntimeError(f"{operation} failed after {attempts} bounded attempt(s): " + " | ".join(errors))
+    raise RuntimeError(f"{operation} failed after {attempts_made} bounded attempt(s): " + " | ".join(errors))
