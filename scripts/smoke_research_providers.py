@@ -247,7 +247,7 @@ def main():
         raise SystemExit("FAIL: installed AkShare has no stock_fund_flow_industry_ths endpoint")
 
     results = []
-    market_trade_day = date.today()
+    market_trade_day = None
     market_target_day = None
     try:
         latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
@@ -255,46 +255,33 @@ def main():
             market_row = next(csv.DictReader(handle))
         raw_day = str(market_row.get("trade_date") or "")
         digits = "".join(ch for ch in raw_day if ch.isdigit())
-        if len(digits) >= 8:
-            market_target_day = digits[:8]
-            market_trade_day = date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
+        if len(digits) < 8:
+            raise ValueError(f"invalid market trade date: {raw_day!r}")
+        market_target_day = digits[:8]
+        market_trade_day = date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
     except Exception as exc:
-        results.append({"period": "market_trade_date", "status": "failed",
-                        "error": f"{type(exc).__name__}: {str(exc)[:300]}"})
+        raise SystemExit(f"FAIL: cannot read market trade date: {type(exc).__name__}: {str(exc)[:300]}")
+
     try:
         universe_names = ths_industry_universe_names(ak)
     except Exception as exc:
         universe_names = None
-        print(json.dumps({"industry_universe_status": "unavailable", "detail": str(exc)[:500]}, ensure_ascii=False))
-    as_of = None
-    try:
-        latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
-        with latest_path.open(encoding="utf-8-sig", newline="") as handle:
-            latest_row = next(csv.DictReader(handle))
-        as_of = date.fromisoformat(str(latest_row.get("trade_date") or "")[:10])
-    except Exception:
-        as_of = date.today()
+        results.append({"period": "industry_universe", "status": "failed",
+                        "error": f"{type(exc).__name__}: {str(exc)[:300]}"})
+
     for period, symbol in PERIOD_SYMBOLS.items():
         try:
             frame = endpoint(symbol=symbol)
             facts = validate_ths_flow_frame(frame, universe_names=universe_names)
-            results.append({"period": period, "symbol": symbol, "status": "success", **facts})
+            results.append({"period": period, "symbol": symbol, **facts})
         except Exception as exc:
             results.append({
                 "period": period, "symbol": symbol, "status": "failed",
                 "error": f"{type(exc).__name__}: {str(exc)[:400]}",
             })
 
-    for theme_name in ("烟草", "工业大麻", "科创次新股"):
-        try:
-            facts = validate_ths_theme_concept(ak, theme_name, as_of=as_of)
-            results.append({"theme": theme_name, **facts})
-        except Exception as exc:
-            results.append({"theme": theme_name, "status": "failed",
-                            "detail": f"{type(exc).__name__}: {str(exc)[:400]}"})
-
-    # Exact special-theme taxonomy smoke: tobacco and industrial cannabis
-    # are separate components; STAR new listings are checked against IPO dates.
+    # Exact THS taxonomy names are resolved separately; STAR listing checks
+    # are bounded in smoke mode and report the untested remainder explicitly.
     for theme_name in ("烟草", "工业大麻", "科创次新股"):
         try:
             facts = validate_ths_theme_concept(
@@ -307,52 +294,42 @@ def main():
                             "symbol": theme_name, "status": "failed",
                             "error": f"{type(exc).__name__}: {str(exc)[:400]}"})
 
-    # Broad-market valuation is checked independently from theme valuation.
-    # A stale provider date is reported as partial, never relabelled as current.
+    # Broad-market valuation is separate from theme-level valuation.
     try:
-        if not market_target_day:
-            raise RuntimeError("market trade date is unavailable for valuation comparison")
-        pe_frame = call_with_retry(ak.stock_a_ttm_lyr, operation="A-share historical PE valuation smoke")
-        pb_frame = call_with_retry(ak.stock_a_all_pb, operation="A-share historical PB valuation smoke")
+        pe_frame = call_with_retry(ak.stock_a_ttm_lyr,
+                                   operation="A-share historical PE valuation smoke")
+        pb_frame = call_with_retry(ak.stock_a_all_pb,
+                                   operation="A-share historical PB valuation smoke")
         valuation = build_snapshot(market_target_day, pe_frame, pb_frame)
-        results.append({"period": "broad_market_valuation", "symbol": "stock_a_ttm_lyr + stock_a_all_pb",
-                        "status": valuation["status"], "trade_date": valuation["trade_date"],
-                        "provider_dates": valuation["provider_dates"],
-                        "coverage_pct": valuation["coverage_pct"],
-                        "scope": valuation["scope"]})
-    except Exception as exc:
-        results.append({"period": "broad_market_valuation",
-                        "symbol": "stock_a_ttm_lyr + stock_a_all_pb", "status": "failed",
-                        "error": f"{type(exc).__name__}: {str(exc)[:400]}"})
-
-    try:
-        pe_fn = getattr(ak, "stock_a_ttm_lyr", None)
-        pb_fn = getattr(ak, "stock_a_all_pb", None)
-        if pe_fn is None or pb_fn is None:
-            raise AttributeError("AkShare broad-market PE/PB endpoints unavailable")
-        pe_frame = pe_fn()
-        pb_frame = pb_fn()
-        valuation = build_valuation_snapshot(as_of, pe_frame, pb_frame)
-        results.append({"valuation": "broad_market", **valuation})
+        results.append({
+            "period": "broad_market_valuation",
+            "symbol": "stock_a_ttm_lyr + stock_a_all_pb",
+            "status": valuation["status"],
+            "trade_date": valuation["trade_date"],
+            "provider_dates": valuation["provider_dates"],
+            "coverage_pct": valuation["coverage_pct"],
+            "scope": valuation["scope"],
+        })
     except Exception as exc:
         results.append({
-            "valuation": "broad_market", "status": "partial",
-            "scope": "broad_market",
-            "detail": f"{type(exc).__name__}: {str(exc)[:400]}",
+            "period": "broad_market_valuation",
+            "symbol": "stock_a_ttm_lyr + stock_a_all_pb",
+            "status": "failed",
+            "error": f"{type(exc).__name__}: {str(exc)[:400]}",
         })
 
     report = {
         "providers": ["THS", "AkShare/Legulegu"],
-        "endpoint": "THS industry flow + broad-market PE/PB + special-theme taxonomy",
+        "endpoint": "THS industry flow + THS concept pages + broad-market PE/PB",
         "akshare_version": getattr(ak, "__version__", "unknown"),
         "read_only": True,
-        "as_of_trade_date": as_of.isoformat(),
+        "as_of_trade_date": market_trade_day.isoformat(),
         "results": results,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    # A provider response with ambiguous duplicate names is useful but
-    # incomplete; keep the run green while exposing "partial" in the JSON.
-    # Empty/schema-invalid endpoint responses remain hard failures.
+    # Partial coverage is visible but does not turn a structurally valid
+    # provider response into a false hard failure. Empty/schema-invalid
+    # responses remain hard failures.
     return smoke_exit_code(results)
 
 
