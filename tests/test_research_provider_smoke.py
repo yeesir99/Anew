@@ -113,7 +113,7 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
             if params["fs"] == "m:90+t:3+f:!50":
                 return FakeResponse({"data": {"diff": [
                     {"f12": "BK0999", "f14": "烟草"}], "total": 1}})
-            if params["fs"] == "b:BK0999+f:!50":
+            if params["fs"] == "b:BK0999":
                 return FakeResponse({"data": {"diff": [
                     {"f12": "600000", "f14": "浦发银行"}], "total": 1}})
             return FakeResponse({"data": {"diff": [], "total": 0}})
