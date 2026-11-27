@@ -30,13 +30,13 @@ class BroadMarketValuationTests(unittest.TestCase):
         self.assertEqual(result["status"], "validated")
         self.assertEqual(result["scope"], "broad_market")
         self.assertEqual(result["coverage_pct"], 100.0)
-        self.assertEqual(result["provider_dates"], {"pe": "20261126", "pb": "20261126"})
+        self.assertEqual(result["provider_dates"], {"pe": "2026-11-26", "pb": "2026-11-26"})
 
     def test_stale_pe_or_pb_never_validates_current_market(self):
         pe, pb = self.frames(pe_date="20261125")
         result = build_snapshot("20261126", pe, pb)
         self.assertEqual(result["status"], "partial")
-        self.assertEqual(result["provider_dates"]["pe"], "20261125")
+        self.assertEqual(result["provider_dates"]["pe"], "2026-11-25")
 
     def test_quantile_outside_unit_interval_is_rejected(self):
         pe, pb = self.frames()
