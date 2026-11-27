@@ -266,7 +266,9 @@ def fetch_baidu_concept_tags(
                     raise ValueError("Baidu concept Result is not an object")
                 parsed = {}
                 for raw_code, groups in result.items():
-                    code = str(raw_code).strip().zfill(6)
+                    raw_code_text = str(raw_code).strip()
+                    digits = "".join(ch for ch in raw_code_text if ch.isdigit())
+                    code = digits[-6:].zfill(6)
                     if len(code) != 6 or not code.isdigit() or not isinstance(groups, list):
                         continue
                     concepts = []
