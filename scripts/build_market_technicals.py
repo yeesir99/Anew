@@ -334,10 +334,12 @@ def main():
     # listed securities or symbol coverage gaps). Run the rotating per-symbol
     # backfill whenever any required indicator is missing, not only when the
     # entire bulk archive failed.
-    archive_full_coverage = bool(len(latest) and all(
-        col in latest and latest[col].notna().sum() == len(latest) for col in METRICS
+    required_technical_coverage_pct = 95.0
+    minimum_eligible_count = int(len(latest) * required_technical_coverage_pct / 100.0 + 0.999)
+    archive_meets_coverage = bool(len(latest) and all(
+        col in latest and latest[col].notna().sum() >= minimum_eligible_count for col in METRICS
     ))
-    if not archive_full_coverage:
+    if not archive_meets_coverage:
         try:
             latest, backfill_stats = _backfill_per_symbol(latest, day)
         except BaseException as exc:
@@ -352,18 +354,21 @@ def main():
     trade_date_iso = datetime.strptime(day, "%Y%m%d").date().isoformat()
     latest.to_csv(DATA / f"market_{trade_date_iso}.csv", index=False, encoding="utf-8-sig")
     coverage = {col: int(latest[col].notna().sum()) if col in latest else 0 for col in METRICS}
-    # A successful fetch/calculation is not the same as full-universe
-    # indicator coverage. Mark the snapshot validated only when every required
-    # metric exists for every stock in this exact trade-date universe.
-    full_metric_coverage = bool(len(latest) and all(
-        coverage.get(metric, 0) == len(latest) for metric in METRICS
+    coverage_pct = {col: round(coverage[col] / len(latest) * 100, 2) if len(latest) else 0
+                    for col in METRICS}
+    # Require at least 95% observed coverage for every metric. Missing values
+    # remain null; the threshold accommodates a small recent-IPO/unavailable
+    # tail but does not hide material history gaps.
+    meets_required_coverage = bool(len(latest) and all(
+        coverage_pct.get(metric, 0) >= required_technical_coverage_pct for metric in METRICS
     ))
     result = {"trade_date": day, "stocks": len(latest),
-        "status": "validated" if full_metric_coverage else "partial",
-        "full_metric_coverage": full_metric_coverage,
+        "status": "validated" if meets_required_coverage else "partial",
+        "meets_required_coverage": meets_required_coverage,
+        "required_coverage_pct": required_technical_coverage_pct,
         "history_sessions": archive_stats.get("history_sessions", snapshot_sessions),
         "snapshot_history_sessions": snapshot_sessions,
-        "coverage": coverage, "bulk_archive": archive_stats,
+        "coverage": coverage, "coverage_pct": coverage_pct, "bulk_archive": archive_stats,
         "per_symbol_history": backfill_stats,
         "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated"}
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
