@@ -86,6 +86,33 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         self.assertIn("885999", calls[0])
         self.assertIn("10jqka.com.cn", result["source_url"])
 
+    def test_eastmoney_exact_concept_fallback_when_ths_page_is_forbidden(self):
+        class FakeAk:
+            def stock_board_concept_name_ths(self):
+                return pd.DataFrame([{"name": "烟草", "code": "885999"}])
+
+            def stock_board_concept_name_em(self):
+                return pd.DataFrame([{"板块名称": "烟草", "板块代码": "BK0999"}])
+
+            def stock_board_concept_cons_em(self, symbol):
+                self.assertEqual(symbol, "BK0999")
+                return pd.DataFrame([{"代码": "600000", "名称": "浦发银行"}])
+
+        class ForbiddenResponse:
+            text = ""
+
+            def raise_for_status(self):
+                raise RuntimeError("403 Forbidden")
+
+        result = validate_ths_theme_concept(
+            FakeAk(), "烟草", date(2026, 11, 26),
+            http_get=lambda *args, **kwargs: ForbiddenResponse()
+        )
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["provider"], "EastMoney")
+        self.assertEqual(result["candidate_count"], 1)
+        self.assertIn("THS constituent page unavailable", result["fallback_detail"])
+
     def test_star_theme_smoke_can_bound_ipo_lookups_and_report_untested(self):
         class FakeAk:
             calls = 0
