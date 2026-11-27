@@ -206,7 +206,7 @@ def fetch_baidu_concept_tags(
     stock_codes,
     *,
     get=None,
-    batch_size: int = 20,
+    batch_size: int = 30,
     max_workers: int = 3,
     timeout_seconds: float = 15.0,
 ) -> tuple[dict[str, list[dict]], dict]:
