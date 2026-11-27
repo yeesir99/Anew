@@ -302,8 +302,8 @@ def main():
         })
 
     report = {
-        "provider": "THS",
-        "endpoint": "stock_fund_flow_industry_ths",
+        "providers": ["THS", "AkShare/Legulegu"],
+        "endpoint": "THS industry flow + broad-market PE/PB + special-theme taxonomy",
         "akshare_version": getattr(ak, "__version__", "unknown"),
         "read_only": True,
         "as_of_trade_date": as_of.isoformat(),
