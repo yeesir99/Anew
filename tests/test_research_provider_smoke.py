@@ -5,7 +5,8 @@ import pandas as pd
 import requests
 
 from scripts.smoke_research_providers import (
-    PERIOD_SYMBOLS, smoke_exit_code, validate_ths_flow_frame, validate_ths_theme_concept,
+    PERIOD_SYMBOLS, is_transport_unavailable, smoke_exit_code,
+    validate_ths_flow_frame, validate_ths_theme_concept,
 )
 
 
@@ -152,7 +153,11 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
 
     def test_partial_provider_data_is_warning_but_schema_failure_is_error(self):
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "partial"}]), 0)
+        self.assertEqual(smoke_exit_code([{"status": "unavailable"}]), 0)
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "failed"}]), 1)
+        self.assertTrue(is_transport_unavailable(TimeoutError("timed out")))
+        self.assertTrue(is_transport_unavailable(RuntimeError("502 Bad Gateway")))
+        self.assertFalse(is_transport_unavailable(ValueError("unexpected schema")))
 
     def test_period_symbols_are_independent_and_explicit(self):
         self.assertEqual(PERIOD_SYMBOLS, {
