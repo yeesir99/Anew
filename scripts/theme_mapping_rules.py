@@ -37,21 +37,30 @@ def merge_exact_components(components, required=("烟草", "工业大麻")):
     return [merged[key] for key in sorted(merged)]
 
 
-def star_next_new_eligible(code, listing_date, as_of, max_days):
-    """Require STAR Market identity, a valid listing date, and an explicit age rule."""
+def star_next_new_eligible(code, listing_date, as_of, max_days=None):
+    """Use THS's explicit definition: STAR-listed and listed less than one year ago."""
     code = str(code or "").strip()
     if not code.startswith(("688", "689")) or len(code) != 6 or not code.isdigit():
         return False
     try:
-        limit = int(max_days)
-        if limit <= 0:
-            return False
         listed = listing_date if isinstance(listing_date, date) else date.fromisoformat(str(listing_date)[:10])
         current = as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of)[:10])
     except (TypeError, ValueError):
         return False
-    age = (current - listed).days
-    return 0 <= age <= limit
+    if max_days is not None:
+        try:
+            limit = int(max_days)
+            if limit <= 0:
+                return False
+            return 0 <= (current - listed).days < limit
+        except (TypeError, ValueError):
+            return False
+    try:
+        one_year_ago = current.replace(year=current.year - 1)
+    except ValueError:
+        # 29 February has no counterpart in the preceding non-leap year.
+        one_year_ago = current.replace(year=current.year - 1, day=28)
+    return one_year_ago < listed <= current
 
 
 def verified_private_bank_relationship(record):
