@@ -110,12 +110,13 @@ def fetch_eastmoney_concept_members(
     target = normal(concept_name)
     matched = None
     list_errors = []
-    taxonomy_response_received = False
+    taxonomy_data_received = False
     for host in hosts:
         for params_variant in list_param_variants:
             try:
                 diff, _, _ = fetch_diff(host, params_variant, "EastMoney concept taxonomy")
-                taxonomy_response_received = True
+                if diff:
+                    taxonomy_data_received = True
                 matched = next((row for row in diff
                                 if normal(row.get("f14")) == target), None)
                 if matched:
@@ -125,8 +126,8 @@ def fetch_eastmoney_concept_members(
         if matched:
             break
     if not matched:
-        if list_errors and not taxonomy_response_received:
-            raise RuntimeError("EastMoney concept taxonomy mirrors failed: " + " | ".join(list_errors))
+        if list_errors and not taxonomy_data_received:
+            raise RuntimeError("EastMoney concept taxonomy mirrors failed or returned empty data: " + " | ".join(list_errors))
         raise LookupError(f"exact EastMoney concept name not found: {concept_name}")
 
     board_code = str(matched.get("f12") or "").strip()
