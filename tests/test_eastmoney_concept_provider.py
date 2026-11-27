@@ -74,6 +74,10 @@ class EastMoneyConceptMirrorTests(unittest.TestCase):
         self.assertEqual(meta["status"], "success")
         self.assertEqual(meta["batch_count"], 2)
 
+    def test_baidu_batch_size_respects_provider_limit(self):
+        with self.assertRaises(ValueError):
+            fetch_baidu_concept_tags(["600000"], batch_size=31, get=lambda *a, **k: None)
+
     def test_baidu_all_batch_failures_are_unavailable(self):
         def fake_get(url, params, headers, timeout):
             return FakeResponse(error="connection timeout")
