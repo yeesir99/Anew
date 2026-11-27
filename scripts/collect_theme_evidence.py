@@ -677,7 +677,7 @@ def main():
                     "detail":"No verified constituent currently satisfies the THS one-year definition"}
             fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
             return verified, {"source":"constituents:"+name,
-                "status":"partial" if failures else "success",
+                "status":"partial" if (failures or expired_count) else "success",
                 "records":len(verified),"provider":"THS + IPO listing-date source",
                 "taxonomy":"THS exact concept board + STAR code + IPO listing date",
                 "matched_symbol":"科创次新股",
