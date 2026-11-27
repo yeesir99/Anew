@@ -528,7 +528,7 @@ def main():
                 try:
                     baidu_concept_cache, baidu_concept_meta = fetch_baidu_concept_tags(
                         [code for code, _ in market_universe],
-                        batch_size=20, max_workers=3, timeout_seconds=8.0
+                        batch_size=30, max_workers=3, timeout_seconds=8.0
                     )
                     baidu_concept_meta["checked_at"] = datetime.now(timezone.utc).isoformat()
                     baidu_concept_meta["trade_date"] = market_trade_day
