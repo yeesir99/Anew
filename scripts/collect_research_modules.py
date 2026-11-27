@@ -358,7 +358,8 @@ def main():
             ths_universe_count = len(ths_universe_names) if ths_universe_names else None
             ths_coverage = (len({x["industry_name"] for x in ths_rows}) / ths_universe_count * 100.0
                             if ths_universe_count else None)
-            ths_snapshot = {"trade_date":trade_day.isoformat(),"status":"success",
+            ths_snapshot_status = "success" if ths_coverage is not None and ths_coverage >= 95.0 else "partial"
+            ths_snapshot = {"trade_date":trade_day.isoformat(),"status":ths_snapshot_status,
                 "provider":"THS","records":len(ths_rows),
                 "coverage_pct":round(min(100.0, ths_coverage), 2) if ths_coverage is not None else None,
                 "expected_industries":ths_universe_count,
@@ -366,7 +367,7 @@ def main():
                 "captured_at":checked,"items":ths_rows,
                 "note":"同花顺实时行业榜备用源；独立展示，不混入申万历史轮动序列。"}
             ths_snapshot_path.write_text(json.dumps(ths_snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            statuses.append({"source":"industry_snapshot_ths","status":"success",
+            statuses.append({"source":"industry_snapshot_ths","status":ths_snapshot_status,
                 "records":len(ths_rows),"provider":"THS",
                 "coverage_pct":round(min(100.0, ths_coverage), 2) if ths_coverage is not None else None,
                 "expected_industries":ths_universe_count,
