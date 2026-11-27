@@ -95,59 +95,37 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
             def stock_board_concept_name_ths(self):
                 return pd.DataFrame([{"name": "烟草", "code": "885999"}])
 
-            def stock_board_concept_name_em(self):
-                return pd.DataFrame([{"板块名称": "烟草", "板块代码": "BK0999"}])
-
-            def stock_board_concept_cons_em(self, symbol):
-                if symbol != "烟草":
-                    raise AssertionError(f"unexpected exact board name: {symbol}")
-                return pd.DataFrame([{"代码": "600000", "名称": "浦发银行"}])
-
-        class ForbiddenResponse:
-            text = ""
+        class FakeResponse:
+            def __init__(self, payload=None, error=None):
+                self.payload = payload
+                self.error = error
 
             def raise_for_status(self):
-                raise RuntimeError("403 Forbidden")
+                if self.error:
+                    raise RuntimeError(self.error)
+
+            def json(self):
+                return self.payload
+
+        def fake_get(url, headers, timeout, params=None):
+            if params is None:
+                return FakeResponse(error="403 Forbidden")
+            if params["fs"] == "m:90+t:3+f:!50":
+                return FakeResponse({"data": {"diff": [
+                    {"f12": "BK0999", "f14": "烟草"}], "total": 1}})
+            if params["fs"] == "b:BK0999+f:!50":
+                return FakeResponse({"data": {"diff": [
+                    {"f12": "600000", "f14": "浦发银行"}], "total": 1}})
+            return FakeResponse({"data": {"diff": [], "total": 0}})
 
         result = validate_ths_theme_concept(
-            FakeAk(), "烟草", date(2026, 11, 26),
-            http_get=lambda *args, **kwargs: ForbiddenResponse()
+            FakeAk(), "烟草", date(2026, 11, 26), http_get=fake_get
         )
         self.assertEqual(result["status"], "success")
         self.assertEqual(result["provider"], "EastMoney")
         self.assertEqual(result["candidate_count"], 1)
         self.assertIn("THS", result["fallback_detail"])
         self.assertIn("403", result["fallback_detail"])
-
-    def test_ths_constituent_403_falls_back_to_exact_eastmoney_concept(self):
-        class FakeAk:
-            def stock_board_concept_name_ths(self):
-                return pd.DataFrame([{"name": "烟草", "code": "885999"}])
-
-            def stock_board_concept_name_em(self):
-                return pd.DataFrame([{"板块名称": "烟草", "板块代码": "BK1234"}])
-
-            def stock_board_concept_cons_em(self, symbol):
-                self.symbol = symbol
-                return pd.DataFrame([{"代码": "600000", "名称": "浦发银行"}])
-
-        class ForbiddenResponse:
-            text = ""
-
-            def raise_for_status(self):
-                raise requests.HTTPError("403 Forbidden")
-
-        def forbidden_get(url, headers, timeout):
-            return ForbiddenResponse()
-
-        fake = FakeAk()
-        result = validate_ths_theme_concept(
-            fake, "烟草", date(2026, 11, 26), http_get=forbidden_get
-        )
-        self.assertEqual(result["status"], "success")
-        self.assertEqual(result["provider"], "EastMoney")
-        self.assertEqual(fake.symbol, "烟草")
-        self.assertEqual(result["candidate_count"], 1)
 
     def test_star_theme_smoke_can_bound_ipo_lookups_and_report_untested(self):
         class FakeAk:
