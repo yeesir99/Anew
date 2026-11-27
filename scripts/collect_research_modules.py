@@ -460,6 +460,7 @@ def main():
                 period_status = (
                     "partial" if (ths_diagnostics["conflicting_duplicates"]
                                   or ths_diagnostics["coverage_pct"] is None
+                                  or ths_diagnostics["coverage_pct"] < 95.0
                                   or ths_diagnostics["unexpected_industries"])
                     else "success"
                 )
@@ -476,7 +477,10 @@ def main():
                     "metric_definition": "THS provider-defined industry net amount (净额), CNY",
                     "detail": "EastMoney unavailable; THS industry flow fallback "
                              + ("partial due to ambiguous duplicate industry names"
-                                if ths_diagnostics["conflicting_duplicates"] else "succeeded")
+                                if ths_diagnostics["conflicting_duplicates"] else
+                                "partial: coverage unknown" if ths_diagnostics["coverage_pct"] is None else
+                                f"partial: coverage {ths_diagnostics['coverage_pct']}% below 95%"
+                                if ths_diagnostics["coverage_pct"] < 95.0 else "succeeded")
                              + ("; EastMoney error: " + em_error if em_error else ""),
                 })
             except Exception as ths_exc:
