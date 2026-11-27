@@ -114,6 +114,10 @@ def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: s
     )
     snapshot_dates = sorted(bars["trade_date"].unique())
     date_set = set(snapshot_dates)
+    bars_by_symbol = {
+        ts_code: group.set_index("trade_date")
+        for ts_code, group in bars.groupby("ts_code", sort=False)
+    }
     additions = []
     extended_symbols = 0
     for ts_code, history in cache.groupby("ts_code", sort=False):
@@ -122,8 +126,8 @@ def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: s
         last_day = str(last["trade_date"])[:8]
         if last_day >= day or last_day not in date_set:
             continue
-        symbol_bars = bars[bars["ts_code"] == ts_code].set_index("trade_date")
-        if last_day not in symbol_bars.index:
+        symbol_bars = bars_by_symbol.get(ts_code)
+        if symbol_bars is None or last_day not in symbol_bars.index:
             continue
         previous_raw_close = float(symbol_bars.loc[last_day]["close_raw"])
         previous_qfq_close = float(last["close"])
