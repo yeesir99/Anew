@@ -13,7 +13,8 @@ class ResearchQualityTests(unittest.TestCase):
         self.research = {"sections": {"themes": {"items": [
             {"industry_name": "主题甲"}, {"industry_name": "主题乙"}
         ]}}}
-        self.technical = {"stocks": 5575, "coverage": {
+        self.technical = {"trade_date": "20261120", "status": "validated",
+                          "stocks": 5575, "coverage": {
             key: 5575 for key in ("ma5", "ma10", "ma20", "ma60", "rsi14",
                                   "macd_dif", "macd_dea", "macd_hist", "volatility20")
         }}
@@ -158,6 +159,21 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertFalse(check["available"])
         self.assertFalse(check["record_count_matches"])
         self.assertEqual(check["records"], 0)
+
+    def test_stale_technical_snapshot_does_not_validate_current_market(self):
+        technical = {**self.technical, "trade_date": "20261119"}
+        report = evaluate_quality(self.market, self.research, [], {}, {}, technical)
+        check = report["checks"]["technical_indicators"]
+        self.assertEqual(check["status"], "partial")
+        self.assertFalse(check["trade_date_matches_market"])
+        self.assertEqual(check["technical_snapshot_trade_date"], "20261119")
+
+    def test_unvalidated_technical_snapshot_does_not_validate_current_market(self):
+        technical = {**self.technical, "status": "degraded"}
+        report = evaluate_quality(self.market, self.research, [], {}, {}, technical)
+        check = report["checks"]["technical_indicators"]
+        self.assertEqual(check["status"], "partial")
+        self.assertEqual(check["technical_snapshot_status"], "degraded")
 
     def test_technical_coverage_uses_market_universe_as_denominator(self):
         technical = {"stocks": 100, "coverage": {
