@@ -13,7 +13,7 @@
 - `disclosure_date`：披露文件日期，ISO `YYYY-MM-DD`
 - `as_of_trade_date`：该证据纳入研究成分的行情交易日，ISO `YYYY-MM-DD`
 - `source_url`：年报、交易所公告或巨潮资讯原始披露的 URL
-- `source_type`：`annual_report`、`exchange_announcement` 或 `cninfo_filing`
+- `source_type`：`annual_report`、`semiannual_report`、`quarterly_report`、`periodic_report`、`exchange_announcement` 或 `cninfo_filing`
 - `source_excerpt`：足以支持股权关系的原文摘录（至少30字符）
 
 可选字段：`listed_company_name`、`reporting_period`、`shareholder_name`、`notes`、`cross_check_urls`。
