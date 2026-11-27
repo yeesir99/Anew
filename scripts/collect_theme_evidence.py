@@ -610,10 +610,10 @@ def main():
                 if not candidates:
                     candidates, candidate_meta = fetch_eastmoney_exact_concept_members("参股民营银行")
                 return [], {"source":"constituents:"+name,"status":"pending_relation_evidence",
-                    "provider":"THS" if candidates else None,
-                    "taxonomy":"THS concept candidates only" if candidates else None,
+                    "provider":candidate_meta.get("provider") if candidate_meta else None,
+                    "taxonomy":candidate_meta.get("taxonomy") if candidate_meta else None,
                     "matched_symbol":candidate_meta.get("matched_symbol") if candidate_meta else None,
-                    "mapping_source":"candidate taxonomy only; not accepted as equity proof",
+                    "mapping_source":"exact THS/EastMoney candidate taxonomy only; not accepted as equity proof",
                     "candidate_codes":[x["code"] for x in candidates],
                     "candidate_count":len(candidates),
                     "verified_relationships":[],
@@ -702,9 +702,9 @@ def main():
             if not verified:
                 return [], {"source":"constituents:"+name,
                     "status":"pending_listing_verification" if failures else "unresolved",
-                    "provider":"THS","taxonomy":"THS exact concept board + IPO listing date",
+                    "provider":meta.get("provider") or "THS","taxonomy":(meta.get("taxonomy") or "exact concept board") + " + IPO listing date",
                     "matched_symbol":meta.get("matched_symbol"),
-                    "mapping_source":"THS exact concept board + stock_ipo_info listing date",
+                    "mapping_source":(meta.get("provider") or "THS") + " exact concept board + stock_ipo_info listing date",
                     "source_url":meta.get("source_url"),
                     "listing_age_policy":"less than one calendar year",
                     "as_of":as_of.isoformat(),"candidate_count":len(candidates),
@@ -713,7 +713,7 @@ def main():
             fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
             return verified, {"source":"constituents:"+name,
                 "status":"partial" if (failures or expired_count) else "success",
-                "records":len(verified),"provider":"THS + IPO listing-date source",
+                "records":len(verified),"provider":(meta.get("provider") or "THS") + " + IPO listing-date source",
                 "taxonomy":"THS exact concept board + STAR code + IPO listing date",
                 "matched_symbol":"科创次新股",
                 "mapping_source":(meta.get("provider") or "THS") + " exact concept membership + THS one-calendar-year definition",
