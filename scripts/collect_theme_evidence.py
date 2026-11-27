@@ -30,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SITE = ROOT / "site" / "data"
 LOG = logging.getLogger("theme-evidence")
+THEME_MAPPING_POLICY_VERSION = 2
 THEME_ALIASES = {
     # Only near-equivalent taxonomy labels are allowed. Broad parent sectors
     # (e.g. semiconductor, small metals, medical services, trade) are excluded
@@ -518,6 +519,7 @@ def main():
             component_summary = {key:{k:v for k,v in value.items() if k != "members"}
                                  for key,value in components.items()}
             cache[name] = {"members":members,"fetched_at":fetched,"source":"THS",
+                "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
                 "matched_symbol":"烟草 + 工业大麻","taxonomy":"separate exact THS concepts",
                 "mapping_source":"THS exact concept taxonomy; two components merged",
                 "components":component_summary,"sector_code":code}
@@ -629,7 +631,8 @@ def main():
         cached = cache.get(name) or {}
         cached_members = cached.get("members") or []
         cached_at = clean(cached.get("fetched_at"))
-        cache_provenance_ok = bool(cached.get("mapping_source") and cached.get("taxonomy")
+        cache_provenance_ok = bool(cached.get("mapping_policy_version") == THEME_MAPPING_POLICY_VERSION
+                                   and cached.get("mapping_source") and cached.get("taxonomy")
                                    and cached.get("matched_symbol"))
         if cached_members and cached_at and cache_provenance_ok and cached.get("sector_code") == code:
             try:
@@ -650,6 +653,7 @@ def main():
                 fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 source_name = meta.get("provider", "Sina")
                 cache[name] = {"members":members,"fetched_at":fetched,"source":source_name,
+                    "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
                     "matched_symbol":meta.get("matched_symbol"),"taxonomy":meta.get("taxonomy"),
                     "mapping_source":meta.get("mapping_source"),"sector_code":code}
                 cache_dirty = True
@@ -699,6 +703,7 @@ def main():
                     if members:
                         fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
                         cache[name] = {"members":members,"fetched_at":fetched,"source":fn_name,
+                            "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
                             "matched_symbol":candidate,"taxonomy":label,
                             "mapping_source":fn_name,"sector_code":code}
                         cache_dirty = True
