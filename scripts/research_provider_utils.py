@@ -126,6 +126,9 @@ def fetch_eastmoney_concept_members(
         for host in member_hosts:
             try:
                 diff, data, source_url = fetch_diff(host, page_params, "EastMoney concept constituents")
+                if not diff:
+                    member_errors.append(f"{host}: empty constituent page")
+                    continue
                 page_rows = diff
                 if total is None:
                     total = int(data.get("total") or len(diff))
