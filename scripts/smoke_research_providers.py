@@ -28,7 +28,22 @@ def _finite_number(value):
         return None
 
 
-def validate_ths_flow_frame(frame):
+def ths_industry_universe_names(ak):
+    frame = ak.stock_board_industry_name_ths()
+    if frame is None or frame.empty:
+        raise ValueError("THS industry universe is empty")
+    name_col = next((col for col in ("name", "行业", "行业名称", "板块名称")
+                     if col in frame.columns), None)
+    if not name_col:
+        raise ValueError(f"THS industry universe name column missing: {list(frame.columns)}")
+    names = {str(value).strip() for value in frame[name_col]
+             if str(value).strip() and str(value).strip().lower() != "nan"}
+    if not names:
+        raise ValueError("THS industry universe has no valid names")
+    return names
+
+
+def validate_ths_flow_frame(frame, universe_names=None):
     """Return normalized contract facts or raise when the THS schema is unusable."""
     if frame is None or getattr(frame, "empty", True):
         raise ValueError("provider returned an empty result")
@@ -66,11 +81,21 @@ def validate_ths_flow_frame(frame):
             source_rows[name] = current_row
     if not by_name:
         raise ValueError("no unambiguous rows with both industry name and finite net amount")
+    expected_names = set(universe_names or [])
+    observed_names = set(by_name)
+    unexpected_names = sorted(observed_names - expected_names) if expected_names else []
+    coverage_pct = (
+        round(len(observed_names & expected_names) / len(expected_names) * 100, 2)
+        if expected_names and not unexpected_names else None
+    )
     return {
-        "status": "partial" if conflicts else "success",
+        "status": "partial" if (conflicts or coverage_pct is None or unexpected_names) else "success",
         "records": len(by_name),
         "raw_records": raw_count,
         "unique_industries": len(by_name),
+        "expected_industries": len(expected_names) if expected_names else None,
+        "coverage_pct": coverage_pct,
+        "unexpected_industries": unexpected_names,
         "duplicate_rows_removed": identical_duplicates,
         "conflicting_duplicates": [
             {"industry": name, "rows": rows} for name, rows in conflicts.items()
@@ -94,10 +119,15 @@ def main():
         raise SystemExit("FAIL: installed AkShare has no stock_fund_flow_industry_ths endpoint")
 
     results = []
+    try:
+        universe_names = ths_industry_universe_names(ak)
+    except Exception as exc:
+        universe_names = None
+        print(json.dumps({"industry_universe_status": "unavailable", "detail": str(exc)[:500]}, ensure_ascii=False))
     for period, symbol in PERIOD_SYMBOLS.items():
         try:
             frame = endpoint(symbol=symbol)
-            facts = validate_ths_flow_frame(frame)
+            facts = validate_ths_flow_frame(frame, universe_names=universe_names)
             results.append({"period": period, "symbol": symbol, "status": "success", **facts})
         except Exception as exc:
             results.append({
