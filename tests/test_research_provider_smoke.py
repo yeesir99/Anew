@@ -95,7 +95,8 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
                 return pd.DataFrame([{"板块名称": "烟草", "板块代码": "BK0999"}])
 
             def stock_board_concept_cons_em(self, symbol):
-                self.assertEqual(symbol, "BK0999")
+                if symbol != "BK0999":
+                    raise AssertionError(f"unexpected board code: {symbol}")
                 return pd.DataFrame([{"代码": "600000", "名称": "浦发银行"}])
 
         class ForbiddenResponse:
