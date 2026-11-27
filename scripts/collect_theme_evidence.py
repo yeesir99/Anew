@@ -765,6 +765,7 @@ def main():
                         "taxonomy":candidate_meta.get("taxonomy"),
                         "source_url":candidate_meta.get("source_url"),
                         "mapping_source":candidate_meta.get("mapping_source"),
+                        "coverage_pct":candidate_meta.get("coverage_pct"),
                         "candidate_only":True,
                     }
                     cache_dirty = True
