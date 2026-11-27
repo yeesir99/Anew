@@ -83,8 +83,12 @@ def verified_private_bank_relationship(record):
 
 
 
+PRIVATE_BANK_MAX_DISCLOSURE_AGE_DAYS = 180
+PRIVATE_BANK_MAX_REVIEW_AGE_DAYS = 180
+
+
 def private_bank_records_for_trade_date(records, trade_date):
-    """Accept latest primary-source equity disclosure per issuer/bank as of a report date."""
+    """Carry forward the latest primary disclosure only within explicit freshness limits."""
     try:
         as_of = date.fromisoformat(str(trade_date)[:10])
     except (TypeError, ValueError):
@@ -93,13 +97,16 @@ def private_bank_records_for_trade_date(records, trade_date):
     for record in records or []:
         if not verified_private_bank_relationship(record):
             continue
-        if str(record.get("as_of_trade_date") or "")[:10] != as_of.isoformat():
-            continue
         try:
+            reviewed = date.fromisoformat(str(record.get("as_of_trade_date") or "")[:10])
             disclosed = date.fromisoformat(str(record.get("disclosure_date") or "")[:10])
         except ValueError:
             continue
-        if disclosed > as_of:
+        review_age = (as_of - reviewed).days
+        disclosure_age = (as_of - disclosed).days
+        if (reviewed > as_of or disclosed > as_of
+                or review_age < 0 or review_age > PRIVATE_BANK_MAX_REVIEW_AGE_DAYS
+                or disclosure_age < 0 or disclosure_age > PRIVATE_BANK_MAX_DISCLOSURE_AGE_DAYS):
             continue
         code = str(record["listed_company_code"]).strip()
         bank = str(record["investee_bank_name"]).strip()
@@ -108,7 +115,11 @@ def private_bank_records_for_trade_date(records, trade_date):
         previous_date = date.min if previous is None else date.fromisoformat(
             str(previous["disclosure_date"])[:10])
         if previous is None or disclosed > previous_date:
-            selected[key] = dict(record)
+            enriched = dict(record)
+            enriched["evidence_age_days"] = disclosure_age
+            enriched["review_age_days"] = review_age
+            enriched["evidence_status"] = "latest_disclosure_within_freshness_window"
+            selected[key] = enriched
     return [selected[key] for key in sorted(selected)]
 
 
