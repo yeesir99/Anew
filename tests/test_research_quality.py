@@ -88,6 +88,10 @@ class ResearchQualityTests(unittest.TestCase):
             "metric_definition": "Broad A-share median PE/PB historical quantiles",
             "scope": "broad_market",
             "coverage_basis": "required_broad_market_valuation_metrics",
+            "source_urls": {
+                "pe": "https://legulegu.com/stockdata/a-ttm-lyr",
+                "pb": "https://legulegu.com/stockdata/all-pb",
+            },
             "note": "仅代表全A股市场整体估值，不代表任何行业或主题的估值分位",
         }
         report = evaluate_quality(self.market, self.research, [], {}, {},
