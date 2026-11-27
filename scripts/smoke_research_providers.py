@@ -159,7 +159,7 @@ def _fetch_ths_concept_members(board_code, http_get=None):
     return tables[0], url
 
 
-def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None):
+def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, http_get=None):
     names = ak.stock_board_concept_name_ths()
     if names is None or names.empty:
         raise ValueError("THS concept-name taxonomy is empty")
@@ -176,7 +176,7 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None):
         members = member_fn(symbol=theme_name)
         source_url = f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}"
     else:
-        members, source_url = _fetch_ths_concept_members(board_code)
+        members, source_url = _fetch_ths_concept_members(board_code, http_get=http_get)
     if members is None or members.empty:
         raise ValueError(f"THS concept constituent page empty for {theme_name}")
     member_code_col = next((col for col in ("代码", "股票代码", "证券代码", "code")
