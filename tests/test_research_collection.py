@@ -25,6 +25,26 @@ class THSIndustryFlowNormalizationTests(unittest.TestCase):
         self.assertEqual(rows[0]["indicator"], "5日")
         self.assertIn("not relabelled as EastMoney", rows[0]["metric_definition"])
 
+    def test_ths_normalizer_deduplicates_identical_industries(self):
+        frame = pd.DataFrame([
+            {"行业": "银行", "净额": 12.5, "涨跌幅": 1.2},
+            {"行业": "银行", "净额": 12.5, "涨跌幅": 1.2},
+        ])
+        rows = ths_industry_flow_rows(
+            frame, "5日", date(2026, 11, 26), "2026-11-27T10:00:00+08:00"
+        )
+        self.assertEqual(len(rows), 1)
+
+    def test_ths_normalizer_rejects_conflicting_duplicate_industries(self):
+        frame = pd.DataFrame([
+            {"行业": "银行", "净额": 12.5, "涨跌幅": 1.2},
+            {"行业": "银行", "净额": 13.0, "涨跌幅": 1.2},
+        ])
+        with self.assertRaises(RuntimeError):
+            ths_industry_flow_rows(
+                frame, "5日", date(2026, 11, 26), "2026-11-27T10:00:00+08:00"
+            )
+
     def test_ths_normalizer_rejects_empty_or_schema_drift(self):
         with self.assertRaises(RuntimeError):
             ths_industry_flow_rows(
