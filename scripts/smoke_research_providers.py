@@ -10,6 +10,9 @@ import csv
 import json
 import math
 import sys
+
+import pandas as pd
+import requests
 from datetime import date
 from pathlib import Path
 
@@ -125,6 +128,37 @@ def validate_ths_flow_frame(frame, universe_names=None):
     }
 
 
+def _fetch_ths_concept_members(board_code, http_get=None):
+    """Read the THS concept constituent page used by the production collector."""
+    http_get = http_get or requests.get
+    cookie = ""
+    try:
+        import py_mini_racer
+        from akshare.datasets import get_ths_js
+        runtime = py_mini_racer.MiniRacer()
+        with open(get_ths_js("ths.js"), "r", encoding="utf-8") as handle:
+            runtime.eval(handle.read())
+        cookie = str(runtime.call("v"))
+    except Exception:
+        pass
+    url = (
+        "https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/"
+        f"page/1/ajax/1/code/{board_code}"
+    )
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Referer": "https://q.10jqka.com.cn/gn/",
+    }
+    if cookie:
+        headers["Cookie"] = f"v={cookie}"
+    response = http_get(url, headers=headers, timeout=15)
+    response.raise_for_status()
+    tables = pd.read_html(response.text)
+    if not tables:
+        raise ValueError("THS concept constituent page has no HTML table")
+    return tables[0], url
+
+
 def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None):
     names = ak.stock_board_concept_name_ths()
     if names is None or names.empty:
@@ -137,9 +171,14 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None):
     if matched.empty:
         return {"theme": theme_name, "status": "partial", "detail": "exact THS concept not found"}
     board_code = str(matched.iloc[0][code_col]).strip()
-    members = ak.stock_board_concept_cons_ths(symbol=theme_name)
+    member_fn = getattr(ak, "stock_board_concept_cons_ths", None)
+    if member_fn is not None:
+        members = member_fn(symbol=theme_name)
+        source_url = f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}"
+    else:
+        members, source_url = _fetch_ths_concept_members(board_code)
     if members is None or members.empty:
-        raise ValueError(f"THS concept constituent endpoint empty for {theme_name}")
+        raise ValueError(f"THS concept constituent page empty for {theme_name}")
     member_code_col = next((col for col in ("代码", "股票代码", "证券代码", "code")
                             if col in members.columns), None)
     if not member_code_col:
@@ -148,8 +187,9 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None):
                     if str(value).strip() and str(value).strip().lower() != "nan"})
     result = {
         "theme": theme_name, "status": "success", "board_code": board_code,
-        "source_url": f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}",
+        "source_url": source_url,
         "candidate_count": len(codes), "member_count": len(codes),
+        "member_page_scope": "first page smoke only",
     }
     if theme_name != "科创次新股":
         return result
