@@ -553,7 +553,7 @@ def main():
                                  f"returned {baidu_concept_meta.get('returned_codes',0)}/{baidu_concept_meta.get('input_codes',0)} stock records",
                     })
                     baidu_status_recorded = True
-            normal = lambda value: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+            normal = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
             names_by_code = {code:name for code,name in market_universe}
             members = []
             concept_codes = set()
