@@ -37,6 +37,14 @@ def number(value):
         return None
 
 
+def is_eastmoney_rate_limit(exc):
+    message = str(exc).lower()
+    return any(token in message for token in (
+        "push2ratelimiterror", "rate limit", "too many requests",
+        "短时间内请求过多", "429", "频繁访问",
+    ))
+
+
 def ths_industry_universe_count(ak):
     """Return the THS industry taxonomy size; None means coverage is unknown."""
     fn = getattr(ak, "stock_board_industry_name_ths", None)
@@ -191,6 +199,9 @@ def main():
 
     checked = datetime.now(TZ).isoformat(timespec="seconds")
     statuses = []
+    # Once EastMoney explicitly rate-limits this run, stop calling its other
+    # endpoints and switch to the independent THS provider.
+    eastmoney_circuit_open = False
     # Industry snapshot: prefer EastMoney, but retain a THS live ranking as
     # an explicitly separate fallback so taxonomies are not mixed into the
     # six-month Shenwan rotation history.
@@ -222,13 +233,14 @@ def main():
                          "provider": "EastMoney",
                          "detail": "行业涨跌幅及成交额快照；代理分不等同产业基本面评分"})
     except Exception as exc:
+        eastmoney_circuit_open = is_eastmoney_rate_limit(exc)
         LOG.warning("EastMoney industry snapshot failed; trying THS fallback: %s", str(exc)[:240])
         statuses.append({"source": "industry_snapshot", "status": "failed", "detail": str(exc)[:500]})
         try:
             ths_fn = getattr(ak, "stock_board_industry_summary_ths", None)
             if ths_fn is None:
                 raise RuntimeError("stock_board_industry_summary_ths unavailable")
-            ths_frame = ths_fn()
+            ths_frame = call_with_retry(ths_fn, operation="THS industry summary")
             if ths_frame is None or ths_frame.empty:
                 raise RuntimeError("THS industry summary returned empty")
             name_col = next((x for x in ("板块", "行业", "板块名称") if x in ths_frame.columns), None)
@@ -301,10 +313,16 @@ def main():
         period_rows = []
         em_error = None
         try:
+            if eastmoney_circuit_open:
+                raise RuntimeError("EastMoney circuit breaker open after rate-limit response")
             fn = getattr(ak, "stock_fund_flow_sector_rank_em", None)
             if fn is None:
                 raise RuntimeError("stock_fund_flow_sector_rank_em unavailable")
-            frame = call_with_retry(lambda: fn(indicator=indicator, sector_type="行业资金流"), operation=f"EastMoney sector flow {indicator}")
+            frame = call_with_retry(
+                lambda: fn(indicator=indicator, sector_type="行业资金流"),
+                operation=f"EastMoney sector flow {indicator}",
+                should_retry=lambda error: not is_eastmoney_rate_limit(error),
+            )
             if frame is None or frame.empty:
                 raise RuntimeError("EastMoney sector-flow endpoint returned empty data")
             name_col = next((x for x in ("名称", "板块名称", "行业", "板块") if x in frame.columns), None)
@@ -340,6 +358,8 @@ def main():
             })
         except Exception as exc:
             em_error = str(exc)[:300]
+            if is_eastmoney_rate_limit(exc):
+                eastmoney_circuit_open = True
             LOG.warning("EastMoney %s sector flow failed; trying THS: %s", indicator, em_error)
 
         if not period_rows:
