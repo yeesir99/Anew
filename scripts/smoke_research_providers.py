@@ -270,7 +270,7 @@ def validate_star_listing_roster(ak, as_of):
     frame = call_with_retry(
         lambda: listing_fn(symbol="科创板"),
         operation="SSE STAR Market official listing roster",
-        attempts=2, base_delay=0.5, max_delay=2.0,
+        attempts=2, delay_seconds=0.5,
     )
     if frame is None or frame.empty:
         raise ValueError("SSE STAR Market listing roster is empty")
