@@ -74,6 +74,17 @@ class EastMoneyConceptMirrorTests(unittest.TestCase):
         self.assertEqual(meta["status"], "success")
         self.assertEqual(meta["batch_count"], 2)
 
+    def test_baidu_all_batch_failures_are_unavailable(self):
+        def fake_get(url, params, headers, timeout):
+            return FakeResponse(error="connection timeout")
+
+        tags, meta = fetch_baidu_concept_tags(
+            ["600000", "000001"], get=fake_get, batch_size=2, max_workers=1
+        )
+        self.assertEqual(tags, {})
+        self.assertEqual(meta["status"], "unavailable")
+        self.assertEqual(len(meta["failed_batches"]), 1)
+
     def test_all_taxonomy_mirrors_failed_is_transport_error(self):
         def fake_get(url, params, headers, timeout):
             return FakeResponse(error="502")
