@@ -1,6 +1,8 @@
 import unittest
 
-from scripts.smoke_research_providers import PERIOD_SYMBOLS, smoke_exit_code, validate_ths_flow_frame
+from scripts.smoke_research_providers import (
+    PERIOD_SYMBOLS, smoke_exit_code, validate_ths_flow_frame, validate_ths_theme_concept,
+)
 
 
 class FakeFrame:
@@ -23,6 +25,30 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         self.assertEqual(result["expected_industries"], 3)
         self.assertAlmostEqual(result["coverage_pct"], 66.67)
         self.assertEqual(result["status"], "success")
+
+    def test_ths_star_theme_requires_exact_board_and_one_year_listing_rule(self):
+        class FakeAk:
+            def stock_board_concept_name_ths(self):
+                return pd.DataFrame([{"name": "科创次新股", "code": "885907"}])
+
+            def stock_board_concept_cons_ths(self, symbol):
+                return pd.DataFrame([{"代码": "688001"}, {"代码": "688002"}])
+
+            def stock_ipo_info(self, symbol):
+                return pd.DataFrame([{"item": "上市日期", "value": "2026-01-01"}])
+
+        result = validate_ths_theme_concept(FakeAk(), "科创次新股", date(2026, 11, 26))
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["candidate_count"], 2)
+        self.assertEqual(result["eligible_within_one_calendar_year"], 2)
+
+        class ExpiredAk(FakeAk):
+            def stock_ipo_info(self, symbol):
+                return pd.DataFrame([{"item": "上市日期", "value": "2025-10-01"}])
+
+        expired = validate_ths_theme_concept(ExpiredAk(), "科创次新股", date(2026, 11, 26))
+        self.assertEqual(expired["status"], "partial")
+        self.assertEqual(expired["expired_or_outside_rule"], 2)
 
     def test_partial_provider_data_is_warning_but_schema_failure_is_error(self):
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "partial"}]), 0)
