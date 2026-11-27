@@ -220,7 +220,7 @@ def fetch_baidu_concept_tags(
     codes = [code for code in codes if len(code) == 6 and code.isdigit()]
     if not codes:
         raise ValueError("Baidu concept lookup requires a non-empty A-share universe")
-    if batch_size < 1 or batch_size > 20
+    if batch_size < 1 or batch_size > 20:
         raise ValueError("Baidu concept batch_size must be between 1 and 20")
 
     if get is None:
