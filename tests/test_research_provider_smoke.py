@@ -53,6 +53,29 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         self.assertEqual(expired["status"], "partial")
         self.assertEqual(expired["expired_or_outside_rule"], 2)
 
+    def test_star_theme_smoke_can_bound_ipo_lookups_and_report_untested(self):
+        class FakeAk:
+            calls = 0
+
+            def stock_board_concept_name_ths(self):
+                return pd.DataFrame([{"name": "科创次新股", "code": "885907"}])
+
+            def stock_board_concept_cons_ths(self, symbol):
+                return pd.DataFrame([{"代码": "688001"}, {"代码": "688002"}])
+
+            def stock_ipo_info(self, symbol):
+                self.calls += 1
+                return pd.DataFrame([{"item": "上市日期", "value": "2026-01-01"}])
+
+        fake = FakeAk()
+        result = validate_ths_theme_concept(
+            fake, "科创次新股", date(2026, 11, 26), max_ipo_checks=1
+        )
+        self.assertEqual(fake.calls, 1)
+        self.assertEqual(result["listing_checks_performed"], 1)
+        self.assertEqual(result["untested_candidates"], 1)
+        self.assertEqual(result["status"], "partial")
+
     def test_partial_provider_data_is_warning_but_schema_failure_is_error(self):
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "partial"}]), 0)
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "failed"}]), 1)
