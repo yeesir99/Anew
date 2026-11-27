@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only live smoke checks for industry capital-flow provider contracts.
+"""Read-only live smoke checks for flow, special-theme and valuation provider contracts.
 
 This script does not write market data or update research snapshots. It is
 intended for an explicitly triggered network check, separate from offline CI.
@@ -23,14 +23,6 @@ except ModuleNotFoundError:
     from build_valuation_snapshot import build_snapshot
     from research_provider_utils import call_with_retry
 
-try:
-    from scripts.theme_mapping_rules import star_next_new_eligible
-except ModuleNotFoundError:
-    from theme_mapping_rules import star_next_new_eligible
-try:
-    from scripts.build_valuation_snapshot import build_snapshot as build_valuation_snapshot
-except ModuleNotFoundError:
-    from build_valuation_snapshot import build_snapshot as build_valuation_snapshot
 
 
 PERIOD_SYMBOLS = {
