@@ -259,6 +259,20 @@ load();
     : '<div class="note">同花顺备用实时行业榜本轮未取得数据；历史轮动继续使用公开行业日频归档。状态：'+esc(liveMeta.status||'missing')+'</div>';
   const cap=document.querySelector('#capital .empty');
   if(cap)cap.outerHTML='<div class="card"><div class="section">公开资金流估算</div>'+table(items('capital-flows').slice(0,60),[['周期',x=>esc(x.indicator)],['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['涨跌幅',x=>pct(x.change_pct)],['估算净额',x=>{const v=x.main_net_inflow!=null?x.main_net_inflow:x.net_inflow;return v==null?'—':fmt(Number(v)/1e8)+'亿'}],['指标口径',x=>esc(x.metric_definition||'口径未记录')],['来源',x=>esc(x.source||'来源待标注')],['日期',x=>esc(x.trade_date)]])+'</div><div class="note">资金流按周期和实际来源展示。THS净额与东方财富主力净流入采用不同指标定义；历史归档不补写本次采集失败的周期。公开估算不代表机构专属账户净流入。</div><div class="card"><div class="section">ETF份额变化</div>'+table(items('etf-shares').slice(0,50),[['代码',x=>esc(x.code)],['名称',x=>esc(x.name)],['基金份额',x=>x.shares==null?'—':fmt(x.shares,0)],['份额变化',x=>pct(x.change_pct)],['对比日期',x=>esc(x.previous_date||'历史基准待积累')],['快照日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">数据源状态</div>'+table(items('data-sources'),[['数据源',x=>esc(x.source)],['状态',x=>esc(x.status)],['说明',x=>esc(x.detail)]])+'</div>';
+  const valuation=(s['market-valuation']||{}).item||{},valuationStatus=(s['market-valuation']||{}).status||'missing';
+  const valuationRoot=document.querySelector('#capital');
+  if(valuationRoot&&!valuationRoot.querySelector('.market-valuation-card')){
+    const vm=valuation.metrics||{},vd=valuation.provider_dates||{};
+    const valuationHtml='<div class="card market-valuation-card"><div class="section">全A股市场估值 · '+esc(valuation.trade_date||'日期待确认')+'</div>'+
+      '<div class="note">状态：'+esc(valuationStatus==='validated'?'已验证':valuationStatus==='partial'?'历史数据或字段不完整':'不可用')+'；来源：'+esc(valuation.source||'来源待记录')+'；PE日期：'+esc(vd.pe||'—')+'；PB日期：'+esc(vd.pb||'—')+'</div>'+
+      '<div class="report-quality-grid">'+[
+        ['PE(TTM)中位数',vm.median_pe_ttm],['PE(TTM)近10年分位',vm.median_pe_ttm_quantile_10y==null?null:vm.median_pe_ttm_quantile_10y*100],
+        ['PE(LYR)中位数',vm.median_pe_lyr],['PE(LYR)近10年分位',vm.median_pe_lyr_quantile_10y==null?null:vm.median_pe_lyr_quantile_10y*100],
+        ['PB中位数',vm.median_pb],['PB近10年分位',vm.median_pb_quantile_10y==null?null:vm.median_pb_quantile_10y*100]
+      ].map(x=>'<div class="report-quality-cell"><strong>'+esc(x[1]==null?'—':fmt(x[1]))+'</strong><span>'+esc(x[0])+'</span></div>').join('')+'</div>'+
+      '<div class="note">'+esc(valuation.note||'全市场整体估值，不代表行业或主题估值。')+'</div></div>';
+    valuationRoot.insertAdjacentHTML('beforeend',valuationHtml);
+  }
   const newsPage=document.querySelector('#news .empty');
   
   if(newsPage){
