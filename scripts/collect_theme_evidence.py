@@ -506,7 +506,7 @@ def main():
                 code_col = find_col(names_frame.columns, ("板块代码","概念代码","代码","code"))
                 if not name_col or not code_col:
                     raise RuntimeError("EastMoney concept taxonomy schema changed")
-                normal = lambda value: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+                normal = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
                 matched = names_frame[names_frame[name_col].astype(str).map(normal) == normal(component_name)]
                 if matched.empty:
                     return [], {"status":"unresolved","provider":"EastMoney",
@@ -677,10 +677,10 @@ def main():
                 candidates, meta = fetch_eastmoney_exact_concept_members("科创次新股")
             if not candidates or not meta or meta.get("status") != "success":
                 return [], {"source":"constituents:"+name,"status":"unresolved",
-                    "provider":"THS" if meta else None,
-                    "taxonomy":"THS exact concept board",
+                    "provider":meta.get("provider") if meta else None,
+                    "taxonomy":meta.get("taxonomy") if meta else None,
                     "matched_symbol":meta.get("matched_symbol") if meta else None,
-                    "mapping_source":"THS exact concept board; no broad industry fallback",
+                    "mapping_source":"exact THS/EastMoney concept board; no broad industry fallback",
                     "source_url":meta.get("source_url") if meta else None,
                     "candidate_count":len(candidates),
                     "detail":"THS exact 科创次新股 concept board unavailable; no inferred members"}
