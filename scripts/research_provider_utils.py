@@ -109,7 +109,7 @@ def fetch_eastmoney_concept_members(
 
     member_params = {
         "pn": 1, "pz": 1000, "po": 1, "np": 1, "fltt": 2, "invt": 2,
-        "fs": f"b:{board_code}+f:!50", "fields": "f12,f14",
+        "fs": f"b:{board_code}", "fields": "f12,f14",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
     }
     member_hosts = ("29.push2.eastmoney.com", "82.push2.eastmoney.com",
