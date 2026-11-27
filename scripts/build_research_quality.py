@@ -120,6 +120,48 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
             "note": "记录存在且本次采集成功仅代表可用；只有来源明确提供覆盖率且达到95%才计为完整。THS当日快照独立展示，不与5日/10日混口径。",
         }
 
+    # Industry ranking freshness is a separate dimension from the historical
+    # sector archive. Prefer a current EastMoney snapshot, otherwise use the
+    # independently labelled THS snapshot without mixing its taxonomy.
+    industry_em = source_by_name.get("industry_snapshot", {})
+    industry_ths = source_by_name.get("industry_snapshot_ths", {})
+    ths_industry_current = bool(
+        registry_current
+        and str((ths_snapshot or {}).get("trade_date") or "") == trade_day
+        and (ths_snapshot or {}).get("status") == "success"
+        and industry_ths.get("status") == "success"
+    )
+    if industry_em.get("status") == "success":
+        industry_source = industry_em
+        industry_provider = industry_em.get("provider") or "EastMoney"
+        industry_snapshot_current = registry_current
+    elif ths_industry_current:
+        industry_source = industry_ths
+        industry_provider = "THS"
+        industry_snapshot_current = True
+    else:
+        industry_source = industry_em if industry_em else industry_ths
+        industry_provider = industry_source.get("provider")
+        industry_snapshot_current = False
+    industry_records = int(industry_source.get("records") or 0)
+    industry_coverage = industry_source.get("coverage_pct")
+    industry_available = bool(industry_snapshot_current and industry_records > 0)
+    industry_valid = bool(
+        industry_available
+        and isinstance(industry_coverage, (int, float))
+        and industry_coverage >= REQUIRED_FLOW_COVERAGE_PCT
+    )
+    checks["industry_snapshot"] = {
+        "status": "validated" if industry_valid else "partial",
+        "available": industry_available,
+        "provider": industry_provider,
+        "trade_date": trade_day if industry_snapshot_current else None,
+        "records": industry_records if industry_available else 0,
+        "coverage_pct": industry_coverage,
+        "required_coverage_pct": REQUIRED_FLOW_COVERAGE_PCT,
+        "note": "行业实时快照与历史归档分开验证；THS备用榜单独展示，不与申万历史行业序列混合。",
+    }
+
     themes = (theme_evidence or {}).get("themes") or {}
     expected_themes = [x for x in (((research or {}).get("sections") or {}).get("themes") or {}).get("items", [])
                        if isinstance(x, dict)]
