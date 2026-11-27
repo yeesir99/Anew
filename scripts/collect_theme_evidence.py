@@ -493,13 +493,74 @@ def main():
         nonlocal cache_dirty, push2_circuit_open
         code = clean(theme.get("sector_code"))
 
+        def fetch_eastmoney_exact_concept_members(component_name):
+            name_fn = getattr(ak, "stock_board_concept_name_em", None)
+            cons_fn = getattr(ak, "stock_board_concept_cons_em", None)
+            if name_fn is None or cons_fn is None:
+                return [], {"status":"unresolved","provider":"EastMoney",
+                            "taxonomy":"EastMoney exact concept board",
+                            "detail":"EastMoney exact concept endpoints unavailable"}
+            try:
+                names_frame = call_with_retry(name_fn, operation="EastMoney concept taxonomy")
+                name_col = find_col(names_frame.columns, ("板块名称","概念名称","名称","name"))
+                code_col = find_col(names_frame.columns, ("板块代码","概念代码","代码","code"))
+                if not name_col or not code_col:
+                    raise RuntimeError("EastMoney concept taxonomy schema changed")
+                normal = lambda value: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+                matched = names_frame[names_frame[name_col].astype(str).map(normal) == normal(component_name)]
+                if matched.empty:
+                    return [], {"status":"unresolved","provider":"EastMoney",
+                                "taxonomy":"EastMoney exact concept board",
+                                "detail":"exact EastMoney concept name not found"}
+                matched_name = str(matched.iloc[0][name_col]).strip()
+                board_code = str(matched.iloc[0][code_col]).strip()
+                frame = call_with_retry(
+                    lambda: cons_fn(symbol=matched_name),
+                    operation=f"EastMoney exact concept constituents {matched_name}",
+                )
+                rows = records(frame)
+                if not rows:
+                    raise RuntimeError("EastMoney exact concept constituents empty")
+                member_code_col = find_col(rows[0].keys(), ("代码","股票代码","证券代码","成分股代码"))
+                member_name_col = find_col(rows[0].keys(), ("名称","股票简称","证券简称","成分股名称"))
+                if not member_code_col:
+                    raise RuntimeError("EastMoney concept constituent code column missing")
+                members = list({
+                    norm_code(row.get(member_code_col)): {
+                        "code": norm_code(row.get(member_code_col)),
+                        "name": row.get(member_name_col),
+                    }
+                    for row in rows if norm_code(row.get(member_code_col))
+                }.values())
+                if not members:
+                    raise RuntimeError("EastMoney exact concept returned no valid six-digit codes")
+                source_url = f"https://quote.eastmoney.com/center/boardlist.html#boards2-90.{board_code}"
+                return members, {
+                    "status":"success","records":len(members),"provider":"EastMoney",
+                    "taxonomy":"EastMoney exact concept board",
+                    "taxonomy_node_id":board_code,"taxonomy_node_name":matched_name,
+                    "matched_symbol":matched_name,
+                    "mapping_source":"stock_board_concept_cons_em exact concept-name match",
+                    "source_url":source_url,
+                }
+            except Exception as exc:
+                return [], {"status":"failed","provider":"EastMoney",
+                            "taxonomy":"EastMoney exact concept board",
+                            "detail":f"{type(exc).__name__}: {str(exc)[:240]}"}
+
         # Composite/special themes are deliberately excluded from the generic
         # name-alias cache. Each requires its own explicit evidence contract.
         if name == "烟草与大麻":
             components = {}
             component_members = {}
             for component in ("烟草", "工业大麻"):
-                members, meta = fetch_ths_concept_members(theme, component)
+                try:
+                    members, meta = fetch_ths_concept_members(theme, component)
+                except Exception as exc:
+                    members, meta = [], {"status":"failed","provider":"THS",
+                                         "detail":f"{type(exc).__name__}: {str(exc)[:180]}"}
+                if not members or not meta or meta.get("status") != "success":
+                    members, meta = fetch_eastmoney_exact_concept_members(component)
                 tagged_members = [{
                     **member,
                     "theme_component": component,
@@ -524,8 +585,9 @@ def main():
                                           "records": len(tagged_members), "members": tagged_members}
                 if not members:
                     return [], {"source":"constituents:"+name,"status":"pending_components",
-                        "provider":"THS","taxonomy":"separate exact concept components",
-                        "mapping_source":"THS exact concept taxonomy; both components required",
+                        "provider":meta.get("provider") if meta else None,
+                        "taxonomy":"separate exact concept components",
+                        "mapping_source":"exact THS/EastMoney concept taxonomy; both components required",
                         "matched_symbol":"烟草 + 工业大麻",
                         "components":{key:{k:v for k,v in value.items() if k != "members"}
                                      for key,value in components.items()},
@@ -540,16 +602,19 @@ def main():
             fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
             component_summary = {key:{k:v for k,v in value.items() if k != "members"}
                                  for key,value in components.items()}
-            cache[name] = {"members":members,"fetched_at":fetched,"source":"THS",
+            component_providers = sorted({str(value.get("provider") or "unknown")
+                                           for value in components.values()})
+            cache[name] = {"members":members,"fetched_at":fetched,"source":"+".join(component_providers),
                 "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
-                "matched_symbol":"烟草 + 工业大麻","taxonomy":"separate exact THS concepts",
-                "mapping_source":"THS exact concept taxonomy; two components merged",
+                "matched_symbol":"烟草 + 工业大麻","taxonomy":"separate exact concept components",
+                "mapping_source":"exact THS/EastMoney concept taxonomy; two components merged",
                 "components":component_summary,"sector_code":code}
             cache_dirty = True
             return members, {"source":"constituents:"+name,"status":"success",
-                "records":len(members),"provider":"THS","taxonomy":"separate exact THS concepts",
+                "records":len(members),"provider":" + ".join(component_providers),
+                "taxonomy":"separate exact concept components",
                 "matched_symbol":"烟草 + 工业大麻",
-                "mapping_source":"THS exact concept taxonomy; two components merged",
+                "mapping_source":"exact THS/EastMoney concept taxonomy; two components merged",
                 "components":component_summary,"mapping_date":fetched,"checked_at":fetched}
 
         if name == "参股民营银行":
@@ -600,7 +665,13 @@ def main():
                 "detail":"成分仅来自日期匹配的年报、交易所公告或巨潮资讯披露记录"}
 
         if name == "科创次新股":
-            candidates, meta = fetch_ths_concept_members(theme, "科创次新股")
+            try:
+                candidates, meta = fetch_ths_concept_members(theme, "科创次新股")
+            except Exception as exc:
+                candidates, meta = [], {"status":"failed","provider":"THS",
+                                        "detail":f"{type(exc).__name__}: {str(exc)[:180]}"}
+            if not candidates or not meta or meta.get("status") != "success":
+                candidates, meta = fetch_eastmoney_exact_concept_members("科创次新股")
             if not candidates or not meta or meta.get("status") != "success":
                 return [], {"source":"constituents:"+name,"status":"unresolved",
                     "provider":"THS" if meta else None,
@@ -613,9 +684,9 @@ def main():
             ipo_fn = getattr(ak, "stock_ipo_info", None)
             if ipo_fn is None:
                 return [], {"source":"constituents:"+name,"status":"pending_listing_verification",
-                    "provider":"THS","taxonomy":"THS exact concept board",
+                    "provider":meta.get("provider") or "THS","taxonomy":meta.get("taxonomy") or "THS exact concept board",
                     "matched_symbol":meta.get("matched_symbol"),
-                    "mapping_source":"THS exact concept board + IPO listing-date verification",
+                    "mapping_source":(meta.get("provider") or "THS") + " exact concept board + IPO listing-date verification",
                     "source_url":meta.get("source_url"),
                     "candidate_count":len(candidates),
                     "detail":"IPO listing-date endpoint unavailable"}
@@ -681,7 +752,7 @@ def main():
                 "records":len(verified),"provider":"THS + IPO listing-date source",
                 "taxonomy":"THS exact concept board + STAR code + IPO listing date",
                 "matched_symbol":"科创次新股",
-                "mapping_source":"THS exact concept board definition: STAR listings less than one calendar year",
+                "mapping_source":(meta.get("provider") or "THS") + " exact concept membership + THS one-calendar-year definition",
                 "taxonomy_node_id":meta.get("taxonomy_node_id"),
                 "taxonomy_node_name":meta.get("taxonomy_node_name") or meta.get("matched_symbol"),
                 "source_url":meta.get("source_url"),
