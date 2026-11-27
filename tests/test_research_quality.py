@@ -19,6 +19,24 @@ class ResearchQualityTests(unittest.TestCase):
                                   "macd_dif", "macd_dea", "macd_hist", "volatility20")
         }}
 
+    def test_conflicting_ths_duplicates_keep_period_partial(self):
+        flows = [{
+            "trade_date": "2026-11-20", "indicator": "今日",
+            "net_inflow_cny": 100, "provider": "THS",
+            "source": "AKShare/THS industry fund-flow ranking",
+        }]
+        registry = {"trade_date": "2026-11-20", "sources": [{
+            "source": "sector_flow_今日", "status": "partial",
+            "provider": "THS", "records": 1, "coverage_pct": 100,
+            "conflicting_duplicates": [{"industry": "物流"}],
+        }]}
+        report = evaluate_quality(self.market, self.research, flows, {}, {},
+                                  self.technical, {}, registry)
+        check = report["checks"]["capital_flow_今日"]
+        self.assertEqual(check["status"], "partial")
+        self.assertFalse(check["available"])
+        self.assertEqual(check["upstream_status"], "partial")
+
     def test_current_ths_industry_snapshot_is_available_but_needs_coverage(self):
         ths = {"trade_date": "2026-11-20", "status": "success", "records": 90,
                "items": [{"industry_name": f"行业{i}"} for i in range(90)]}
