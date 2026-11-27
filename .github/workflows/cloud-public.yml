@@ -118,7 +118,6 @@ jobs:
         timeout-minutes: 8
         env:
           TZ: Asia/Shanghai
-          STAR_NEXT_NEW_MAX_LISTING_DAYS: ${{ vars.STAR_NEXT_NEW_MAX_LISTING_DAYS }}
         run: python scripts/collect_theme_evidence.py
       - name: Validate theme evidence joins and coverage
         if: always() && !cancelled()
