@@ -57,6 +57,99 @@ def _day_key(value) -> str:
     return parsed.strftime("%Y%m%d")
 
 
+def _load_snapshot_bars(day: str) -> pd.DataFrame:
+    """Load raw full-market bars used to extend existing qfq history safely."""
+    files = sorted(DATA.glob("market_????-??-??.csv"))
+    if LATEST.exists() and all(path.resolve() != LATEST.resolve() for path in files):
+        files.append(LATEST)
+    parts = []
+    for path in files:
+        try:
+            frame = pd.read_csv(path, encoding="utf-8-sig", dtype={"symbol": str})
+            required = {"symbol", "trade_date", "close", "pre_close"}
+            if not required.issubset(frame.columns):
+                continue
+            volume_col = "vol" if "vol" in frame.columns else "volume" if "volume" in frame.columns else None
+            if not volume_col:
+                continue
+            part = frame[["symbol", "trade_date", "close", "pre_close", volume_col]].copy()
+            part = part.rename(columns={"close": "close_raw", "pre_close": "pre_close_raw",
+                                        volume_col: "vol"})
+            part["symbol"] = part["symbol"].astype(str).str.replace(r"\\.0$", "", regex=True).str.zfill(6)
+            part["ts_code"] = part["symbol"].map(_ts_code_for_symbol)
+            part["trade_date"] = part["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str.replace("-", "", regex=False).str[:8]
+            for col in ("close_raw", "pre_close_raw", "vol"):
+                part[col] = pd.to_numeric(part[col], errors="coerce")
+            part = part.dropna(subset=["ts_code", "trade_date", "close_raw", "pre_close_raw"])
+            part = part[(part["trade_date"] <= day) & (part["close_raw"] > 0) & (part["pre_close_raw"] > 0)]
+            parts.append(part[["ts_code", "trade_date", "close_raw", "pre_close_raw", "vol"]])
+        except Exception as exc:
+            logging.warning("skip snapshot bars %s: %s", path.name, str(exc)[:180])
+    if not parts:
+        return pd.DataFrame(columns=["ts_code", "trade_date", "close_raw", "pre_close_raw", "vol"])
+    bars = pd.concat(parts, ignore_index=True)
+    return bars.drop_duplicates(["ts_code", "trade_date"], keep="last").sort_values(
+        ["ts_code", "trade_date"]
+    )
+
+
+def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: str) -> tuple[pd.DataFrame, int]:
+    """Extend cached qfq closes using daily return ratios from full-market snapshots.
+
+    This avoids mixing raw snapshot closes with qfq history. A symbol is extended
+    only when the cached last date is present in the snapshot date set and every
+    subsequent market session for that symbol is present; gaps are never bridged.
+    """
+    required_cache = ["ts_code", "trade_date", "close", "vol"]
+    required_bars = ["ts_code", "trade_date", "close_raw", "pre_close_raw", "vol"]
+    if cache.empty or not set(required_cache).issubset(cache.columns) or snapshot_bars.empty:
+        return cache, 0
+    bars = snapshot_bars[required_bars].copy()
+    bars["trade_date"] = bars["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str[:8]
+    bars["close_raw"] = pd.to_numeric(bars["close_raw"], errors="coerce")
+    bars["pre_close_raw"] = pd.to_numeric(bars["pre_close_raw"], errors="coerce")
+    bars = bars.dropna(subset=["ts_code", "trade_date", "close_raw", "pre_close_raw"])
+    bars = bars.drop_duplicates(["ts_code", "trade_date"], keep="last").sort_values(
+        ["ts_code", "trade_date"]
+    )
+    snapshot_dates = sorted(bars["trade_date"].unique())
+    date_set = set(snapshot_dates)
+    additions = []
+    extended_symbols = 0
+    for ts_code, history in cache.groupby("ts_code", sort=False):
+        history = history.sort_values("trade_date")
+        last = history.iloc[-1]
+        last_day = str(last["trade_date"])[:8]
+        if last_day >= day or last_day not in date_set:
+            continue
+        symbol_bars = bars[bars["ts_code"] == ts_code].set_index("trade_date")
+        previous_qfq_close = float(last["close"])
+        appended = []
+        for session in (value for value in snapshot_dates if last_day < value <= day):
+            if session not in symbol_bars.index:
+                break
+            row = symbol_bars.loc[session]
+            raw_close = float(row["close_raw"])
+            raw_pre_close = float(row["pre_close_raw"])
+            if raw_close <= 0 or raw_pre_close <= 0:
+                break
+            adjusted_close = previous_qfq_close * raw_close / raw_pre_close
+            appended.append({
+                "ts_code": ts_code, "trade_date": session,
+                "close": adjusted_close, "vol": row["vol"],
+            })
+            previous_qfq_close = adjusted_close
+        if appended:
+            additions.extend(appended)
+            extended_symbols += 1
+    if additions:
+        cache = pd.concat([cache, pd.DataFrame(additions)], ignore_index=True)
+        cache = cache.drop_duplicates(["ts_code", "trade_date"], keep="last").sort_values(
+            ["ts_code", "trade_date"]
+        )
+    return cache, extended_symbols
+
+
 def _snapshot_history() -> tuple[pd.DataFrame, int]:
     files = sorted(DATA.glob("market_????-??-??.csv"))
     latest_resolved = LATEST.resolve()
@@ -218,6 +311,11 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
         cache["vol"] = pd.to_numeric(cache["vol"], errors="coerce")
         cache = cache.dropna(subset=["ts_code", "trade_date", "close", "vol"])
         cache = cache.drop_duplicates(["ts_code", "trade_date"], keep="last")
+    # Extend every cached qfq series to the latest market date using the
+    # full-market daily snapshots. This keeps previously backfilled symbols
+    # current instead of leaving them stuck on the date of their last API fetch.
+    snapshot_bars = _load_snapshot_bars(day)
+    cache, snapshot_extended_symbols = _extend_qfq_history(cache, snapshot_bars, day)
     cached_symbols = set()
     requests_needed = []
     for _, row in universe.iterrows():
@@ -265,6 +363,7 @@ def _backfill_per_symbol(latest: pd.DataFrame, day: str) -> tuple[pd.DataFrame, 
     stats = {"requested": len(requests_needed), "successful": len(histories), "failed": failures,
              "cache_hits": len(cached_symbols), "universe": len(universe),
              "universe_total": len(codes), "cursor_start": start_index, "cursor_next": cursor_next,
+             "snapshot_extended_symbols": snapshot_extended_symbols,
              "workers": workers, "window_days": 170}
     if cache.empty:
         return latest, stats
