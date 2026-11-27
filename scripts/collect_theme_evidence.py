@@ -499,7 +499,7 @@ def main():
             components = {}
             component_members = {}
             for component in ("烟草", "工业大麻"):
-                members, meta = fetch_ths_concept_members({"sector_code": None}, component)
+                members, meta = fetch_ths_concept_members(theme, component)
                 tagged_members = [{
                     **member,
                     "theme_component": component,
