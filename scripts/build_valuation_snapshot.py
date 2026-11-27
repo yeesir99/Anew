@@ -90,12 +90,13 @@ def build_snapshot(target_trade_date, pe_frame, pb_frame, captured_at=None):
     expected_count = len(PE_FIELDS) + len(PB_FIELDS)
     available_count = sum(value is not None for value in all_values.values())
     exact_date = pe_day == target_day and pb_day == target_day
+    iso_day = lambda value: f"{value[:4]}-{value[4:6]}-{value[6:8]}"
     return {
         "schema_version": 1,
         "scope": "broad_market",
         "status": "validated" if exact_date and available_count == expected_count else "partial",
-        "trade_date": target_day,
-        "provider_dates": {"pe": pe_day, "pb": pb_day},
+        "trade_date": iso_day(target_day),
+        "provider_dates": {"pe": iso_day(pe_day), "pb": iso_day(pb_day)},
         "source": "AkShare/Legulegu A-share historical valuation series",
         "provider": "AkShare",
         "metric_definition": (
