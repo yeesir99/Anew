@@ -623,6 +623,8 @@ def main():
                                          "detail":f"{type(exc).__name__}: {str(exc)[:180]}"}
                 if not members or not meta or meta.get("status") != "success":
                     members, meta = fetch_eastmoney_exact_concept_members(component)
+                if not members or not meta or meta.get("status") != "success":
+                    members, meta = fetch_baidu_exact_concept_members(component)
                 tagged_members = [{
                     **member,
                     "theme_component": component,
@@ -710,6 +712,8 @@ def main():
                 candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
                 if not candidates:
                     candidates, candidate_meta = fetch_eastmoney_exact_concept_members("参股民营银行")
+                if not candidates:
+                    candidates, candidate_meta = fetch_baidu_exact_concept_members("参股民营银行")
                 return [], {"source":"constituents:"+name,"status":"pending_relation_evidence",
                     "provider":candidate_meta.get("provider") if candidate_meta else None,
                     "taxonomy":candidate_meta.get("taxonomy") if candidate_meta else None,
@@ -737,6 +741,8 @@ def main():
                                         "detail":f"{type(exc).__name__}: {str(exc)[:180]}"}
             if not candidates or not meta or meta.get("status") != "success":
                 candidates, meta = fetch_eastmoney_exact_concept_members("科创次新股")
+            if not candidates or not meta or meta.get("status") != "success":
+                candidates, meta = fetch_baidu_exact_concept_members("科创次新股")
             if not candidates or not meta or meta.get("status") != "success":
                 return [], {"source":"constituents:"+name,"status":"unresolved",
                     "provider":meta.get("provider") if meta else None,
