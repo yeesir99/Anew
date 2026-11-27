@@ -427,7 +427,7 @@ def main():
             facts = validate_ths_theme_concept(
                 ak, theme_name, market_trade_day, max_ipo_checks=1
             )
-            results.append({"period": "special_theme_" + theme_name,
+            results.append({"period": "ths_eastmoney_theme_" + theme_name,
                             "symbol": theme_name, **facts})
         except Exception as exc:
             results.append({"period": "special_theme_" + theme_name,
@@ -460,8 +460,8 @@ def main():
         })
 
     report = {
-        "providers": ["THS", "Baidu Stock Market", "AkShare/Legulegu"],
-        "endpoint": "THS industry flow + Baidu/THS concept tags + broad-market PE/PB",
+        "providers": ["THS", "Baidu Stock Market", "Shanghai Stock Exchange", "AkShare/Legulegu"],
+        "endpoint": "THS industry flow + Baidu concept tags + SSE STAR listing roster + broad-market PE/PB",
         "akshare_version": getattr(ak, "__version__", "unknown"),
         "read_only": True,
         "as_of_trade_date": market_trade_day.isoformat(),
