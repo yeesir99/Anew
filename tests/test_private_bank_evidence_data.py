@@ -20,11 +20,22 @@ class PrivateBankEvidenceDataTests(unittest.TestCase):
         self.assertTrue(record["source_url"].startswith("https://static.cninfo.com.cn/"))
         self.assertTrue(record.get("cross_check_urls"))
 
-    def test_evidence_is_not_reused_for_a_different_market_date(self):
+    def test_evidence_carries_forward_to_next_trade_date_with_age_metadata(self):
         path = Path(__file__).resolve().parents[1] / "data" / "private_bank_equity_evidence.json"
         payload = json.loads(path.read_text(encoding="utf-8"))
         records = private_bank_records_for_trade_date(
             payload.get("records", []), "2026-11-27"
+        )
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["evidence_status"], "latest_disclosure_within_freshness_window")
+        self.assertEqual(records[0]["review_age_days"], 1)
+        self.assertGreater(records[0]["evidence_age_days"], 90)
+
+    def test_evidence_expires_after_180_days_without_a_new_disclosure(self):
+        path = Path(__file__).resolve().parents[1] / "data" / "private_bank_equity_evidence.json"
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        records = private_bank_records_for_trade_date(
+            payload.get("records", []), "2027-03-01"
         )
         self.assertEqual(records, [])
 
