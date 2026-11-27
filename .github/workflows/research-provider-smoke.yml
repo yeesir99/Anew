@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/smoke_research_providers.py'
+      - 'scripts/research_provider_utils.py'
       - 'requirements.txt'
       - '.github/workflows/research-provider-smoke.yml'
 
