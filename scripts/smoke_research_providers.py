@@ -46,7 +46,10 @@ def validate_ths_flow_frame(frame):
             raw_count += 1
             previous = by_name.get(name)
             if previous is not None and previous != amount:
-                raise ValueError(f"conflicting duplicate industry rows: {name}")
+                raise ValueError(
+                    f"conflicting duplicate industry rows: {name}; "
+                    f"net_amount={previous} vs {amount}"
+                )
             by_name[name] = amount
     if not by_name:
         raise ValueError("no rows with both industry name and finite net amount")
