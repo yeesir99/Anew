@@ -191,10 +191,31 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         "method": (technical or {}).get("method"),
     }
 
-    valuation_status = "validated" if (valuation or {}).get("status") == "validated" and (valuation or {}).get("records", 0) else "unavailable"
+    valuation_trade_day = str((valuation or {}).get("trade_date") or "")
+    valuation_records = int((valuation or {}).get("records") or 0)
+    valuation_coverage = (valuation or {}).get("coverage_pct")
+    valuation_provenance = bool(
+        (valuation or {}).get("source")
+        and (valuation or {}).get("provider")
+        and (valuation or {}).get("metric_definition")
+    )
+    valuation_valid = bool(
+        (valuation or {}).get("status") == "validated"
+        and valuation_trade_day == trade_day
+        and valuation_records > 0
+        and valuation_provenance
+        and isinstance(valuation_coverage, (int, float))
+        and valuation_coverage >= REQUIRED_FLOW_COVERAGE_PCT
+    )
+    valuation_status = "validated" if valuation_valid else "unavailable"
     checks["valuation_crowding"] = {
         "status": valuation_status,
-        "note": "缺少可靠的历史PE/PB分位数据时必须保持缺失，不以涨跌幅、换手率或资金流替代。",
+        "trade_date": valuation_trade_day or None,
+        "trade_date_matches_market": valuation_trade_day == trade_day,
+        "records": valuation_records,
+        "coverage_pct": valuation_coverage,
+        "provenance_valid": valuation_provenance,
+        "note": "必须提供同交易日PE/PB历史分位、来源、Provider、指标定义和至少95%覆盖；缺失时不以涨跌幅、换手率或资金流替代。",
     }
 
     all_checks = [v["status"] for v in checks.values()]
