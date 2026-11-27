@@ -45,23 +45,30 @@ def is_eastmoney_rate_limit(exc):
     ))
 
 
-def ths_industry_universe_count(ak):
-    """Return the THS industry taxonomy size; None means coverage is unknown."""
+def ths_industry_universe_names(ak):
+    """Return exact THS industry taxonomy names; None means coverage is unknown."""
     fn = getattr(ak, "stock_board_industry_name_ths", None)
     if fn is None:
         return None
-    frame = fn()
+    frame = call_with_retry(fn, operation="THS industry universe")
     if frame is None or frame.empty:
         return None
-    name_col = next((x for x in ("name", "行业", "行业名称") if x in frame.columns), None)
+    name_col = next((x for x in ("name", "行业", "行业名称", "板块名称")
+                     if x in frame.columns), None)
     if not name_col:
         return None
     names = {str(x).strip() for x in frame[name_col].tolist()
              if x is not None and str(x).strip() and str(x).lower() != "nan"}
-    return len(names) or None
+    return names or None
 
 
-def ths_industry_flow_rows(frame, indicator, trade_day, captured_at, return_diagnostics=False):
+def ths_industry_universe_count(ak):
+    names = ths_industry_universe_names(ak)
+    return len(names) if names else None
+
+
+def ths_industry_flow_rows(frame, indicator, trade_day, captured_at,
+                           expected_industry_names=None, return_diagnostics=False):
     """Normalize THS's provider-defined net amount; source unit is CNY 100m."""
     if frame is None or frame.empty:
         raise RuntimeError("THS industry flow returned no rows")
@@ -115,11 +122,21 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at, return_diag
     rows = list(by_industry.values())
     if not rows:
         raise RuntimeError("THS industry flow contains no unambiguous finite net-amount rows")
+    observed_names = set(by_industry)
+    expected_names = set(expected_industry_names or [])
+    unexpected_names = sorted(observed_names - expected_names) if expected_names else []
+    coverage_pct = (
+        round(len(observed_names & expected_names) / len(expected_names) * 100, 2)
+        if expected_names and not unexpected_names else None
+    )
     diagnostics = {
         "raw_records": raw_records,
         "records": len(rows),
         "unique_industries": len(rows),
         "duplicate_rows_removed": identical_duplicates,
+        "expected_industries": len(expected_names) if expected_names else None,
+        "coverage_pct": coverage_pct,
+        "unexpected_industries": unexpected_names,
         "conflicting_duplicates": [
             {"industry": name, "rows": source_rows_for_conflict}
             for name, source_rows_for_conflict in conflict_rows.items()
@@ -362,10 +379,12 @@ def main():
     flow_rows = []
     flow_period_outcomes = []
     try:
-        ths_universe_count = ths_industry_universe_count(ak)
+        ths_universe_names = ths_industry_universe_names(ak)
+        ths_universe_count = len(ths_universe_names) if ths_universe_names else None
     except Exception as exc:
+        ths_universe_names = None
         ths_universe_count = None
-        LOG.warning("THS industry taxonomy count unavailable: %s", str(exc)[:180])
+        LOG.warning("THS industry taxonomy unavailable: %s", str(exc)[:180])
 
     for indicator in ("今日", "5日", "10日"):
         period_rows = []
@@ -431,18 +450,26 @@ def main():
                 ths_symbol = {"今日": "即时", "5日": "5日排行", "10日": "10日排行"}[indicator]
                 frame = call_with_retry(lambda: ths_fn(symbol=ths_symbol), operation=f"THS industry flow {indicator}")
                 period_rows, ths_diagnostics = ths_industry_flow_rows(
-                    frame, indicator, trade_day, checked, return_diagnostics=True
+                    frame, indicator, trade_day, checked,
+                    expected_industry_names=ths_universe_names,
+                    return_diagnostics=True,
                 )
                 # Ambiguous duplicate names are excluded, while unaffected
                 # industries remain publishable with a partial source status.
-                period_status = "partial" if ths_diagnostics["conflicting_duplicates"] else "success"
+                period_status = (
+                    "partial" if (ths_diagnostics["conflicting_duplicates"]
+                                  or ths_diagnostics["coverage_pct"] is None
+                                  or ths_diagnostics["unexpected_industries"])
+                    else "success"
+                )
                 statuses.append({
                     "source": "sector_flow_" + indicator, "status": period_status,
                     "records": len(period_rows), "raw_records": ths_diagnostics["raw_records"],
                     "provider": "THS",
                     "endpoint": "stock_fund_flow_industry_ths",
-                    "coverage_pct": None,
-                    "expected_industries": None,
+                    "coverage_pct": ths_diagnostics["coverage_pct"],
+                    "expected_industries": ths_diagnostics["expected_industries"],
+                    "unexpected_industries": ths_diagnostics["unexpected_industries"],
                     "duplicate_rows_removed": ths_diagnostics["duplicate_rows_removed"],
                     "conflicting_duplicates": ths_diagnostics["conflicting_duplicates"],
                     "metric_definition": "THS provider-defined industry net amount (净额), CNY",
