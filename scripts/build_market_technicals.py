@@ -75,9 +75,9 @@ def _load_snapshot_bars(day: str) -> pd.DataFrame:
             part = frame[["symbol", "trade_date", "close", "pre_close", volume_col]].copy()
             part = part.rename(columns={"close": "close_raw", "pre_close": "pre_close_raw",
                                         volume_col: "vol"})
-            part["symbol"] = part["symbol"].astype(str).str.replace(r"\\.0$", "", regex=True).str.zfill(6)
+            part["symbol"] = part["symbol"].astype(str).str.replace(r"\.0$", "", regex=True).str.zfill(6)
             part["ts_code"] = part["symbol"].map(_ts_code_for_symbol)
-            part["trade_date"] = part["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str.replace("-", "", regex=False).str[:8]
+            part["trade_date"] = part["trade_date"].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("-", "", regex=False).str[:8]
             for col in ("close_raw", "pre_close_raw", "vol"):
                 part[col] = pd.to_numeric(part[col], errors="coerce")
             part = part.dropna(subset=["ts_code", "trade_date", "close_raw", "pre_close_raw"])
@@ -105,7 +105,7 @@ def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: s
     if cache.empty or not set(required_cache).issubset(cache.columns) or snapshot_bars.empty:
         return cache, 0
     bars = snapshot_bars[required_bars].copy()
-    bars["trade_date"] = bars["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str[:8]
+    bars["trade_date"] = bars["trade_date"].astype(str).str.replace(r"\.0$", "", regex=True).str[:8]
     bars["close_raw"] = pd.to_numeric(bars["close_raw"], errors="coerce")
     bars["pre_close_raw"] = pd.to_numeric(bars["pre_close_raw"], errors="coerce")
     bars = bars.dropna(subset=["ts_code", "trade_date", "close_raw", "pre_close_raw", "vol"])
