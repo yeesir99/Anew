@@ -173,7 +173,7 @@ def _fetch_em_concept_members(ak, theme_name):
     members = ak.stock_board_concept_cons_em(symbol=matched_name)
     if members is None or members.empty:
         raise ValueError(f"EastMoney concept constituents empty for {theme_name}/{board_code}")
-    return members, board_code, f"https://quote.eastmoney.com/center/boardlist.html#boards2-90.{board_code}"
+    return members, board_code, f"https://quote.eastmoney.com/bk/90.{board_code}.html"
 
 
 def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, http_get=None):
