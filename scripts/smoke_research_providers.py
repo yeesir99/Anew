@@ -10,6 +10,7 @@ import csv
 import json
 import math
 import sys
+from io import StringIO
 
 import pandas as pd
 import requests
@@ -150,7 +151,7 @@ def _fetch_ths_concept_members(board_code, http_get=None):
         headers["Cookie"] = f"v={cookie}"
     response = http_get(url, headers=headers, timeout=15)
     response.raise_for_status()
-    tables = pd.read_html(response.text)
+    tables = pd.read_html(StringIO(response.text))
     if not tables:
         raise ValueError("THS concept constituent page has no HTML table")
     return tables[0], url
