@@ -26,9 +26,9 @@ from import_sector_archive import is_concept_code
 from theme_mapping_rules import (merge_exact_components, star_next_new_eligible,
     private_bank_records_for_trade_date, consistent_provider_flow_persistence)
 try:
-    from scripts.research_provider_utils import fetch_eastmoney_concept_members
+    from scripts.research_provider_utils import call_with_retry, fetch_eastmoney_concept_members
 except ModuleNotFoundError:
-    from research_provider_utils import fetch_eastmoney_concept_members
+    from research_provider_utils import call_with_retry, fetch_eastmoney_concept_members
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
