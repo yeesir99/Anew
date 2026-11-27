@@ -37,19 +37,24 @@ def validate_ths_flow_frame(frame):
     net_col = next((name for name in NET_COLUMNS if name in columns), None)
     if not industry_col or not net_col:
         raise ValueError("schema mismatch; columns=" + repr(columns))
-    valid_names = set()
-    count = 0
+    by_name = {}
+    raw_count = 0
     for _, row in frame.iterrows():
         name = str(row.get(industry_col, "")).strip()
         amount = _finite_number(row.get(net_col))
         if name and name.lower() != "nan" and amount is not None:
-            count += 1
-            valid_names.add(name)
-    if count == 0:
+            raw_count += 1
+            previous = by_name.get(name)
+            if previous is not None and previous != amount:
+                raise ValueError(f"conflicting duplicate industry rows: {name}")
+            by_name[name] = amount
+    if not by_name:
         raise ValueError("no rows with both industry name and finite net amount")
     return {
-        "records": count,
-        "unique_industries": len(valid_names),
+        "records": len(by_name),
+        "raw_records": raw_count,
+        "unique_industries": len(by_name),
+        "duplicate_rows_removed": raw_count - len(by_name),
         "industry_column": industry_col,
         "net_amount_column": net_col,
         "source_unit": "provider-returned value; expected 亿元 per AkShare THS endpoint contract",
