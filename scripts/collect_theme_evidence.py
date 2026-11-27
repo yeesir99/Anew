@@ -683,7 +683,7 @@ def main():
                     "mapping_source":"exact THS/EastMoney concept board; no broad industry fallback",
                     "source_url":meta.get("source_url") if meta else None,
                     "candidate_count":len(candidates),
-                    "detail":"THS exact 科创次新股 concept board unavailable; no inferred members"}
+                    "detail":"THS/EastMoney exact 科创次新股 concept board unavailable; no inferred members"}
             ipo_fn = getattr(ak, "stock_ipo_info", None)
             if ipo_fn is None:
                 return [], {"source":"constituents:"+name,"status":"pending_listing_verification",
@@ -720,9 +720,9 @@ def main():
                             **candidate,
                             "listing_date": listed.isoformat(),
                             "listing_age_days": (as_of - listed).days,
-                            "membership_reason": "THS defines 科创次新股 as STAR-listed securities listed less than one calendar year ago",
+                            "membership_reason": "STAR-listed security listed less than one calendar year ago under the documented 科创次新股 rule",
                             "membership_evidence": {
-                                "provider": "THS",
+                                "provider": meta.get("provider") or "THS",
                                 "taxonomy": meta.get("taxonomy"),
                                 "taxonomy_node_id": meta.get("taxonomy_node_id"),
                                 "taxonomy_node_name": meta.get("taxonomy_node_name") or meta.get("matched_symbol"),
