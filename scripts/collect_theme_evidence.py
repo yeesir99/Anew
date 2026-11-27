@@ -752,125 +752,89 @@ def main():
                 "detail":"成分仅来自日期匹配的年报、交易所公告或巨潮资讯披露记录"}
 
         if name == "科创次新股":
+            listing_fn = getattr(ak, "stock_info_sh_name_code", None)
+            if listing_fn is None:
+                return [], {"source":"constituents:"+name,"status":"unavailable",
+                            "provider":"Shanghai Stock Exchange",
+                            "detail":"AkShare stock_info_sh_name_code endpoint unavailable"}
             try:
-                candidates, meta = fetch_ths_concept_members(theme, "科创次新股")
-            except Exception as exc:
-                candidates, meta = [], {"status":"failed","provider":"THS",
-                                        "detail":f"{type(exc).__name__}: {str(exc)[:180]}"}
-            if not candidates or not meta or meta.get("status") != "success":
-                candidates, meta = fetch_eastmoney_exact_concept_members("科创次新股")
-            if not candidates or not meta or meta.get("status") != "success":
-                candidates, meta = fetch_baidu_exact_concept_members("科创次新股")
-            if not candidates or not meta or meta.get("status") != "success":
-                return [], {"source":"constituents:"+name,"status":"unresolved",
-                    "provider":meta.get("provider") if meta else None,
-                    "taxonomy":meta.get("taxonomy") if meta else None,
-                    "matched_symbol":meta.get("matched_symbol") if meta else None,
-                    "mapping_source":"exact THS/EastMoney concept board; no broad industry fallback",
-                    "source_url":meta.get("source_url") if meta else None,
-                    "candidate_count":len(candidates),
-                    "detail":"THS/EastMoney exact 科创次新股 concept board unavailable; no inferred members"}
-            ipo_fn = getattr(ak, "stock_ipo_info", None)
-            if ipo_fn is None:
-                return [], {"source":"constituents:"+name,"status":"pending_listing_verification",
-                    "provider":meta.get("provider") or "THS","taxonomy":meta.get("taxonomy") or "THS exact concept board",
-                    "matched_symbol":meta.get("matched_symbol"),
-                    "mapping_source":(meta.get("provider") or "THS") + " exact concept board + IPO listing-date verification",
-                    "source_url":meta.get("source_url"),
-                    "candidate_count":len(candidates),
-                    "detail":"IPO listing-date endpoint unavailable"}
-            verified, failures = [], []
-            expired_count = 0
-            as_of = date.fromisoformat(str(theme.get("trade_date") or date.today().isoformat())[:10])
-            for candidate in candidates:
-                stock_code = candidate["code"]
-                if not stock_code.startswith(("688", "689")):
-                    continue
-                try:
-                    info = call_with_retry(
-                        lambda code=stock_code: ipo_fn(symbol=code),
-                        operation=f"IPO listing date {stock_code}",
-                    )
-                    item_col = find_col(info.columns, ("item", "项目"))
-                    value_col = find_col(info.columns, ("value", "值"))
-                    if not item_col or not value_col:
-                        raise RuntimeError("IPO info schema changed")
-                    listing_values = info.loc[
-                        info[item_col].astype(str).str.strip() == "上市日期", value_col
-                    ]
-                    if listing_values.empty:
-                        raise RuntimeError("listing date absent")
-                    listed = datetime.strptime(str(listing_values.iloc[0])[:10], "%Y-%m-%d").date()
-                    if star_next_new_eligible(stock_code, listed, as_of):
-                        verified.append({
-                            **candidate,
-                            "listing_date": listed.isoformat(),
-                            "listing_age_days": (as_of - listed).days,
-                            "membership_reason": "STAR-listed security listed less than one calendar year ago under the documented 科创次新股 rule",
-                            "membership_evidence": {
-                                "provider": meta.get("provider") or "THS",
-                                "concept_code": candidate.get("concept_code"),
-                                "taxonomy": meta.get("taxonomy"),
-                                "taxonomy_node_id": meta.get("taxonomy_node_id"),
-                                "taxonomy_node_name": meta.get("taxonomy_node_name") or meta.get("matched_symbol"),
-                                "source_url": meta.get("source_url"),
-                                "listing_date_source": "AkShare stock_ipo_info",
-                                "listing_date": listed.isoformat(),
-                                "as_of_trade_date": as_of.isoformat(),
-                                "policy": "less than one calendar year",
+                frame = call_with_retry(
+                    lambda: listing_fn(symbol="科创板"),
+                    operation="SSE STAR Market official listing roster",
+                    attempts=2, base_delay=0.5, max_delay=2.0,
+                )
+                if frame is None or frame.empty:
+                    raise ValueError("SSE STAR Market listing roster is empty")
+                code_col = find_col(frame.columns, ("证券代码", "股票代码", "代码"))
+                name_col = find_col(frame.columns, ("证券简称", "股票简称", "名称"))
+                date_col = find_col(frame.columns, ("上市日期", "上市时间", "LIST_DATE"))
+                if not code_col or not date_col:
+                    raise ValueError(f"SSE listing roster schema mismatch: {list(frame.columns)}")
+                digits = "".join(ch for ch in str(market_trade_day or "") if ch.isdigit())
+                if len(digits) < 8:
+                    raise ValueError(f"invalid report trade date for STAR listing rule: {market_trade_day!r}")
+                as_of = date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
+                star_codes, valid_dates, eligible = [], 0, []
+                for row in frame.to_dict("records"):
+                    code = str(row.get(code_col) or "").strip().zfill(6)
+                    if not code.startswith(("688", "689")) or len(code) != 6 or not code.isdigit():
+                        continue
+                    star_codes.append(code)
+                    listed = pd.to_datetime(row.get(date_col), errors="coerce")
+                    if pd.isna(listed):
+                        continue
+                    valid_dates += 1
+                    listed_date = listed.date()
+                    if star_next_new_eligible(code, listed_date, as_of):
+                        eligible.append({
+                            "code":code,
+                            "name":str(row.get(name_col) or "").strip() if name_col else None,
+                            "listing_date":listed_date.isoformat(),
+                            "membership_reason":"SSE official STAR listing date within one calendar year",
+                            "membership_evidence":{
+                                "provider":"Shanghai Stock Exchange",
+                                "taxonomy":"official STAR Market listing roster",
+                                "source_url":"https://www.sse.com.cn/assortment/stock/list/share/",
+                                "listing_date":listed_date.isoformat(),
+                                "as_of_trade_date":as_of.isoformat(),
+                                "policy":"less than one calendar year",
                             },
                         })
-                    else:
-                        expired_count += 1
-                except Exception as exc:
-                    failures.append({"code":stock_code,"error":str(exc)[:120]})
-                time.sleep(0.08)
-            if not verified:
+                coverage_pct = round(valid_dates / max(1, len(star_codes)) * 100, 1)
+                checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                meta = {
+                    "status":"success" if star_codes and coverage_pct >= 95.0 else "partial",
+                    "provider":"Shanghai Stock Exchange",
+                    "taxonomy":"official STAR Market listing roster",
+                    "taxonomy_node_id":"SSE:STAR",
+                    "taxonomy_node_name":"科创板",
+                    "matched_symbol":"SSE 科创板上市日期",
+                    "mapping_source":"SSE official STAR listing dates + one calendar year eligibility rule",
+                    "source_url":"https://www.sse.com.cn/assortment/stock/list/share/",
+                    "checked_at":checked_at,
+                    "trade_date":as_of.isoformat(),
+                    "coverage_pct":coverage_pct,
+                    "records":len(eligible),
+                    "candidate_count":len(eligible),
+                    "roster_count":len(star_codes),
+                    "eligibility_rule":"688/689 listing date within one calendar year as of report trade date",
+                }
+                source_status.append({
+                    "source":"sse_star_listing_roster",
+                    "status":meta["status"],
+                    "provider":meta["provider"],
+                    "coverage_pct":coverage_pct,
+                    "records":len(star_codes),
+                    "detail":f"{len(eligible)} eligible new listings as of {as_of.isoformat()}",
+                })
+                return eligible, {"source":"constituents:"+name, **meta}
+            except Exception as exc:
                 return [], {"source":"constituents:"+name,
-                    "status":"pending_listing_verification" if failures else "unresolved",
-                    "provider":meta.get("provider") or "THS","taxonomy":(meta.get("taxonomy") or "exact concept board") + " + IPO listing date",
-                    "matched_symbol":meta.get("matched_symbol"),
-                    "mapping_source":(meta.get("provider") or "THS") + " exact concept board + stock_ipo_info listing date",
-                    "source_url":meta.get("source_url"),
-                    "listing_age_policy":"less than one calendar year",
-                    "as_of":as_of.isoformat(),"candidate_count":len(candidates),
-                    "expired_candidates":expired_count,"failed_listing_lookups":len(failures),
-                    "detail":"No verified constituent currently satisfies the THS one-year definition"}
-            fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
-            return verified, {"source":"constituents:"+name,
-                "status":"partial" if (failures or expired_count) else "success",
-                "records":len(verified),"provider":(meta.get("provider") or "THS") + " + IPO listing-date source",
-                "taxonomy":"THS exact concept board + STAR code + IPO listing date",
-                "matched_symbol":"科创次新股",
-                "mapping_source":(meta.get("provider") or "THS") + " exact concept membership + THS one-calendar-year definition",
-                "taxonomy_node_id":meta.get("taxonomy_node_id"),
-                "taxonomy_node_name":meta.get("taxonomy_node_name") or meta.get("matched_symbol"),
-                "source_url":meta.get("source_url"),
-                "listing_age_policy":"less than one calendar year",
-                "as_of":as_of.isoformat(),"expired_candidates":expired_count,
-                "failed_listing_lookups":len(failures),
-                "mapping_date":fetched,"checked_at":fetched}
-
-        cached = cache.get(name) or {}
-        cached_members = cached.get("members") or []
-        cached_at = clean(cached.get("fetched_at"))
-        cache_provenance_ok = bool(cached.get("mapping_policy_version") == THEME_MAPPING_POLICY_VERSION
-                                   and cached.get("mapping_source") and cached.get("taxonomy")
-                                   and cached.get("matched_symbol"))
-        if cached_members and cached_at and cache_provenance_ok and cached.get("sector_code") == code:
-            try:
-                age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(cached_at.replace("Z","+00:00"))).days
-                if 0 <= age_days <= 30:
-                    return cached_members, {"source":"constituents:"+name,"status":"cached",
-                        "records":len(cached_members),"provider":cached.get("source"),
-                        "mapping_source":cached.get("mapping_source"),"taxonomy":cached.get("taxonomy"),
-                        "taxonomy_node_id":cached.get("taxonomy_node_id"),
-                        "taxonomy_node_name":cached.get("taxonomy_node_name"),
-                        "source_url":cached.get("source_url"),
-                        "matched_symbol":cached.get("matched_symbol"),
-                        "mapping_date":cached_at,"checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
-            except Exception:
-                pass
+                            "status":"unavailable" if any(token in str(exc).lower() for token in ("timeout","connection","502","403","remote disconnected")) else "failed",
+                            "provider":"Shanghai Stock Exchange",
+                            "taxonomy":"official STAR Market listing roster",
+                            "source_url":"https://www.sse.com.cn/assortment/stock/list/share/",
+                            "detail":f"{type(exc).__name__}: {str(exc)[:240]}"}
         try:
             members, meta = fetch_sina_members(theme, name)
             if not members:
