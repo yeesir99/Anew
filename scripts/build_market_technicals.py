@@ -108,7 +108,7 @@ def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: s
     bars["trade_date"] = bars["trade_date"].astype(str).str.replace(r"\\.0$", "", regex=True).str[:8]
     bars["close_raw"] = pd.to_numeric(bars["close_raw"], errors="coerce")
     bars["pre_close_raw"] = pd.to_numeric(bars["pre_close_raw"], errors="coerce")
-    bars = bars.dropna(subset=["ts_code", "trade_date", "close_raw", "pre_close_raw"])
+    bars = bars.dropna(subset=["ts_code", "trade_date", "close_raw", "pre_close_raw", "vol"])
     bars = bars.drop_duplicates(["ts_code", "trade_date"], keep="last").sort_values(
         ["ts_code", "trade_date"]
     )
@@ -123,6 +123,9 @@ def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: s
         if last_day >= day or last_day not in date_set:
             continue
         symbol_bars = bars[bars["ts_code"] == ts_code].set_index("trade_date")
+        if last_day not in symbol_bars.index:
+            continue
+        previous_raw_close = float(symbol_bars.loc[last_day]["close_raw"])
         previous_qfq_close = float(last["close"])
         appended = []
         for session in (value for value in snapshot_dates if last_day < value <= day):
@@ -131,7 +134,11 @@ def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: s
             row = symbol_bars.loc[session]
             raw_close = float(row["close_raw"])
             raw_pre_close = float(row["pre_close_raw"])
-            if raw_close <= 0 or raw_pre_close <= 0:
+            tolerance = max(0.02, previous_raw_close * 0.001)
+            if (raw_close <= 0 or raw_pre_close <= 0
+                    or abs(raw_pre_close - previous_raw_close) > tolerance):
+                # A missing session or corporate-action discontinuity breaks
+                # the chain; wait for a fresh adjusted-history provider fetch.
                 break
             adjusted_close = previous_qfq_close * raw_close / raw_pre_close
             appended.append({
@@ -139,6 +146,7 @@ def _extend_qfq_history(cache: pd.DataFrame, snapshot_bars: pd.DataFrame, day: s
                 "close": adjusted_close, "vol": row["vol"],
             })
             previous_qfq_close = adjusted_close
+            previous_raw_close = raw_close
         if appended:
             additions.extend(appended)
             extended_symbols += 1
