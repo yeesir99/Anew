@@ -534,7 +534,7 @@ def main():
                 }.values())
                 if not members:
                     raise RuntimeError("EastMoney exact concept returned no valid six-digit codes")
-                source_url = f"https://quote.eastmoney.com/center/boardlist.html#boards2-90.{board_code}"
+                source_url = f"https://quote.eastmoney.com/bk/90.{board_code}.html"
                 return members, {
                     "status":"success","records":len(members),"provider":"EastMoney",
                     "taxonomy":"EastMoney exact concept board",
