@@ -17,7 +17,10 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-from research_provider_utils import call_with_retry
+try:
+    from research_provider_utils import call_with_retry
+except ModuleNotFoundError:
+    from scripts.research_provider_utils import call_with_retry
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
