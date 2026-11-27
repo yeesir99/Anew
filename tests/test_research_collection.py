@@ -1,9 +1,14 @@
+import csv
+import tempfile
 import unittest
 from datetime import date
+from pathlib import Path
 
 import pandas as pd
 
-from scripts.collect_research_modules import is_eastmoney_rate_limit, number, ths_industry_flow_rows
+from scripts.collect_research_modules import (
+    is_eastmoney_rate_limit, number, replace_flow_period_rows, ths_industry_flow_rows,
+)
 
 
 class THSIndustryFlowNormalizationTests(unittest.TestCase):
@@ -12,6 +17,43 @@ class THSIndustryFlowNormalizationTests(unittest.TestCase):
         self.assertTrue(is_eastmoney_rate_limit(RuntimeError("HTTP 429 too many requests")))
         self.assertTrue(is_eastmoney_rate_limit(RuntimeError("短时间内请求过多")))
         self.assertFalse(is_eastmoney_rate_limit(RuntimeError("temporary timeout")))
+
+    def test_current_flow_period_replacement_removes_stale_rows_only_in_scope(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "capital_flows.csv"
+            with path.open("w", encoding="utf-8-sig", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=[
+                    "trade_date", "indicator", "industry", "provider", "net_inflow_cny"
+                ])
+                writer.writeheader()
+                writer.writerows([
+                    {"trade_date": "2026-11-26", "indicator": "今日", "industry": "银行",
+                     "provider": "EastMoney", "net_inflow_cny": 10},
+                    {"trade_date": "2026-11-26", "indicator": "5日", "industry": "银行",
+                     "provider": "EastMoney", "net_inflow_cny": 20},
+                    {"trade_date": "2026-11-25", "indicator": "今日", "industry": "银行",
+                     "provider": "THS", "net_inflow_cny": 30},
+                ])
+            replace_flow_period_rows(path, "2026-11-26", "今日", [{
+                "trade_date": "2026-11-26", "indicator": "今日", "industry": "电子",
+                "provider": "THS", "net_inflow_cny": 40,
+            }])
+            with path.open(encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual(
+                {(row["trade_date"], row["indicator"], row["industry"]) for row in rows},
+                {
+                    ("2026-11-26", "今日", "电子"),
+                    ("2026-11-26", "5日", "银行"),
+                    ("2026-11-25", "今日", "银行"),
+                },
+            )
+            replace_flow_period_rows(path, "2026-11-26", "今日", [])
+            with path.open(encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertNotIn(("2026-11-26", "今日", "电子"), {
+                (row["trade_date"], row["indicator"], row["industry"]) for row in rows
+            })
 
     def test_amount_suffix_is_parsed_without_losing_unit(self):
         self.assertEqual(number("12.5亿元"), 12.5)
