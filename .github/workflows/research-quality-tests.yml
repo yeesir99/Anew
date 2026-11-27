@@ -14,6 +14,7 @@ on:
       - 'tests/test_research_quality.py'
       - 'tests/test_research_collection.py'
       - 'tests/test_private_bank_evidence_data.py'
+      - 'data/private_bank_equity_evidence.json'
       - 'tests/test_theme_mapping_rules.py'
       - 'tests/test_research_provider_smoke.py'
       - 'tests/test_research_provider_utils.py'
