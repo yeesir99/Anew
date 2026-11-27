@@ -194,6 +194,10 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
             return {"theme": theme_name, "status": "partial",
                     "provider": None,
                     "detail": f"THS unavailable ({str(ths_exc)[:120]}); {str(em_exc)[:180]}"}
+        except RuntimeError as em_exc:
+            return {"theme": theme_name, "status": "unavailable",
+                    "provider": None,
+                    "detail": f"THS unavailable ({str(ths_exc)[:120]}); EastMoney mirrors unavailable ({str(em_exc)[:180]})"}
     member_code_col = next((col for col in ("代码", "股票代码", "证券代码", "code")
                             if col in members.columns), None)
     if not member_code_col:
@@ -249,8 +253,17 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
         result["status"] = "partial"
     return result
 
+def is_transport_unavailable(exc):
+    message = f"{type(exc).__name__}: {exc}".lower()
+    return any(token in message for token in (
+        "timeout", "timed out", "502", "503", "504", "403", "429",
+        "connection", "remote end closed", "remote disconnected",
+        "max retries", "network is unreachable", "proxyerror",
+    ))
+
+
 def smoke_exit_code(results):
-    """Partial source data is reported but does not fail the code contract."""
+    """Only schema/contract failures fail CI; provider outages remain visible."""
     return 1 if any(item.get("status") == "failed" for item in results) else 0
 
 
@@ -291,7 +304,8 @@ def main():
             results.append({"period": period, "symbol": symbol, **facts})
         except Exception as exc:
             results.append({
-                "period": period, "symbol": symbol, "status": "failed",
+                "period": period, "symbol": symbol,
+                "status": "unavailable" if is_transport_unavailable(exc) else "failed",
                 "error": f"{type(exc).__name__}: {str(exc)[:400]}",
             })
 
@@ -306,7 +320,8 @@ def main():
                             "symbol": theme_name, **facts})
         except Exception as exc:
             results.append({"period": "special_theme_" + theme_name,
-                            "symbol": theme_name, "status": "failed",
+                            "symbol": theme_name,
+                            "status": "unavailable" if is_transport_unavailable(exc) else "failed",
                             "error": f"{type(exc).__name__}: {str(exc)[:400]}"})
 
     # Broad-market valuation is separate from theme-level valuation.
@@ -329,7 +344,7 @@ def main():
         results.append({
             "period": "broad_market_valuation",
             "symbol": "stock_a_ttm_lyr + stock_a_all_pb",
-            "status": "failed",
+            "status": "unavailable" if is_transport_unavailable(exc) else "failed",
             "error": f"{type(exc).__name__}: {str(exc)[:400]}",
         })
 
