@@ -93,6 +93,20 @@ class THSIndustryFlowNormalizationTests(unittest.TestCase):
                 frame, "5日", date(2026, 11, 26), "2026-11-27T10:00:00+08:00"
             )
 
+    def test_ths_normalizer_calculates_coverage_from_provider_universe(self):
+        frame = pd.DataFrame([
+            {"行业": "银行", "净额": 12.5, "涨跌幅": 1.2},
+            {"行业": "电子", "净额": 4.2, "涨跌幅": 0.5},
+        ])
+        rows, diagnostics = ths_industry_flow_rows(
+            frame, "10日", date(2026, 11, 26), "2026-11-27T10:00:00+08:00",
+            expected_industry_names={"银行", "电子", "医药"},
+            return_diagnostics=True,
+        )
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(diagnostics["expected_industries"], 3)
+        self.assertAlmostEqual(diagnostics["coverage_pct"], 66.67)
+
     def test_ths_normalizer_keeps_unambiguous_rows_and_reports_conflicts(self):
         frame = pd.DataFrame([
             {"行业": "银行", "净额": 12.5, "涨跌幅": 1.2},
