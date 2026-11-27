@@ -95,6 +95,8 @@ class SpecialThemeMappingTests(unittest.TestCase):
     def test_mapping_provenance_requires_source_symbol_and_date(self):
         self.assertTrue(has_mapping_provenance({
             "status": "success",
+            "provider": "Sina",
+            "source_url": "https://vip.stock.finance.sina.com.cn/mkt/",
             "mapping_source": "Sina taxonomy",
             "matched_symbol": "某主题",
             "mapping_date": "2026-11-20",
