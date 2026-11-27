@@ -78,7 +78,9 @@ jobs:
         timeout-minutes: 8
         env:
           TZ: Asia/Shanghai
-        run: python scripts/build_valuation_snapshot.py
+        run: |
+          rm -f data/valuation_crowding.json
+          python scripts/build_valuation_snapshot.py
       - name: Collect validated archive fallback if live API is unavailable
         if: steps.live.outcome == 'failure'
         env:
