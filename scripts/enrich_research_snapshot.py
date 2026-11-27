@@ -49,6 +49,11 @@ def main():
     except Exception:
         pass
     day = market.get("trade_date")
+    source_doc_day = str(source_doc.get("trade_date") or "")
+    period_source_status = {
+        str(item.get("source") or ""): item
+        for item in source_doc.get("sources", []) if isinstance(item, dict)
+    }
     # Do not mix live Chinese industry labels with archived BK codes.
     archive_rows = [x for x in industries if "sector_daily_quotes" in str(x.get("source", ""))]
     source_industries = archive_rows if archive_rows else industries
@@ -153,78 +158,56 @@ def main():
     ths_live_items = ths_snapshot.get("items", []) if ths_snapshot.get("status") == "success" else []
     flow_items = []
     for row in flows:
-        if row.get("trade_date") == day:
-            flow_items.append({"trade_date": row.get("trade_date"), "indicator": row.get("indicator"),
-                "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or SECTOR_NAMES.get(str(row.get("industry") or "")), "change_pct": num(row.get("change_pct")),
-                "main_net_inflow": num(row.get("main_net_inflow_cny")),
-                "main_net_ratio": num(row.get("main_net_ratio_pct")), "source": row.get("source")})
-    live_flow_count = len(flow_items)
-    if not flow_items:
-        for row in current:
-            net = num(row.get("main_net_inflow_cny"))
-            if net is not None:
-                flow_items.append({"trade_date": industry_snapshot_day, "indicator": "今日",
-                    "industry": row.get("industry"), "industry_name": industry_names.get(str(row.get("industry") or "")) or row.get("industry_name"), "change_pct": num(row.get("change_pct")),
-                    "main_net_inflow": net, "main_net_ratio": num(row.get("main_net_ratio_pct")),
-                    "source": row.get("source", "public sector archive")})
-    # Build auditable 5/10-session flow persistence from the same dated
-    # sector archive. Ratios are weighted by turnover; incomplete windows
-    # remain absent and never get zero-filled.
-    archive_rows = [x for x in industries
-        if str(x.get("source", "")).find("sector_daily_quotes") >= 0
-        and str(x.get("trade_date", ""))[:10] <= str(day)[:10]
-        and num(x.get("main_net_inflow_cny")) is not None
-        and (num(x.get("turnover_cny")) or 0) > 0]
-    archive_days = sorted({str(x.get("trade_date", ""))[:10] for x in archive_rows})
-    flow_keys = {(str(x.get("indicator")), str(x.get("industry"))) for x in flow_items}
-    by_sector = {}
-    for row in archive_rows:
-        by_sector.setdefault(str(row.get("industry") or row.get("sector_code") or ""), []).append(row)
-    for code, rows in by_sector.items():
-        rows.sort(key=lambda x: str(x.get("trade_date", "")))
-        for period, window in (("5日", 5), ("10日", 10)):
-            target_days = archive_days[-window:]
-            sample = [x for x in rows if str(x.get("trade_date", ""))[:10] in target_days]
-            if len(sample) != window or [str(x.get("trade_date", ""))[:10] for x in sample] != target_days:
-                continue
-            if (period, code) in flow_keys:
-                continue
-            net_sum = sum(num(x.get("main_net_inflow_cny")) or 0 for x in sample)
-            turnover_sum = sum(num(x.get("turnover_cny")) or 0 for x in sample)
-            if turnover_sum <= 0:
-                continue
-            cumulative_return = 1.0
-            for item in sample:
-                daily_change = num(item.get("change_pct"))
-                if daily_change is not None:
-                    cumulative_return *= 1 + daily_change / 100
-            flow_items.append({"trade_date": target_days[-1], "indicator": period,
-                "industry": code,
-                "industry_name": industry_names.get(code) or SECTOR_NAMES.get(code) or sample[-1].get("industry_name"),
-                "change_pct": round((cumulative_return - 1) * 100, 4),
-                "main_net_inflow": net_sum,
-                "main_net_ratio": round(net_sum / turnover_sum * 100, 4),
-                "source": f"sector_daily_quotes rolling {window}-session aggregate (EastMoney-derived archive)"})
+        period = str(row.get("indicator") or "")
+        status = period_source_status.get("sector_flow_" + period, {})
+        # A retained CSV row is not current evidence if this run did not
+        # successfully collect that period on the current market date.
+        if (source_doc_day != str(day) or status.get("status") != "success"
+                or str(row.get("trade_date") or "") != str(day)):
+            continue
+        expected_provider = status.get("provider")
+        row_provider = row.get("provider")
+        if not row_provider:
+            row_source = str(row.get("source") or "")
+            row_provider = "THS" if "THS" in row_source else "EastMoney" if "EastMoney" in row_source else None
+        if expected_provider and row_provider != expected_provider:
+            continue
+        flow_items.append({"trade_date": row.get("trade_date"), "indicator": period,
+            "industry": row.get("industry"),
+            "industry_name": industry_names.get(str(row.get("industry") or "")) or SECTOR_NAMES.get(str(row.get("industry") or "")),
+            "change_pct": num(row.get("change_pct")),
+            "main_net_inflow": num(row.get("main_net_inflow_cny")),
+            "main_net_ratio": num(row.get("main_net_ratio_pct")),
+            "net_inflow": num(row.get("net_inflow_cny")),
+            "provider": row.get("provider"), "metric_definition": row.get("metric_definition"),
+            "source": row.get("source")})
+    live_flow_count = sum(1 for row in flow_items if row.get("indicator") == "今日")
+    # Do not synthesize current 5/10-day flow rows from an old sector archive.
+    # A failed live period remains unavailable; historical archive values belong
+    # in their own dated archive module, not in the current capital-flow series.
     # Use THS to replace stale archive "today" values only when no live
     # EastMoney flow rows were available; keep rolling 5/10-session history separate.
-    if ths_live_items and live_flow_count == 0:
-        flow_items = [x for x in flow_items if x.get("indicator") != "今日"]
-    existing_today_names = {str(x.get("industry_name") or x.get("industry") or "")
-                            for x in flow_items if x.get("indicator") == "今日"}
-    for row in ths_live_items:
-        name = str(row.get("industry_name") or "").strip()
-        if not name or name in existing_today_names:
-            continue
-        net = num(row.get("main_net_inflow_cny"))
-        ratio = num(row.get("main_net_ratio_pct"))
-        if net is None:
-            continue
-        flow_items.append({"trade_date":ths_snapshot.get("trade_date"),"indicator":"今日",
-            "industry":name,"industry_name":name,"change_pct":num(row.get("change_pct")),
-            "main_net_inflow":net,"main_net_ratio":ratio,
-            "source":"AKShare/THS live industry summary"})
+    ths_status = period_source_status.get("industry_snapshot_ths", {})
+    ths_snapshot_current = (source_doc_day == str(day)
+        and ths_status.get("status") == "success"
+        and str(ths_snapshot.get("trade_date") or "") == str(day)
+        and ths_snapshot.get("status") == "success")
+    if ths_live_items and live_flow_count == 0 and ths_snapshot_current:
+        for row in ths_live_items:
+            name = str(row.get("industry_name") or "").strip()
+            net = num(row.get("net_inflow_cny"))
+            ratio = num(row.get("net_inflow_ratio_pct"))
+            if not name or net is None:
+                continue
+            flow_items.append({"trade_date":ths_snapshot.get("trade_date"),"indicator":"今日",
+                "industry":name,"industry_name":name,"change_pct":num(row.get("change_pct")),
+                "main_net_inflow":None,"main_net_ratio":None,
+                "net_inflow":net,"provider":"THS",
+                "metric_definition":row.get("metric_definition"),
+                "source":"AKShare/THS live industry summary"})
     flow_items.sort(key=lambda x: ({"今日":0,"5日":1,"10日":2}.get(x.get("indicator"), 3),
-                                   -(x.get("main_net_inflow") or 0)))
+                                   -((x.get("main_net_inflow") if x.get("main_net_inflow") is not None
+                                      else x.get("net_inflow")) or 0)))
     etf_items = []
     for row in etfs:
         if row.get("trade_date") != day:
@@ -273,8 +256,11 @@ def main():
         "note": industry_note}
     sections["themes"] = {"items": themes}
     sections["rotation"] = {"items": rotation, "note": industry_note}
+    flow_sources = sorted({str(x.get("source") or "来源未记录") for x in flow_items})
+    flow_metrics = sorted({str(x.get("metric_definition") or "指标定义未记录") for x in flow_items})
     sections["capital-flows"] = {"items": flow_items,
-        "note": "今日值来自东方财富公开主力资金估算；5日/10日为行业日频档案按成交额加权汇总，不是机构专属账户流向，也不代表真实机构账户净买入。"}
+        "sources": flow_sources, "metric_definitions": flow_metrics,
+        "note": "资金流按交易日、周期和实际来源分别展示；THS净额不改名为东方财富主力净流入，历史归档不补写本次采集失败的周期。各项均为公开行业估算，不代表机构专属账户流向或真实机构账户净买入。"}
     sections["etf-shares"] = {"items": etf_items,
         "note": "份额变化按相同代码、交易所和来源口径比较；份额变化不等于机构净买入。"}
     sections["data-sources"] = {"items": source_doc.get("sources", [])}

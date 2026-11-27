@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import inspect
 import re
 import time
@@ -22,6 +23,8 @@ from pathlib import Path
 import akshare as ak
 import pandas as pd
 from import_sector_archive import is_concept_code
+from theme_mapping_rules import (merge_exact_components, star_next_new_eligible,
+    private_bank_records_for_trade_date, consistent_provider_flow_persistence)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -209,16 +212,9 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
     """Score only dimensions supported by sufficiently broad, attributable evidence."""
     evidence = evidence or {}
     change = number(change_pct)
-    f5, f10 = number(flow_5d), number(flow_10d)
+    f5, f10 = flow_5d, flow_10d
     structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
-    persistence = None
-    if f5 is not None and f10 is not None:
-        if f5 > 0 and f10 > 0:
-            persistence = 75.0
-        elif f5 < 0 and f10 < 0:
-            persistence = 25.0
-        else:
-            persistence = 50.0
+    persistence = consistent_provider_flow_persistence(f5, f10)
     codes = set(evidence.get("constituent_codes") or [])
     revenue_score, revenue_meta = _breadth_score(
         (evidence.get("financials") or {}).get("records") or [], codes,
@@ -254,20 +250,38 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
 
 
 def flow_ratio_for_theme(flow_rows, theme, period):
+    """Return a provider-tagged signed flow amount; never compare mixed providers."""
     name = _score_key(theme.get("industry_name") or theme.get("industry"))
     code = _score_key(theme.get("sector_code"))
+    target_day = str(theme.get("trade_date") or "")
+    if not target_day:
+        return None
     matches = []
     for row in flow_rows:
+        if str(row.get("trade_date") or "") != target_day:
+            continue
         if str(row.get("indicator") or "").strip() != period:
             continue
         row_keys = {_score_key(row.get("industry_name")), _score_key(row.get("industry")),
                     _score_key(row.get("sector_code"))}
         row_keys.discard("")
-        if name and name in row_keys or code and code in row_keys:
-            value = number(row.get("main_net_ratio"))
-            if value is not None:
-                matches.append((str(row.get("trade_date") or ""), value))
-    return max(matches, key=lambda x: x[0])[1] if matches else None
+        if not ((name and name in row_keys) or (code and code in row_keys)):
+            continue
+        provider = str(row.get("provider") or "")
+        if row.get("main_net_inflow_cny") not in (None, ""):
+            value = number(row.get("main_net_inflow_cny"))
+            provider = provider or "EastMoney"
+        else:
+            value = number(row.get("net_inflow_cny"))
+            provider = provider or ("THS" if "THS" in str(row.get("source") or "") else "")
+        if value is not None and provider:
+            matches.append((provider, value))
+    if not matches:
+        return None
+    providers = {provider for provider, _ in matches}
+    if len(providers) != 1:
+        return None
+    return matches[0]
 
 
 def main():
@@ -470,15 +484,158 @@ def main():
     def fetch_members(theme, name):
         nonlocal cache_dirty, push2_circuit_open
         code = clean(theme.get("sector_code"))
+
+        # Composite/special themes are deliberately excluded from the generic
+        # name-alias cache. Each requires its own explicit evidence contract.
+        if name == "烟草与大麻":
+            components = {}
+            component_members = {}
+            for component in ("烟草", "工业大麻"):
+                members, meta = fetch_ths_concept_members({"sector_code": None}, component)
+                component_members[component] = members
+                components[component] = {"status": meta.get("status") if meta else "unresolved",
+                                          "matched_symbol": meta.get("matched_symbol") if meta else None,
+                                          "records": len(members), "members": members}
+                if not members:
+                    return [], {"source":"constituents:"+name,"status":"pending_components",
+                        "provider":"THS","taxonomy":"separate exact concept components",
+                        "mapping_source":"THS exact concept taxonomy; both components required",
+                        "matched_symbol":"烟草 + 工业大麻",
+                        "components":{key:{k:v for k,v in value.items() if k != "members"}
+                                     for key,value in components.items()},
+                        "detail":"烟草与工业大麻必须分别精确命中；任一组件缺失则不合并"}
+            members = merge_exact_components(components)
+            if not members:
+                return [], {"source":"constituents:"+name,"status":"pending_components",
+                    "mapping_source":"THS exact concept components; merge validation failed",
+                    "matched_symbol":"烟草 + 工业大麻","components":{
+                        key:{k:v for k,v in value.items() if k != "members"}
+                        for key,value in components.items()}}
+            fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            component_summary = {key:{k:v for k,v in value.items() if k != "members"}
+                                 for key,value in components.items()}
+            cache[name] = {"members":members,"fetched_at":fetched,"source":"THS",
+                "matched_symbol":"烟草 + 工业大麻","taxonomy":"separate exact THS concepts",
+                "mapping_source":"THS exact concept taxonomy; two components merged",
+                "components":component_summary,"sector_code":code}
+            cache_dirty = True
+            return members, {"source":"constituents:"+name,"status":"success",
+                "records":len(members),"provider":"THS","taxonomy":"separate exact THS concepts",
+                "matched_symbol":"烟草 + 工业大麻",
+                "mapping_source":"THS exact concept taxonomy; two components merged",
+                "components":component_summary,"mapping_date":fetched,"checked_at":fetched}
+
+        if name == "参股民营银行":
+            # THS concept membership is discovery-only. Actual membership must
+            # come from manually reviewed primary disclosures in the evidence file.
+            evidence_path = DATA / "private_bank_equity_evidence.json"
+            try:
+                evidence_doc = json.loads(evidence_path.read_text(encoding="utf-8")) if evidence_path.exists() else {}
+            except Exception as evidence_exc:
+                evidence_doc = {}
+                LOG.warning("Private-bank evidence file unreadable: %s", str(evidence_exc)[:160])
+            evidence_records = private_bank_records_for_trade_date(
+                evidence_doc.get("records") or [], trade_day.isoformat())
+            members = []
+            for record in evidence_records:
+                members.append({
+                    "code": str(record["listed_company_code"]).strip(),
+                    "name": clean(record.get("listed_company_name")),
+                    "investee_bank_name": record.get("investee_bank_name"),
+                    "holding_pct": float(record["holding_pct"]),
+                    "disclosure_date": record["disclosure_date"],
+                })
+            if not members:
+                candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
+                return [], {"source":"constituents:"+name,"status":"pending_relation_evidence",
+                    "provider":"THS" if candidates else None,
+                    "taxonomy":"THS concept candidates only" if candidates else None,
+                    "matched_symbol":candidate_meta.get("matched_symbol") if candidate_meta else None,
+                    "mapping_source":"candidate taxonomy only; not accepted as equity proof",
+                    "candidate_codes":[x["code"] for x in candidates],
+                    "candidate_count":len(candidates),
+                    "verified_relationships":[],
+                    "detail":"需要在 data/private_bank_equity_evidence.json 中提供上市公司原始披露证据；概念标签不作为持股证明"}
+            fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            return members, {"source":"constituents:"+name,"status":"success",
+                "records":len(members),"provider":"reviewed primary disclosures",
+                "taxonomy":"listed-company equity disclosures",
+                "matched_symbol":"参股民营银行（逐条披露核验）",
+                "mapping_source":"data/private_bank_equity_evidence.json; primary disclosure fields validated",
+                "mapping_date":fetched,"checked_at":fetched,
+                "verified_relationships":evidence_records,
+                "detail":"成分仅来自日期匹配的年报、交易所公告或巨潮资讯披露记录"}
+
+        if name == "科创次新股":
+            candidates, meta = fetch_ths_concept_members({"sector_code": None}, "科创次新股")
+            threshold_raw = os.getenv("STAR_NEXT_NEW_MAX_LISTING_DAYS", "").strip()
+            if not threshold_raw.isdigit() or int(threshold_raw) <= 0:
+                return [], {"source":"constituents:"+name,"status":"pending_rule",
+                    "provider":"THS" if candidates else None,
+                    "taxonomy":"THS concept candidates only" if candidates else None,
+                    "matched_symbol":meta.get("matched_symbol") if meta else None,
+                    "mapping_source":"THS candidate taxonomy; listing-age rule not configured",
+                    "candidate_codes":[x["code"] for x in candidates],
+                    "candidate_count":len(candidates),
+                    "detail":"未配置 STAR_NEXT_NEW_MAX_LISTING_DAYS；不猜测次新股期限"}
+            max_days = int(threshold_raw)
+            ipo_fn = getattr(ak, "stock_ipo_info", None)
+            if ipo_fn is None:
+                return [], {"source":"constituents:"+name,"status":"pending_listing_dates",
+                    "mapping_source":"THS candidate taxonomy; IPO listing-date endpoint unavailable",
+                    "candidate_count":len(candidates)}
+            verified, failures = [], []
+            as_of = date.fromisoformat(str(theme.get("trade_date") or date.today().isoformat())[:10])
+            for candidate in candidates:
+                stock_code = candidate["code"]
+                if not stock_code.startswith(("688", "689")):
+                    continue
+                try:
+                    info = ipo_fn(symbol=stock_code)
+                    item_col = find_col(info.columns, ("item", "项目"))
+                    value_col = find_col(info.columns, ("value", "值"))
+                    if not item_col or not value_col:
+                        raise RuntimeError("IPO info schema changed")
+                    listing_values = info.loc[info[item_col].astype(str).str.strip() == "上市日期", value_col]
+                    if listing_values.empty:
+                        raise RuntimeError("listing date absent")
+                    listed = datetime.strptime(str(listing_values.iloc[0])[:10], "%Y-%m-%d").date()
+                    age = (as_of - listed).days
+                    if star_next_new_eligible(stock_code, listed, as_of, max_days):
+                        verified.append({**candidate,"listing_date":listed.isoformat(),
+                                         "listing_age_days":age})
+                except Exception as exc:
+                    failures.append({"code":stock_code,"error":str(exc)[:120]})
+                time.sleep(0.08)
+            if not verified:
+                return [], {"source":"constituents:"+name,"status":"pending_listing_verification",
+                    "provider":"THS","taxonomy":"科创板代码 + 新浪IPO上市日期",
+                    "matched_symbol":meta.get("matched_symbol") if meta else None,
+                    "mapping_source":"THS concept candidates + stock_ipo_info listing date",
+                    "listing_age_max_days":max_days,"as_of":as_of.isoformat(),
+                    "candidate_count":len(candidates),"failed_listing_lookups":len(failures),
+                    "detail":"未取得满足配置期限的可核验成分股；不回填候选名单"}
+            fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            return verified, {"source":"constituents:"+name,"status":"success",
+                "records":len(verified),"provider":"THS + Sina IPO",
+                "taxonomy":"科创板代码 + IPO上市日期","matched_symbol":"科创次新股",
+                "mapping_source":"THS exact concept candidates + stock_ipo_info listing date",
+                "listing_age_max_days":max_days,"as_of":as_of.isoformat(),
+                "failed_listing_lookups":len(failures),"mapping_date":fetched,"checked_at":fetched}
+
         cached = cache.get(name) or {}
         cached_members = cached.get("members") or []
         cached_at = clean(cached.get("fetched_at"))
-        if cached_members and cached_at and cached.get("sector_code") == code:
+        cache_provenance_ok = bool(cached.get("mapping_source") and cached.get("taxonomy")
+                                   and cached.get("matched_symbol"))
+        if cached_members and cached_at and cache_provenance_ok and cached.get("sector_code") == code:
             try:
                 age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(cached_at.replace("Z","+00:00"))).days
-                if age_days <= 30:
+                if 0 <= age_days <= 30:
                     return cached_members, {"source":"constituents:"+name,"status":"cached",
-                        "records":len(cached_members),"mapping_source":cached.get("source"),
+                        "records":len(cached_members),"provider":cached.get("source"),
+                        "mapping_source":cached.get("mapping_source"),"taxonomy":cached.get("taxonomy"),
+                        "matched_symbol":cached.get("matched_symbol"),
                         "mapping_date":cached_at,"checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
             except Exception:
                 pass
@@ -490,7 +647,8 @@ def main():
                 fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 source_name = meta.get("provider", "Sina")
                 cache[name] = {"members":members,"fetched_at":fetched,"source":source_name,
-                    "matched_symbol":meta.get("matched_symbol"),"sector_code":code}
+                    "matched_symbol":meta.get("matched_symbol"),"taxonomy":meta.get("taxonomy"),
+                    "mapping_source":meta.get("mapping_source"),"sector_code":code}
                 cache_dirty = True
                 return members, {"source":"constituents:"+name,"status":"success","records":len(members),
                     **meta,"mapping_date":fetched,"checked_at":fetched}
@@ -538,7 +696,8 @@ def main():
                     if members:
                         fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
                         cache[name] = {"members":members,"fetched_at":fetched,"source":fn_name,
-                            "matched_symbol":candidate,"sector_code":code}
+                            "matched_symbol":candidate,"taxonomy":label,
+                            "mapping_source":fn_name,"sector_code":code}
                         cache_dirty = True
                         return members, {"source":"constituents:"+name,"status":"success",
                             "records":len(members),"provider":label,"matched_symbol":candidate,
@@ -747,6 +906,8 @@ def main():
             "sector_code": theme.get("sector_code"),
             "constituent_count": len(members),
             "mapping": theme_member_meta.get(name, {}),
+            "private_bank_equity_evidence": (theme_member_meta.get(name, {}).get("verified_relationships", [])
+                if name == "参股民营银行" else []),
             "constituent_codes": sorted(codes),
             "financials": {"report_date": report_date, "records": financial,
                 "coverage": len({re.sub(r"\D", "", str(r.get("股票代码") or r.get("证券代码") or "")) for r in financial})},

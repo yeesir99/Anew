@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "description": "Manually reviewed primary-source equity disclosures only. Empty records means the theme remains unresolved.",
+  "records": []
+}
