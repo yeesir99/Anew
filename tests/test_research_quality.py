@@ -56,7 +56,10 @@ class ResearchQualityTests(unittest.TestCase):
                    "mapping": {"status": "success", "mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
             for name in ("主题甲", "主题乙")
         }}
-        valuation = {"status": "validated", "records": 5575}
+        valuation = {"status": "validated", "trade_date": "2026-11-20",
+                     "records": 5575, "coverage_pct": 100,
+                     "source": "official valuation history", "provider": "Exchange",
+                     "metric_definition": "PE/PB historical percentile"}
         registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "sector_flow_" + period, "status": "success", "provider": "EastMoney", "records": 50, "coverage_pct": 100}
             for period in ("今日", "5日", "10日")
@@ -86,6 +89,15 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertTrue(today["available"])
         self.assertEqual(today["fallback_provider"], "THS")
         self.assertEqual(today["records"], 90)
+
+    def test_valuation_requires_dated_source_provider_and_coverage(self):
+        valuation = {"status": "validated", "records": 5575}
+        report = evaluate_quality(self.market, self.research, [], {}, {}, self.technical,
+                                  valuation, {})
+        check = report["checks"]["valuation_crowding"]
+        self.assertEqual(check["status"], "unavailable")
+        self.assertFalse(check["provenance_valid"])
+        self.assertFalse(check["trade_date_matches_market"])
 
     def test_success_without_coverage_is_not_complete(self):
         flows = [{
