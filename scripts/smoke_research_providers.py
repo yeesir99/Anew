@@ -51,7 +51,8 @@ def validate_ths_flow_frame(frame):
                 conflicts[name].append({str(key): str(value) for key, value in row.to_dict().items()})
                 continue
             previous = by_name.get(name)
-            current_row = {str(key): str(value) for key, value in row.to_dict().items()}
+            row_data = row.to_dict() if hasattr(row, "to_dict") else dict(row)
+            current_row = {str(key): str(value) for key, value in row_data.items()}
             if previous is not None and previous != amount:
                 conflicts[name] = [source_rows.get(name), current_row]
                 by_name.pop(name, None)
