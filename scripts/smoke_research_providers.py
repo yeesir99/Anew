@@ -6,9 +6,14 @@ intended for an explicitly triggered network check, separate from offline CI.
 """
 from __future__ import annotations
 
+import csv
 import json
 import math
 import sys
+from datetime import date
+from pathlib import Path
+
+from scripts.theme_mapping_rules import star_next_new_eligible
 
 
 PERIOD_SYMBOLS = {
@@ -106,6 +111,71 @@ def validate_ths_flow_frame(frame, universe_names=None):
     }
 
 
+def validate_ths_theme_concept(ak, theme_name, as_of=None):
+    names = ak.stock_board_concept_name_ths()
+    if names is None or names.empty:
+        raise ValueError("THS concept-name taxonomy is empty")
+    name_col = next((col for col in ("name", "名称", "概念名称") if col in names.columns), None)
+    code_col = next((col for col in ("code", "代码", "板块代码") if col in names.columns), None)
+    if not name_col or not code_col:
+        raise ValueError(f"THS concept taxonomy schema changed: {list(names.columns)}")
+    matched = names[names[name_col].astype(str).str.strip() == theme_name]
+    if matched.empty:
+        return {"theme": theme_name, "status": "partial", "detail": "exact THS concept not found"}
+    board_code = str(matched.iloc[0][code_col]).strip()
+    members = ak.stock_board_concept_cons_ths(symbol=theme_name)
+    if members is None or members.empty:
+        raise ValueError(f"THS concept constituent endpoint empty for {theme_name}")
+    member_code_col = next((col for col in ("代码", "股票代码", "证券代码", "code")
+                            if col in members.columns), None)
+    if not member_code_col:
+        raise ValueError(f"THS concept constituent schema changed: {list(members.columns)}")
+    codes = sorted({str(value).strip().zfill(6) for value in members[member_code_col]
+                    if str(value).strip() and str(value).strip().lower() != "nan"})
+    result = {
+        "theme": theme_name, "status": "success", "board_code": board_code,
+        "source_url": f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}",
+        "candidate_count": len(codes), "member_count": len(codes),
+    }
+    if theme_name != "科创次新股":
+        return result
+    if as_of is None:
+        as_of = date.today()
+    failures, expired, eligible = [], 0, 0
+    ipo_fn = getattr(ak, "stock_ipo_info", None)
+    if ipo_fn is None:
+        return {**result, "status": "partial", "detail": "IPO listing-date endpoint unavailable"}
+    for code in codes:
+        if not code.startswith(("688", "689")):
+            failures.append({"code": code, "error": "not a STAR Market code"})
+            continue
+        try:
+            info = ipo_fn(symbol=code)
+            item_col = next((col for col in ("item", "项目") if col in info.columns), None)
+            value_col = next((col for col in ("value", "值") if col in info.columns), None)
+            if not item_col or not value_col:
+                raise ValueError("IPO info schema changed")
+            values = info.loc[info[item_col].astype(str).str.strip() == "上市日期", value_col]
+            if values.empty:
+                raise ValueError("listing date absent")
+            listed = date.fromisoformat(str(values.iloc[0])[:10])
+            if star_next_new_eligible(code, listed, as_of):
+                eligible += 1
+            else:
+                expired += 1
+        except Exception as exc:
+            failures.append({"code": code, "error": str(exc)[:120]})
+    result.update({
+        "eligible_within_one_calendar_year": eligible,
+        "expired_or_outside_rule": expired,
+        "listing_lookup_failures": failures,
+        "listing_age_policy": "THS: STAR-listed and listed less than one calendar year ago",
+    })
+    if failures or expired:
+        result["status"] = "partial"
+    return result
+
+
 def smoke_exit_code(results):
     """Partial source data is reported but does not fail the code contract."""
     return 1 if any(item.get("status") == "failed" for item in results) else 0
@@ -124,6 +194,14 @@ def main():
     except Exception as exc:
         universe_names = None
         print(json.dumps({"industry_universe_status": "unavailable", "detail": str(exc)[:500]}, ensure_ascii=False))
+    as_of = None
+    try:
+        latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
+        with latest_path.open(encoding="utf-8-sig", newline="") as handle:
+            latest_row = next(csv.DictReader(handle))
+        as_of = date.fromisoformat(str(latest_row.get("trade_date") or "")[:10])
+    except Exception:
+        as_of = date.today()
     for period, symbol in PERIOD_SYMBOLS.items():
         try:
             frame = endpoint(symbol=symbol)
