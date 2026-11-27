@@ -600,7 +600,7 @@ def main():
                 "detail":"成分仅来自日期匹配的年报、交易所公告或巨潮资讯披露记录"}
 
         if name == "科创次新股":
-            candidates, meta = fetch_ths_concept_members({"sector_code": None}, "科创次新股")
+            candidates, meta = fetch_ths_concept_members(theme, "科创次新股")
             if not candidates or not meta or meta.get("status") != "success":
                 return [], {"source":"constituents:"+name,"status":"unresolved",
                     "provider":"THS" if meta else None,
