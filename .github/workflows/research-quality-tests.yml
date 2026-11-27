@@ -23,6 +23,7 @@ on:
       - 'tests/test_theme_mapping_rules.py'
       - 'tests/test_research_provider_smoke.py'
       - 'tests/test_research_provider_utils.py'
+      - 'tests/test_eastmoney_concept_provider.py'
       - '.github/workflows/research-quality-tests.yml'
       - '.github/workflows/cloud-public.yml'
 permissions:
@@ -44,7 +45,7 @@ jobs:
       - name: Install research test dependencies
         run: pip install --disable-pip-version-check -r requirements.txt
       - name: Compile quality contract
-        run: python -m py_compile scripts/build_research_quality.py scripts/theme_mapping_rules.py scripts/collect_theme_evidence.py scripts/collect_research_modules.py scripts/enrich_research_snapshot.py scripts/build_market_technicals.py scripts/build_valuation_snapshot.py tests/test_valuation_snapshot.py tests/test_research_quality.py tests/test_research_collection.py tests/test_technical_history.py tests/test_theme_mapping_rules.py
+        run: python -m py_compile scripts/build_research_quality.py scripts/theme_mapping_rules.py scripts/collect_theme_evidence.py scripts/collect_research_modules.py scripts/enrich_research_snapshot.py scripts/build_market_technicals.py scripts/build_valuation_snapshot.py tests/test_valuation_snapshot.py scripts/research_provider_utils.py tests/test_eastmoney_concept_provider.py tests/test_research_quality.py tests/test_research_collection.py tests/test_technical_history.py tests/test_theme_mapping_rules.py
       - name: Run research quality contract tests
         run: python -m unittest discover -s tests -p 'test_research_quality.py' -v
       - name: Run research collection normalization tests
@@ -59,5 +60,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_provider_smoke.py' -v
       - name: Run broad-market valuation contract tests
         run: python -m unittest discover -s tests -p 'test_valuation_snapshot.py' -v
+      - name: Run EastMoney concept mirror provider tests
+        run: python -m unittest discover -s tests -p 'test_eastmoney_concept_provider.py' -v
       - name: Run bounded retry tests
         run: python -m unittest discover -s tests -p 'test_research_provider_utils.py' -v
