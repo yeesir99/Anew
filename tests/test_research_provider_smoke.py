@@ -51,9 +51,12 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
                 return pd.DataFrame([{"item": "上市日期", "value": "2026-01-01"}])
 
         result = validate_ths_theme_concept(FakeAk(), "科创次新股", date(2026, 11, 26))
-        self.assertEqual(result["status"], "success")
         self.assertEqual(result["candidate_count"], 2)
         self.assertEqual(result["eligible_within_one_calendar_year"], 2)
+        self.assertEqual(result["expired_or_outside_rule"], 0)
+        self.assertEqual(result["listing_lookup_failures"], [])
+        self.assertEqual(result["untested_candidates"], 0)
+        self.assertEqual(result["status"], "success")
 
         class ExpiredAk(FakeAk):
             def stock_ipo_info(self, symbol):
@@ -96,8 +99,8 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
                 return pd.DataFrame([{"板块名称": "烟草", "板块代码": "BK0999"}])
 
             def stock_board_concept_cons_em(self, symbol):
-                if symbol != "BK0999":
-                    raise AssertionError(f"unexpected board code: {symbol}")
+                if symbol != "烟草":
+                    raise AssertionError(f"unexpected exact board name: {symbol}")
                 return pd.DataFrame([{"代码": "600000", "名称": "浦发银行"}])
 
         class ForbiddenResponse:
