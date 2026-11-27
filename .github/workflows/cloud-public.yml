@@ -61,12 +61,12 @@ jobs:
         continue-on-error: true
         timeout-minutes: 4
         run: python scripts/collect_chinese_news.py
-      - name: Build broad-market technical indicators and rotate full-universe history backfill
+      - name: Build broad-market technical indicators and accelerate full-universe history backfill
         if: steps.live.outcome == 'success'
         continue-on-error: true
-        timeout-minutes: 15
+        timeout-minutes: 25
         env:
-          MAX_HISTORY_STOCKS: "250"
+          MAX_HISTORY_STOCKS: "1000"
           HISTORY_WORKERS: "3"
         run: |
           if ! python scripts/build_market_technicals.py; then
