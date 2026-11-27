@@ -345,8 +345,15 @@ def main():
     trade_date_iso = datetime.strptime(day, "%Y%m%d").date().isoformat()
     latest.to_csv(DATA / f"market_{trade_date_iso}.csv", index=False, encoding="utf-8-sig")
     coverage = {col: int(latest[col].notna().sum()) if col in latest else 0 for col in METRICS}
+    # A successful fetch/calculation is not the same as full-universe
+    # indicator coverage. Mark the snapshot validated only when every required
+    # metric exists for every stock in this exact trade-date universe.
+    full_metric_coverage = bool(len(latest) and all(
+        coverage.get(metric, 0) == len(latest) for metric in METRICS
+    ))
     result = {"trade_date": day, "stocks": len(latest),
-        "status": "validated" if archive_applied or backfill_stats.get("failed", 0) == 0 and backfill_stats.get("status") != "failed" else "degraded",
+        "status": "validated" if full_metric_coverage else "partial",
+        "full_metric_coverage": full_metric_coverage,
         "history_sessions": archive_stats.get("history_sessions", snapshot_sessions),
         "snapshot_history_sessions": snapshot_sessions,
         "coverage": coverage, "bulk_archive": archive_stats,
