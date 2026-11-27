@@ -48,6 +48,13 @@ def main():
         source_doc = json.loads((DATA / "research_sources.json").read_text(encoding="utf-8"))
     except Exception:
         pass
+    valuation_snapshot = {}
+    try:
+        valuation_snapshot = json.loads((DATA / "valuation_crowding.json").read_text(encoding="utf-8"))
+        if not isinstance(valuation_snapshot, dict):
+            valuation_snapshot = {}
+    except Exception:
+        valuation_snapshot = {}
     day = market.get("trade_date")
     source_doc_day = str(source_doc.get("trade_date") or "")
     period_source_status = {
@@ -222,6 +229,14 @@ def main():
             "previous_date": previous.get("trade_date") if previous else None, "source": row.get("source")})
     breadth = market.get("market_breadth", {})
     sections = research.setdefault("sections", {})
+    sections["market-valuation"] = {
+        "item": valuation_snapshot,
+        "status": valuation_snapshot.get("status", "missing"),
+        "trade_date": valuation_snapshot.get("trade_date"),
+        "provider": valuation_snapshot.get("provider"),
+        "source": valuation_snapshot.get("source"),
+        "note": valuation_snapshot.get("note", "全A股市场整体估值；不是行业或主题估值。"),
+    }
     sections["industry-live"] = {"items": ths_live_items,
         "status": ths_snapshot.get("status", "missing"),
         "trade_date": ths_snapshot.get("trade_date"),
