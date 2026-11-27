@@ -263,6 +263,58 @@ def is_transport_unavailable(exc):
     ))
 
 
+def validate_star_listing_roster(ak, as_of):
+    listing_fn = getattr(ak, "stock_info_sh_name_code", None)
+    if listing_fn is None:
+        raise ValueError("AkShare has no SSE stock_info_sh_name_code endpoint")
+    frame = call_with_retry(
+        lambda: listing_fn(symbol="科创板"),
+        operation="SSE STAR Market official listing roster",
+        attempts=2, base_delay=0.5, max_delay=2.0,
+    )
+    if frame is None or frame.empty:
+        raise ValueError("SSE STAR Market listing roster is empty")
+    code_col = next((col for col in ("证券代码", "股票代码", "代码") if col in frame.columns), None)
+    name_col = next((col for col in ("证券简称", "股票简称", "名称") if col in frame.columns), None)
+    date_col = next((col for col in ("上市日期", "上市时间", "LIST_DATE") if col in frame.columns), None)
+    if not code_col or not date_col:
+        raise ValueError(f"SSE listing roster schema mismatch: {list(frame.columns)}")
+    rows, eligible = 0, []
+    for row in frame.to_dict("records"):
+        code = str(row.get(code_col) or "").strip().zfill(6)
+        if not code.startswith(("688", "689")) or len(code) != 6 or not code.isdigit():
+            continue
+        rows += 1
+        listed = pd.to_datetime(row.get(date_col), errors="coerce")
+        if pd.isna(listed):
+            continue
+        listed_date = listed.date()
+        if star_next_new_eligible(code, listed_date, as_of):
+            eligible.append({
+                "code": code,
+                "name": str(row.get(name_col) or "").strip() if name_col else None,
+                "listing_date": listed_date.isoformat(),
+            })
+    coverage = round(
+        sum(1 for row in frame.to_dict("records")
+            if str(row.get(code_col) or "").strip().zfill(6).startswith(("688", "689"))
+            and pd.notna(pd.to_datetime(row.get(date_col), errors="coerce")))
+        / max(1, rows) * 100, 1
+    )
+    return {
+        "status": "success" if rows and coverage >= 95.0 else "partial",
+        "provider": "Shanghai Stock Exchange",
+        "taxonomy": "official STAR Market listing roster",
+        "source_url": "https://www.sse.com.cn/assortment/stock/list/share/",
+        "coverage_pct": coverage,
+        "roster_count": rows,
+        "candidate_count": len(eligible),
+        "eligible_codes": eligible,
+        "eligibility_rule": "688/689 listing date within one calendar year as of report trade date",
+        "trade_date": as_of.isoformat(),
+    }
+
+
 def smoke_exit_code(results):
     """Only schema/contract failures fail CI; provider outages remain visible."""
     return 1 if any(item.get("status") == "failed" for item in results) else 0
@@ -309,8 +361,10 @@ def main():
             "records": baidu_meta["records"],
             "failed_batches": baidu_meta["failed_batches"],
         })
+        star_facts = validate_star_listing_roster(ak, market_trade_day)
+        results.append({"period": "star_listing_roster", **star_facts})
         normalize_concept = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
-        for theme_name in ("烟草", "工业大麻", "参股民营银行", "科创次新股"):
+        for theme_name in ("烟草", "工业大麻", "参股民营银行"):
             matches = [
                 code for code, concepts in baidu_tags.items()
                 if any(normalize_concept(item.get("name")) == normalize_concept(theme_name)
@@ -353,7 +407,7 @@ def main():
 
     # Exact THS taxonomy names are resolved separately; STAR listing checks
     # are bounded in smoke mode and report the untested remainder explicitly.
-    for theme_name in ("烟草", "工业大麻", "科创次新股"):
+    for theme_name in ("烟草", "工业大麻"):
         try:
             facts = validate_ths_theme_concept(
                 ak, theme_name, market_trade_day, max_ipo_checks=1
