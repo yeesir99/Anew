@@ -71,6 +71,7 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
     if not name_col or not net_col:
         raise RuntimeError("THS industry flow schema changed: " + str(list(frame.columns)))
     by_industry = {}
+    source_rows = {}
     for _, item in frame.iterrows():
         name = str(item.get(name_col, "")).strip()
         net_yi = number(item.get(net_col))
@@ -96,12 +97,15 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
             previous["net_inflow_cny"] != normalized["net_inflow_cny"]
             or previous["change_pct"] != normalized["change_pct"]
         ):
+            current_source_row = {str(key): str(value) for key, value in item.to_dict().items()}
             raise RuntimeError(
                 f"THS industry flow has conflicting duplicate rows for {name}: "
                 f"net_cny={previous['net_inflow_cny']} vs {normalized['net_inflow_cny']}; "
-                f"change_pct={previous['change_pct']} vs {normalized['change_pct']}"
+                f"change_pct={previous['change_pct']} vs {normalized['change_pct']}; "
+                f"rows={source_rows.get(name)} vs {current_source_row}"
             )
         by_industry[name] = normalized
+        source_rows[name] = {str(key): str(value) for key, value in item.to_dict().items()}
     rows = list(by_industry.values())
     if not rows:
         raise RuntimeError("THS industry flow contains no finite net-amount rows")
