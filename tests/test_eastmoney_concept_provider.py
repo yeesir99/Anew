@@ -28,7 +28,7 @@ class EastMoneyConceptMirrorTests(unittest.TestCase):
                 return FakeResponse({"data": {"diff": [
                     {"f12": "BK0999", "f14": "烟草"},
                 ], "total": 1}})
-            if "29.push2.eastmoney.com" in url and params["fs"] == "b:BK0999":
+            if params["fs"] == "b:BK0999":
                 return FakeResponse({"data": {"diff": [
                     {"f12": "600000", "f14": "浦发银行"},
                 ], "total": 1}})
