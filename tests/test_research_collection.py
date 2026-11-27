@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.collect_research_modules import (
-    is_eastmoney_rate_limit, number, replace_flow_period_rows, ths_industry_flow_rows,
+    flow_quality_status, is_eastmoney_rate_limit, number, replace_flow_period_rows, ths_industry_flow_rows,
 )
 
 
@@ -54,6 +54,14 @@ class THSIndustryFlowNormalizationTests(unittest.TestCase):
             self.assertNotIn(("2026-11-26", "今日", "电子"), {
                 (row["trade_date"], row["indicator"], row["industry"]) for row in rows
             })
+
+    def test_ths_flow_coverage_below_95_percent_is_partial(self):
+        self.assertEqual(flow_quality_status({"coverage_pct": 94.99}), "partial")
+        self.assertEqual(flow_quality_status({"coverage_pct": 100}), "success")
+        self.assertEqual(flow_quality_status({"coverage_pct": None}), "partial")
+        self.assertEqual(flow_quality_status({"coverage_pct": 100,
+                                              "conflicting_duplicates": [{"industry": "银行"}]}),
+                         "partial")
 
     def test_amount_suffix_is_parsed_without_losing_unit(self):
         self.assertEqual(number("12.5亿元"), 12.5)
