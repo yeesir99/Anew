@@ -78,6 +78,30 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertFalse(report["checks"]["capital_flow_5日"]["available"])
         self.assertEqual(report["checks"]["theme_mapping"]["mapped"], 1)
 
+    def test_broad_market_valuation_is_labelled_and_not_promoted_to_theme_scope(self):
+        valuation = {
+            "status": "validated", "trade_date": "20261120",
+            "provider_dates": {"pe": "20261120", "pb": "20261120"},
+            "records": 2, "coverage_pct": 100,
+            "source": "AkShare/Legulegu A-share historical valuation series",
+            "provider": "AkShare",
+            "metric_definition": "Broad A-share median PE/PB historical quantiles",
+            "scope": "broad_market",
+            "coverage_basis": "required_broad_market_valuation_metrics",
+            "note": "仅代表全A股市场整体估值，不代表任何行业或主题的估值分位",
+        }
+        report = evaluate_quality(self.market, self.research, [], {}, {},
+                                  self.technical, valuation, {})
+        check = report["checks"]["valuation_crowding"]
+        self.assertEqual(check["status"], "validated")
+        self.assertEqual(check["scope"], "broad_market")
+        self.assertIn("不代表任何行业或主题", check["note"])
+
+        valuation["scope"] = "theme_level"
+        report = evaluate_quality(self.market, self.research, [], {}, {},
+                                  self.technical, valuation, {})
+        self.assertEqual(report["checks"]["valuation_crowding"]["status"], "unavailable")
+
     def test_complete_requires_all_dimensions(self):
         flows = []
         for period in ("今日", "5日", "10日"):
