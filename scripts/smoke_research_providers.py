@@ -177,20 +177,20 @@ def _fetch_em_concept_members(ak, theme_name):
 
 
 def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, http_get=None):
-    names = ak.stock_board_concept_name_ths()
-    if names is None or names.empty:
-        raise ValueError("THS concept-name taxonomy is empty")
-    name_col = next((col for col in ("name", "名称", "概念名称") if col in names.columns), None)
-    code_col = next((col for col in ("code", "代码", "板块代码") if col in names.columns), None)
-    if not name_col or not code_col:
-        raise ValueError(f"THS concept taxonomy schema changed: {list(names.columns)}")
-    matched = names[names[name_col].astype(str).str.strip() == theme_name]
-    if matched.empty:
-        return {"theme": theme_name, "status": "partial", "detail": "exact THS concept not found"}
-    board_code = str(matched.iloc[0][code_col]).strip()
     provider = "THS"
     fallback_detail = None
     try:
+        names = ak.stock_board_concept_name_ths()
+        if names is None or names.empty:
+            raise ValueError("THS concept-name taxonomy is empty")
+        name_col = next((col for col in ("name", "名称", "概念名称") if col in names.columns), None)
+        code_col = next((col for col in ("code", "代码", "板块代码") if col in names.columns), None)
+        if not name_col or not code_col:
+            raise ValueError(f"THS concept taxonomy schema changed: {list(names.columns)}")
+        matched = names[names[name_col].astype(str).str.strip() == theme_name]
+        if matched.empty:
+            raise LookupError(f"exact THS concept not found: {theme_name}")
+        board_code = str(matched.iloc[0][code_col]).strip()
         member_fn = getattr(ak, "stock_board_concept_cons_ths", None)
         if member_fn is not None:
             members = member_fn(symbol=theme_name)
@@ -203,14 +203,15 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
         try:
             members, board_code, source_url = _fetch_em_concept_members(ak, theme_name)
             provider = "EastMoney"
-            fallback_detail = f"THS constituent page unavailable: {type(ths_exc).__name__}: {str(ths_exc)[:180]}"
+            fallback_detail = f"THS exact taxonomy/constituents unavailable: {type(ths_exc).__name__}: {str(ths_exc)[:180]}"
         except LookupError as em_exc:
             return {"theme": theme_name, "status": "partial",
+                    "provider": None,
                     "detail": f"THS unavailable ({str(ths_exc)[:120]}); {str(em_exc)[:180]}"}
     member_code_col = next((col for col in ("代码", "股票代码", "证券代码", "code")
                             if col in members.columns), None)
     if not member_code_col:
-        raise ValueError(f"THS concept constituent schema changed: {list(members.columns)}")
+        raise ValueError(f"{provider} concept constituent schema changed: {list(members.columns)}")
     codes = sorted({str(value).strip().zfill(6) for value in members[member_code_col]
                     if str(value).strip() and str(value).strip().lower() != "nan"})
     result = {
@@ -225,7 +226,6 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
     if as_of is None:
         as_of = date.today()
     failures, expired, eligible = [], 0, 0
-    listing_checks = []
     ipo_fn = getattr(ak, "stock_ipo_info", None)
     if ipo_fn is None:
         return {**result, "status": "partial", "detail": "IPO listing-date endpoint unavailable"}
@@ -245,10 +245,7 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
             if values.empty:
                 raise ValueError("listing date absent")
             listed = date.fromisoformat(str(values.iloc[0])[:10])
-            is_eligible = star_next_new_eligible(code, listed, as_of)
-            listing_checks.append({"code": code, "listing_date": listed.isoformat(),
-                                   "eligible": is_eligible})
-            if is_eligible:
+            if star_next_new_eligible(code, listed, as_of):
                 eligible += 1
             else:
                 expired += 1
@@ -258,7 +255,6 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
         "eligible_within_one_calendar_year": eligible,
         "expired_or_outside_rule": expired,
         "listing_lookup_failures": failures,
-        "listing_checks": listing_checks,
         "listing_checks_performed": len(checked_codes),
         "untested_candidates": untested_candidates,
         "listing_age_policy": "THS: STAR-listed and listed less than one calendar year ago",
@@ -266,7 +262,6 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
     if failures or expired or untested_candidates:
         result["status"] = "partial"
     return result
-
 
 def smoke_exit_code(results):
     """Partial source data is reported but does not fail the code contract."""
