@@ -2,6 +2,7 @@ name: Research quality contract tests
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: [main]
     paths:
       - 'scripts/build_research_quality.py'
@@ -29,7 +30,7 @@ permissions:
 
 concurrency:
   group: research-quality-${{ github.event.pull_request.head.ref || github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   quality-contract:
