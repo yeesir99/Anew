@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import time
 import re
+import json
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import parse_qs
 
 import requests
 from collections.abc import Callable
@@ -196,3 +200,118 @@ def fetch_eastmoney_concept_members(
         "source_url": source_url,
         "mirror_hosts": list(hosts),
     }
+
+
+def fetch_baidu_concept_tags(
+    stock_codes,
+    *,
+    get=None,
+    batch_size: int = 100,
+    max_workers: int = 3,
+    timeout_seconds: float = 15.0,
+) -> tuple[dict[str, list[dict]], dict]:
+    """Fetch per-stock Baidu concept tags in bounded batches.
+
+    This is an independent fallback when THS pages and EastMoney Push2 are
+    unreachable. Only exact concept-name matches are returned to callers.
+    """
+    codes = sorted({str(code).strip().zfill(6) for code in stock_codes
+                    if str(code).strip() and str(code).strip().lower() != "nan"})
+    codes = [code for code in codes if len(code) == 6 and code.isdigit()]
+    if not codes:
+        raise ValueError("Baidu concept lookup requires a non-empty A-share universe")
+    if batch_size < 1 or batch_size > 200:
+        raise ValueError("Baidu concept batch_size must be between 1 and 200")
+
+    if get is None:
+        def get(url, **kwargs):
+            try:
+                from curl_cffi import requests as curl_requests
+                response = curl_requests.get(url, impersonate="chrome", **kwargs)
+                response.raise_for_status()
+                return response
+            except Exception as curl_error:
+                try:
+                    response = requests.get(url, **kwargs)
+                    response.raise_for_status()
+                    return response
+                except Exception as requests_error:
+                    raise RuntimeError(
+                        f"Baidu transport failed via curl_cffi and requests: "
+                        f"{type(curl_error).__name__}: {str(curl_error)[:120]} | "
+                        f"{type(requests_error).__name__}: {str(requests_error)[:120]}"
+                    ) from requests_error
+
+    url = "https://finance.pae.baidu.com/api/getrelatedblock"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Referer": "https://finance.pae.baidu.com/",
+        "Accept": "application/json, text/plain, */*",
+    }
+    batches = [codes[i:i + batch_size] for i in range(0, len(codes), batch_size)]
+
+    def fetch_batch(batch):
+        stock_arg = [{"code": code, "market": "ab", "type": "stock"} for code in batch]
+        params = {"stock": json.dumps(stock_arg, ensure_ascii=False), "finClientType": "pc"}
+        last_error = None
+        for attempt in range(2):
+            try:
+                response = get(url, params=params, headers=headers, timeout=timeout_seconds)
+                response.raise_for_status()
+                payload = response.json()
+                result = payload.get("Result") if isinstance(payload, dict) else None
+                if result is None:
+                    raise ValueError("Baidu concept response missing Result object")
+                if not isinstance(result, dict):
+                    raise ValueError("Baidu concept Result is not an object")
+                parsed = {}
+                for raw_code, groups in result.items():
+                    code = str(raw_code).strip().zfill(6)
+                    if len(code) != 6 or not code.isdigit() or not isinstance(groups, list):
+                        continue
+                    concepts = []
+                    for group in groups:
+                        if not isinstance(group, dict) or str(group.get("name") or "") != "概念":
+                            continue
+                        for item in group.get("list") or []:
+                            if not isinstance(item, dict):
+                                continue
+                            name = str(item.get("name") or "").strip()
+                            query = parse_qs(str(item.get("xcx_query") or ""))
+                            concept_code = (query.get("code") or [""])[0]
+                            if name:
+                                concepts.append({"name": name, "concept_code": concept_code or None})
+                    parsed[code] = concepts
+                return parsed, None
+            except Exception as exc:
+                last_error = f"{type(exc).__name__}: {str(exc)[:200]}"
+                if attempt == 0:
+                    time.sleep(0.2)
+        return {}, last_error
+
+    merged = {}
+    failed_batches = []
+    with ThreadPoolExecutor(max_workers=max(1, min(int(max_workers), 4))) as pool:
+        futures = {pool.submit(fetch_batch, batch): batch for batch in batches}
+        for future in as_completed(futures):
+            batch = futures[future]
+            parsed, error = future.result()
+            merged.update(parsed)
+            if error:
+                failed_batches.append({"first_code": batch[0], "last_code": batch[-1],
+                                       "count": len(batch), "error": error})
+
+    coverage_pct = round(len(merged) / len(codes) * 100, 1)
+    meta = {
+        "provider": "Baidu Stock Market",
+        "taxonomy": "Baidu per-stock concept tags",
+        "source_url": url,
+        "input_codes": len(codes),
+        "returned_codes": len(merged),
+        "coverage_pct": coverage_pct,
+        "records": sum(len(items) for items in merged.values()),
+        "batch_count": len(batches),
+        "failed_batches": failed_batches,
+        "status": "success" if not failed_batches and coverage_pct >= 95.0 else "partial",
+    }
+    return merged, meta
