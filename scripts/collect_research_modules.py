@@ -61,7 +61,7 @@ def ths_industry_universe_count(ak):
     return len(names) or None
 
 
-def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
+def ths_industry_flow_rows(frame, indicator, trade_day, captured_at, return_diagnostics=False):
     """Normalize THS's provider-defined net amount; source unit is CNY 100m."""
     if frame is None or frame.empty:
         raise RuntimeError("THS industry flow returned no rows")
@@ -72,11 +72,18 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
         raise RuntimeError("THS industry flow schema changed: " + str(list(frame.columns)))
     by_industry = {}
     source_rows = {}
+    conflict_rows = {}
+    raw_records = 0
+    identical_duplicates = 0
     for _, item in frame.iterrows():
         name = str(item.get(name_col, "")).strip()
         net_yi = number(item.get(net_col))
         change = number(item.get(change_col)) if change_col else None
         if not name or name.lower() == "nan" or net_yi is None:
+            continue
+        raw_records += 1
+        if name in conflict_rows:
+            conflict_rows[name].append({str(key): str(value) for key, value in item.to_dict().items()})
             continue
         normalized = {
             "trade_date": trade_day.isoformat(),
@@ -93,23 +100,38 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
             "captured_at": captured_at,
         }
         previous = by_industry.get(name)
-        if previous and (
-            previous["net_inflow_cny"] != normalized["net_inflow_cny"]
-            or previous["change_pct"] != normalized["change_pct"]
-        ):
-            current_source_row = {str(key): str(value) for key, value in item.to_dict().items()}
-            raise RuntimeError(
-                f"THS industry flow has conflicting duplicate rows for {name}: "
-                f"net_cny={previous['net_inflow_cny']} vs {normalized['net_inflow_cny']}; "
-                f"change_pct={previous['change_pct']} vs {normalized['change_pct']}; "
-                f"rows={source_rows.get(name)} vs {current_source_row}"
-            )
+        current_source_row = {str(key): str(value) for key, value in item.to_dict().items()}
+        if previous:
+            if (previous["net_inflow_cny"] != normalized["net_inflow_cny"]
+                    or previous["change_pct"] != normalized["change_pct"]):
+                conflict_rows[name] = [source_rows.get(name), current_source_row]
+                by_industry.pop(name, None)
+                source_rows.pop(name, None)
+                continue
+            identical_duplicates += 1
+            continue
         by_industry[name] = normalized
-        source_rows[name] = {str(key): str(value) for key, value in item.to_dict().items()}
+        source_rows[name] = current_source_row
     rows = list(by_industry.values())
     if not rows:
-        raise RuntimeError("THS industry flow contains no finite net-amount rows")
-    return rows
+        raise RuntimeError("THS industry flow contains no unambiguous finite net-amount rows")
+    diagnostics = {
+        "raw_records": raw_records,
+        "records": len(rows),
+        "unique_industries": len(rows),
+        "duplicate_rows_removed": identical_duplicates,
+        "conflicting_duplicates": [
+            {"industry": name, "rows": source_rows_for_conflict}
+            for name, source_rows_for_conflict in conflict_rows.items()
+        ],
+    }
+    if conflict_rows and not return_diagnostics:
+        details = "; ".join(
+            f"{name}: {rows[0]} vs {rows[1]}"
+            for name, rows in conflict_rows.items()
+        )
+        raise RuntimeError("THS industry flow has conflicting duplicate rows: " + details)
+    return (rows, diagnostics) if return_diagnostics else rows
 
 
 def append_rows(path: Path, rows: list[dict], keys: tuple[str, ...]):
@@ -378,18 +400,25 @@ def main():
                     raise RuntimeError("stock_fund_flow_industry_ths unavailable")
                 ths_symbol = {"今日": "即时", "5日": "5日排行", "10日": "10日排行"}[indicator]
                 frame = call_with_retry(lambda: ths_fn(symbol=ths_symbol), operation=f"THS industry flow {indicator}")
-                period_rows = ths_industry_flow_rows(frame, indicator, trade_day, checked)
-                # The board-name endpoint is not asserted to be the exact ranking universe.
-                # Without a provider-native denominator, completeness remains unknown.
-                coverage_pct = None
+                period_rows, ths_diagnostics = ths_industry_flow_rows(
+                    frame, indicator, trade_day, checked, return_diagnostics=True
+                )
+                # Ambiguous duplicate names are excluded, while unaffected
+                # industries remain publishable with a partial source status.
+                period_status = "partial" if ths_diagnostics["conflicting_duplicates"] else "success"
                 statuses.append({
-                    "source": "sector_flow_" + indicator, "status": "success",
-                    "records": len(period_rows), "provider": "THS",
+                    "source": "sector_flow_" + indicator, "status": period_status,
+                    "records": len(period_rows), "raw_records": ths_diagnostics["raw_records"],
+                    "provider": "THS",
                     "endpoint": "stock_fund_flow_industry_ths",
                     "coverage_pct": None,
                     "expected_industries": None,
+                    "duplicate_rows_removed": ths_diagnostics["duplicate_rows_removed"],
+                    "conflicting_duplicates": ths_diagnostics["conflicting_duplicates"],
                     "metric_definition": "THS provider-defined industry net amount (净额), CNY",
-                    "detail": "EastMoney unavailable; THS industry flow fallback succeeded"
+                    "detail": "EastMoney unavailable; THS industry flow fallback "
+                             + ("partial due to ambiguous duplicate industry names"
+                                if ths_diagnostics["conflicting_duplicates"] else "succeeded")
                              + ("; EastMoney error: " + em_error if em_error else ""),
                 })
             except Exception as ths_exc:
