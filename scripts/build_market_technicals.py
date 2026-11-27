@@ -330,7 +330,14 @@ def main():
         except Exception as exc:
             logging.warning("bulk technical calculation failed; use per-symbol fallback: %s", str(exc)[:300])
             archive_stats["calculation_error"] = str(exc)[:300]
-    if not archive_applied:
+    # A non-empty bulk archive may still leave holes (for example newly
+    # listed securities or symbol coverage gaps). Run the rotating per-symbol
+    # backfill whenever any required indicator is missing, not only when the
+    # entire bulk archive failed.
+    archive_full_coverage = bool(len(latest) and all(
+        col in latest and latest[col].notna().sum() == len(latest) for col in METRICS
+    ))
+    if not archive_full_coverage:
         try:
             latest, backfill_stats = _backfill_per_symbol(latest, day)
         except BaseException as exc:
