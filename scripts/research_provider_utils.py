@@ -57,7 +57,24 @@ def fetch_eastmoney_concept_members(
     tried in a bounded order so a single 502/timeout does not erase valid data.
     Exact concept-name matching is mandatory; parent/alias substitution is not.
     """
-    get = get or requests.get
+    if get is None:
+        def get(url, **kwargs):
+            try:
+                from curl_cffi import requests as curl_requests
+                response = curl_requests.get(url, impersonate="chrome", **kwargs)
+                response.raise_for_status()
+                return response
+            except Exception as curl_error:
+                try:
+                    response = requests.get(url, **kwargs)
+                    response.raise_for_status()
+                    return response
+                except Exception as requests_error:
+                    raise RuntimeError(
+                        f"EastMoney transport failed via curl_cffi and requests: "
+                        f"{type(curl_error).__name__}: {str(curl_error)[:120]} | "
+                        f"{type(requests_error).__name__}: {str(requests_error)[:120]}"
+                    ) from requests_error
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
         "Referer": "https://quote.eastmoney.com/",
@@ -71,6 +88,10 @@ def fetch_eastmoney_concept_members(
         "fs": "m:90+t:3+f:!50", "fields": "f12,f14",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
     }
+    list_param_variants = (
+        list_params,
+        {**list_params, "fs": "m:90+t:3"},
+    )
 
     def fetch_diff(host, params, operation):
         url = f"https://{host}/api/qt/clist/get"
@@ -90,14 +111,17 @@ def fetch_eastmoney_concept_members(
     matched = None
     list_errors = []
     for host in hosts:
-        try:
-            diff, _, _ = fetch_diff(host, list_params, "EastMoney concept taxonomy")
-            matched = next((row for row in diff
-                            if normal(row.get("f14")) == target), None)
-            if matched:
-                break
-        except Exception as exc:
-            list_errors.append(f"{host}: {type(exc).__name__}: {str(exc)[:160]}")
+        for params_variant in list_param_variants:
+            try:
+                diff, _, _ = fetch_diff(host, params_variant, "EastMoney concept taxonomy")
+                matched = next((row for row in diff
+                                if normal(row.get("f14")) == target), None)
+                if matched:
+                    break
+            except Exception as exc:
+                list_errors.append(f"{host}: {type(exc).__name__}: {str(exc)[:160]}")
+        if matched:
+            break
     if not matched:
         if list_errors and len(list_errors) == len(hosts):
             raise RuntimeError("EastMoney concept taxonomy mirrors failed: " + " | ".join(list_errors))
