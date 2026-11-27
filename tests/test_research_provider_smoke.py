@@ -6,7 +6,7 @@ import requests
 
 from scripts.smoke_research_providers import (
     PERIOD_SYMBOLS, is_transport_unavailable, smoke_exit_code,
-    validate_ths_flow_frame, validate_ths_theme_concept,
+    validate_star_listing_roster, validate_ths_flow_frame, validate_ths_theme_concept,
 )
 
 
@@ -150,6 +150,23 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         self.assertEqual(result["listing_checks_performed"], 1)
         self.assertEqual(result["untested_candidates"], 1)
         self.assertEqual(result["status"], "partial")
+
+    def test_star_theme_uses_official_sse_listing_dates(self):
+        class FakeAk:
+            def stock_info_sh_name_code(self, symbol):
+                self.symbol = symbol
+                return pd.DataFrame([
+                    {"证券代码": "688001", "证券简称": "华兴源创", "上市日期": "2026-01-01"},
+                    {"证券代码": "688002", "证券简称": "睿创微纳", "上市日期": "2024-07-22"},
+                    {"证券代码": "600000", "证券简称": "浦发银行", "上市日期": "1999-11-10"},
+                ])
+
+        facts = validate_star_listing_roster(FakeAk(), date(2026, 11, 26))
+        self.assertEqual(facts["status"], "success")
+        self.assertEqual(facts["provider"], "Shanghai Stock Exchange")
+        self.assertEqual(facts["candidate_count"], 1)
+        self.assertEqual(facts["eligible_codes"][0]["code"], "688001")
+        self.assertEqual(facts["coverage_pct"], 100.0)
 
     def test_partial_provider_data_is_warning_but_schema_failure_is_error(self):
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "partial"}]), 0)
