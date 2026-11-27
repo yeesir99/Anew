@@ -3,6 +3,7 @@ name: Research provider network smoke
 on:
   workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: [main]
     paths:
       - 'scripts/smoke_research_providers.py'
@@ -14,7 +15,7 @@ permissions:
 
 concurrency:
   group: ths-provider-smoke-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   ths-industry-flow-smoke:
