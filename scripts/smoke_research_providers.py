@@ -13,7 +13,10 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from scripts.theme_mapping_rules import star_next_new_eligible
+try:
+    from scripts.theme_mapping_rules import star_next_new_eligible
+except ModuleNotFoundError:
+    from theme_mapping_rules import star_next_new_eligible
 
 
 PERIOD_SYMBOLS = {
