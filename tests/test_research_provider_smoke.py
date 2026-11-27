@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.smoke_research_providers import PERIOD_SYMBOLS, validate_ths_flow_frame
+from scripts.smoke_research_providers import PERIOD_SYMBOLS, smoke_exit_code, validate_ths_flow_frame
 
 
 class FakeFrame:
@@ -14,6 +14,10 @@ class FakeFrame:
 
 
 class ResearchProviderSmokeContractTests(unittest.TestCase):
+    def test_partial_provider_data_is_warning_but_schema_failure_is_error(self):
+        self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "partial"}]), 0)
+        self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "failed"}]), 1)
+
     def test_period_symbols_are_independent_and_explicit(self):
         self.assertEqual(PERIOD_SYMBOLS, {
             "今日": "即时", "5日": "5日排行", "10日": "10日排行"
