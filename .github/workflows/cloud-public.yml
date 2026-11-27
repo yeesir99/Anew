@@ -64,7 +64,7 @@ jobs:
       - name: Mark prior technical coverage stale before current refresh
         if: always() && !cancelled()
         run: |
-          python -c 'import json; from datetime import datetime, timezone; from pathlib import Path; p=Path("data/technical_coverage.json"); r=json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}; r["status"]="degraded"; r["last_attempt_at"]=datetime.now(timezone.utc).isoformat(timespec="seconds"); r["last_attempt_error"]="awaiting current-run technical refresh; previous metrics are retained only as historical cache"; p.parent.mkdir(parents=True, exist_ok=True); p.write_text(json.dumps(r, ensure_ascii=False, indent=2)+"\\n", encoding="utf-8")'
+          python -c 'import json; from datetime import datetime, timezone; from pathlib import Path; p=Path("data/technical_coverage.json"); r=json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}; r["status"]="degraded"; r["last_attempt_at"]=datetime.now(timezone.utc).isoformat(timespec="seconds"); r["last_attempt_error"]="awaiting current-run technical refresh; previous metrics are retained only as historical cache"; p.parent.mkdir(parents=True, exist_ok=True); p.write_text(json.dumps(r, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")'
       - name: Build broad-market technical indicators and accelerate full-universe history backfill
         if: steps.live.outcome == 'success'
         continue-on-error: true
@@ -74,7 +74,7 @@ jobs:
           HISTORY_WORKERS: "3"
         run: |
           if ! python scripts/build_market_technicals.py; then
-            python -c 'import json; from datetime import datetime, timezone; from pathlib import Path; p=Path("data/technical_coverage.json"); r=json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}; r["status"]="degraded"; r["last_attempt_at"]=datetime.now(timezone.utc).isoformat(timespec="seconds"); r["last_attempt_error"]="technical builder exited abnormally; current technical refresh unavailable"; p.write_text(json.dumps(r, ensure_ascii=False, indent=2)+"\\n", encoding="utf-8"); print(json.dumps({"technical_status":"degraded","last_attempt_error":r["last_attempt_error"]}))'
+            python -c 'import json; from datetime import datetime, timezone; from pathlib import Path; p=Path("data/technical_coverage.json"); r=json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}; r["status"]="degraded"; r["last_attempt_at"]=datetime.now(timezone.utc).isoformat(timespec="seconds"); r["last_attempt_error"]="technical builder exited abnormally; current technical refresh unavailable"; p.write_text(json.dumps(r, ensure_ascii=False, indent=2)+"\n", encoding="utf-8"); print(json.dumps({"technical_status":"degraded","last_attempt_error":r["last_attempt_error"]}))'
           fi
       - name: Clear previous broad-market valuation snapshot
         if: always() && !cancelled()
