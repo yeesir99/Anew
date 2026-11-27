@@ -422,6 +422,8 @@ def main():
             if not members:
                 return [], None
             return list(members.values()), {"provider":"THS","taxonomy":"概念板块",
+                "taxonomy_node_id":board_code,"taxonomy_node_name":matched_name,
+                "source_url":f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}",
                 "matched_symbol":matched_name,
                 "mapping_source":"THS stock_board_concept_name_ths + gn constituent endpoint",
                 "status":"success"}
@@ -482,6 +484,8 @@ def main():
             return [], {"provider":"Sina","taxonomy":group,"matched_symbol":item["name"],
                         "mapping_source":"Sina stock_classify_board","status":"empty"}
         return list(members.values()), {"provider":"Sina","taxonomy":group,
+            "taxonomy_node_id":item["node"],"taxonomy_node_name":item["name"],
+            "source_url":data_url,
             "matched_symbol":item["name"],"mapping_source":"Sina stock_classify_board",
             "status":"success"}
 
@@ -641,6 +645,9 @@ def main():
                     return cached_members, {"source":"constituents:"+name,"status":"cached",
                         "records":len(cached_members),"provider":cached.get("source"),
                         "mapping_source":cached.get("mapping_source"),"taxonomy":cached.get("taxonomy"),
+                        "taxonomy_node_id":cached.get("taxonomy_node_id"),
+                        "taxonomy_node_name":cached.get("taxonomy_node_name"),
+                        "source_url":cached.get("source_url"),
                         "matched_symbol":cached.get("matched_symbol"),
                         "mapping_date":cached_at,"checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
             except Exception:
@@ -655,6 +662,9 @@ def main():
                 cache[name] = {"members":members,"fetched_at":fetched,"source":source_name,
                     "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
                     "matched_symbol":meta.get("matched_symbol"),"taxonomy":meta.get("taxonomy"),
+                    "taxonomy_node_id":meta.get("taxonomy_node_id"),
+                    "taxonomy_node_name":meta.get("taxonomy_node_name"),
+                    "source_url":meta.get("source_url"),
                     "mapping_source":meta.get("mapping_source"),"sector_code":code}
                 cache_dirty = True
                 return members, {"source":"constituents:"+name,"status":"success","records":len(members),
@@ -705,6 +715,8 @@ def main():
                         cache[name] = {"members":members,"fetched_at":fetched,"source":fn_name,
                             "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
                             "matched_symbol":candidate,"taxonomy":label,
+                            "taxonomy_node_id":None,"taxonomy_node_name":candidate,
+                            "source_url":None,
                             "mapping_source":fn_name,"sector_code":code}
                         cache_dirty = True
                         return members, {"source":"constituents:"+name,"status":"success",
