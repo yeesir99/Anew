@@ -39,29 +39,40 @@ def validate_ths_flow_frame(frame):
         raise ValueError("schema mismatch; columns=" + repr(columns))
     by_name = {}
     source_rows = {}
+    conflicts = {}
     raw_count = 0
+    identical_duplicates = 0
     for _, row in frame.iterrows():
         name = str(row.get(industry_col, "")).strip()
         amount = _finite_number(row.get(net_col))
         if name and name.lower() != "nan" and amount is not None:
             raw_count += 1
+            if name in conflicts:
+                conflicts[name].append({str(key): str(value) for key, value in row.to_dict().items()})
+                continue
             previous = by_name.get(name)
+            current_row = {str(key): str(value) for key, value in row.to_dict().items()}
             if previous is not None and previous != amount:
-                current_row = {str(key): str(value) for key, value in row.to_dict().items()}
-                raise ValueError(
-                    f"conflicting duplicate industry rows: {name}; "
-                    f"net_amount={previous} vs {amount}; "
-                    f"rows={source_rows.get(name)} vs {current_row}"
-                )
+                conflicts[name] = [source_rows.get(name), current_row]
+                by_name.pop(name, None)
+                source_rows.pop(name, None)
+                continue
+            if previous is not None:
+                identical_duplicates += 1
+                continue
             by_name[name] = amount
-            source_rows[name] = {str(key): str(value) for key, value in row.to_dict().items()}
+            source_rows[name] = current_row
     if not by_name:
-        raise ValueError("no rows with both industry name and finite net amount")
+        raise ValueError("no unambiguous rows with both industry name and finite net amount")
     return {
+        "status": "partial" if conflicts else "success",
         "records": len(by_name),
         "raw_records": raw_count,
         "unique_industries": len(by_name),
-        "duplicate_rows_removed": raw_count - len(by_name),
+        "duplicate_rows_removed": identical_duplicates,
+        "conflicting_duplicates": [
+            {"industry": name, "rows": rows} for name, rows in conflicts.items()
+        ],
         "industry_column": industry_col,
         "net_amount_column": net_col,
         "source_unit": "provider-returned value; expected 亿元 per AkShare THS endpoint contract",
