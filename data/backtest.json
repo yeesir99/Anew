@@ -1,0 +1,381 @@
+{
+  "status": "available",
+  "strategy": "行业过去5个交易日动量排名前20%，等权持有下一交易日",
+  "benchmark": "当日可用行业等权收益",
+  "fee_bps_round_trip": 20,
+  "observations": 79,
+  "sessions": 84,
+  "cumulative_return_pct": -9.736,
+  "benchmark_cumulative_return_pct": 1.885,
+  "win_rate_pct": 54.43,
+  "max_drawdown_pct": -16.16,
+  "daily": [
+    {
+      "date": "2026-07-07",
+      "return_pct": -3.1478282828282826,
+      "gross_return_pct": -2.9478282828282825,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-07-08",
+      "return_pct": -0.9003030303030304,
+      "gross_return_pct": -0.7003030303030304,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-07-09",
+      "return_pct": -0.8431658291457285,
+      "gross_return_pct": -0.6431658291457285,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-10",
+      "return_pct": 0.3281407035175879,
+      "gross_return_pct": 0.5281407035175879,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-13",
+      "return_pct": -2.653417085427136,
+      "gross_return_pct": -2.453417085427136,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-14",
+      "return_pct": 1.0198484848484852,
+      "gross_return_pct": 1.2198484848484852,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-07-15",
+      "return_pct": 1.764141414141414,
+      "gross_return_pct": 1.964141414141414,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-07-16",
+      "return_pct": 0.4964141414141418,
+      "gross_return_pct": 0.6964141414141418,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-07-17",
+      "return_pct": -3.649646464646467,
+      "gross_return_pct": -3.4496464646464666,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-07-20",
+      "return_pct": 0.2593467336683415,
+      "gross_return_pct": 0.4593467336683415,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-21",
+      "return_pct": -1.0485427135678398,
+      "gross_return_pct": -0.8485427135678397,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-22",
+      "return_pct": -0.018894472361809217,
+      "gross_return_pct": 0.1811055276381908,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-23",
+      "return_pct": 1.4557286432160805,
+      "gross_return_pct": 1.6557286432160805,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-24",
+      "return_pct": -3.0951758793969875,
+      "gross_return_pct": -2.8951758793969873,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-27",
+      "return_pct": 1.7627135678391959,
+      "gross_return_pct": 1.9627135678391958,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-28",
+      "return_pct": -2.558643216080402,
+      "gross_return_pct": -2.358643216080402,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-29",
+      "return_pct": 1.5397487437185917,
+      "gross_return_pct": 1.7397487437185917,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-30",
+      "return_pct": -0.7160804020100502,
+      "gross_return_pct": -0.5160804020100502,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-07-31",
+      "return_pct": 1.4263819095477375,
+      "gross_return_pct": 1.6263819095477374,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-08-03",
+      "return_pct": 0.7445959595959599,
+      "gross_return_pct": 0.94459595959596,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-08-04",
+      "return_pct": 0.9701010101010097,
+      "gross_return_pct": 1.1701010101010096,
+      "selected_industries": 198
+    },
+    {
+      "date": "2026-08-05",
+      "return_pct": 1.4047499999999995,
+      "gross_return_pct": 1.6047499999999995,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-06",
+      "return_pct": 0.46569999999999995,
+      "gross_return_pct": 0.6657,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-07",
+      "return_pct": 1.39365,
+      "gross_return_pct": 1.59365,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-10",
+      "return_pct": 0.5525499999999999,
+      "gross_return_pct": 0.7525499999999998,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-11",
+      "return_pct": -0.8427999999999998,
+      "gross_return_pct": -0.6427999999999998,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-12",
+      "return_pct": 1.3164500000000008,
+      "gross_return_pct": 1.5164500000000007,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-13",
+      "return_pct": -0.9625000000000004,
+      "gross_return_pct": -0.7625000000000003,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-14",
+      "return_pct": -0.22740000000000005,
+      "gross_return_pct": -0.02740000000000003,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-17",
+      "return_pct": 1.4613499999999995,
+      "gross_return_pct": 1.6613499999999994,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-18",
+      "return_pct": -0.36060000000000003,
+      "gross_return_pct": -0.1606,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-19",
+      "return_pct": -5.4624500000000005,
+      "gross_return_pct": -5.26245,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-20",
+      "return_pct": 0.786,
+      "gross_return_pct": 0.986,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-21",
+      "return_pct": -0.8957000000000004,
+      "gross_return_pct": -0.6957000000000003,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-24",
+      "return_pct": -0.4057,
+      "gross_return_pct": -0.2057,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-25",
+      "return_pct": 0.9189500000000002,
+      "gross_return_pct": 1.1189500000000001,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-26",
+      "return_pct": 0.55325,
+      "gross_return_pct": 0.75325,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-28",
+      "return_pct": 0.4868999999999995,
+      "gross_return_pct": 0.6868999999999995,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-08-31",
+      "return_pct": 0.2818500000000001,
+      "gross_return_pct": 0.4818500000000001,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-01",
+      "return_pct": 0.6950499999999997,
+      "gross_return_pct": 0.8950499999999998,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-02",
+      "return_pct": -1.3014,
+      "gross_return_pct": -1.1014,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-03",
+      "return_pct": -1.0547499999999996,
+      "gross_return_pct": -0.8547499999999997,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-04",
+      "return_pct": -0.35665,
+      "gross_return_pct": -0.15665,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-07",
+      "return_pct": 0.5107000000000002,
+      "gross_return_pct": 0.7107000000000002,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-08",
+      "return_pct": 1.2789999999999992,
+      "gross_return_pct": 1.4789999999999992,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-09",
+      "return_pct": -0.5565499999999999,
+      "gross_return_pct": -0.3565499999999999,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-10",
+      "return_pct": -1.8394500000000003,
+      "gross_return_pct": -1.6394500000000003,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-11",
+      "return_pct": -2.37885,
+      "gross_return_pct": -2.1788499999999997,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-14",
+      "return_pct": -0.21530000000000002,
+      "gross_return_pct": -0.015300000000000012,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-15",
+      "return_pct": -1.269300000000001,
+      "gross_return_pct": -1.069300000000001,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-16",
+      "return_pct": 1.412699999999999,
+      "gross_return_pct": 1.612699999999999,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-17",
+      "return_pct": -0.41390000000000005,
+      "gross_return_pct": -0.2139,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-09-18",
+      "return_pct": 1.834349999999999,
+      "gross_return_pct": 2.034349999999999,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-10-13",
+      "return_pct": 0.09790000000000004,
+      "gross_return_pct": 0.29790000000000005,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-11-02",
+      "return_pct": 2.7321105527638183,
+      "gross_return_pct": 2.9321105527638185,
+      "selected_industries": 199
+    },
+    {
+      "date": "2026-11-05",
+      "return_pct": 2.741399999999999,
+      "gross_return_pct": 2.9413999999999993,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-11-06",
+      "return_pct": -2.1030000000000006,
+      "gross_return_pct": -1.9030000000000005,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-11-09",
+      "return_pct": -0.29275000000000007,
+      "gross_return_pct": -0.09275000000000003,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-11-10",
+      "return_pct": 2.4216500000000005,
+      "gross_return_pct": 2.6216500000000007,
+      "selected_industries": 200
+    },
+    {
+      "date": "2026-11-17",
+      "return_pct": -2.9213106796116475,
+      "gross_return_pct": -2.7213106796116473,
+      "selected_industries": 206
+    }
+  ],
+  "limitations": [
+    "行业样本和分类沿用上游公开接口，可能发生口径变更。",
+    "仅为行业动量基准实验，不含停牌、涨跌停成交约束、滑点细节及税费。",
+    "20bp往返成本为统一假设，不是实际成交成本；历史结果不代表未来收益。",
+    "当前数据从云端迁移后开始持续积累，不存在可恢复的NAS历史数据库。"
+  ],
+  "generated_at": "2026-11-27T20:20:58+00:00"
+}
