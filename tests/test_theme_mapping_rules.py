@@ -42,20 +42,23 @@ class SpecialThemeMappingTests(unittest.TestCase):
         self.assertFalse(verified_private_bank_relationship({**valid, "source_type": "concept_tag"}))
 
 
-    def test_private_bank_evidence_must_match_report_trade_date(self):
+    def test_private_bank_evidence_carries_forward_within_freshness_window(self):
         record = {
             "listed_company_code": "600001",
             "investee_bank_name": "某民营银行",
             "relationship_type": "equity_investment",
             "holding_pct": 5.0,
-            "disclosure_date": "2026-03-31",
+            "disclosure_date": "2026-09-30",
             "as_of_trade_date": "2026-11-20",
             "source_url": "https://example.com/annual-report",
             "source_type": "annual_report",
             "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之五，具体投资情况见年度报告附注。",
         }
         self.assertEqual(len(private_bank_records_for_trade_date([record], "2026-11-20")), 1)
-        self.assertEqual(private_bank_records_for_trade_date([record], "2026-11-21"), [])
+        carried = private_bank_records_for_trade_date([record], "2026-11-21")
+        self.assertEqual(len(carried), 1)
+        self.assertEqual(carried[0]["review_age_days"], 1)
+        self.assertEqual(private_bank_records_for_trade_date([record], "2027-04-01"), [])
         self.assertEqual(private_bank_records_for_trade_date(
             [{**record, "disclosure_date": "2026-12-01"}], "2026-11-20"), [])
         self.assertEqual(private_bank_records_for_trade_date(
@@ -69,13 +72,13 @@ class SpecialThemeMappingTests(unittest.TestCase):
             "investee_bank_name": "某民营银行",
             "relationship_type": "equity_investment",
             "holding_pct": 4.0,
-            "disclosure_date": "2025-03-31",
+            "disclosure_date": "2026-08-01",
             "as_of_trade_date": "2026-11-20",
             "source_url": "https://example.com/annual-report",
             "source_type": "annual_report",
             "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之四，具体投资情况见年度报告附注。",
         }
-        newer = {**base, "holding_pct": 5.0, "disclosure_date": "2026-03-31"}
+        newer = {**base, "holding_pct": 5.0, "disclosure_date": "2026-09-01"}
         rows = private_bank_records_for_trade_date([base, newer], "2026-11-20")
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["holding_pct"], 5.0)
