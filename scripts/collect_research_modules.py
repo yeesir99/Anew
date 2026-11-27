@@ -28,7 +28,7 @@ DATA.mkdir(exist_ok=True)
 
 def number(value):
     try:
-        value = pd.to_numeric(str(value).replace(",", "").replace("%", "").strip(), errors="coerce")
+        value = pd.to_numeric(str(value).replace(",", "").replace("%", "").replace("亿元", "").strip(), errors="coerce")
         return None if pd.isna(value) else float(value)
     except Exception:
         return None
