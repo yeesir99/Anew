@@ -40,7 +40,7 @@ def merge_exact_components(components, required=("烟草", "工业大麻")):
 
 
 def star_next_new_eligible(code, listing_date, as_of, max_days=None):
-    """Use THS's explicit definition: STAR-listed and listed less than one year ago."""
+    """Project rule: STAR-listed and listed less than one calendar year ago."""
     code = str(code or "").strip()
     if not code.startswith(("688", "689")) or len(code) != 6 or not code.isdigit():
         return False
