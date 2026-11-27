@@ -96,7 +96,11 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
             previous["net_inflow_cny"] != normalized["net_inflow_cny"]
             or previous["change_pct"] != normalized["change_pct"]
         ):
-            raise RuntimeError(f"THS industry flow has conflicting duplicate rows for {name}")
+            raise RuntimeError(
+                f"THS industry flow has conflicting duplicate rows for {name}: "
+                f"net_cny={previous['net_inflow_cny']} vs {normalized['net_inflow_cny']}; "
+                f"change_pct={previous['change_pct']} vs {normalized['change_pct']}"
+            )
         by_industry[name] = normalized
     rows = list(by_industry.values())
     if not rows:
