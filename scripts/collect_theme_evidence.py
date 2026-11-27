@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SITE = ROOT / "site" / "data"
 LOG = logging.getLogger("theme-evidence")
-THEME_MAPPING_POLICY_VERSION = 2
+THEME_MAPPING_POLICY_VERSION = 3
 THEME_ALIASES = {
     # Only near-equivalent taxonomy labels are allowed. Broad parent sectors
     # (e.g. semiconductor, small metals, medical services, trade) are excluded
@@ -648,6 +648,7 @@ def main():
                     "membership_reason": f"returned by the exact {(meta or {}).get('provider') or 'unverified'} constituent source for component {component}",
                     "membership_evidence": {
                         "provider": (meta or {}).get("provider"),
+                        "concept_code": member.get("concept_code"),
                         "taxonomy": (meta or {}).get("taxonomy"),
                         "taxonomy_node_id": (meta or {}).get("taxonomy_node_id"),
                         "taxonomy_node_name": (meta or {}).get("taxonomy_node_name"),
@@ -808,6 +809,7 @@ def main():
                             "membership_reason": "STAR-listed security listed less than one calendar year ago under the documented 科创次新股 rule",
                             "membership_evidence": {
                                 "provider": meta.get("provider") or "THS",
+                                "concept_code": candidate.get("concept_code"),
                                 "taxonomy": meta.get("taxonomy"),
                                 "taxonomy_node_id": meta.get("taxonomy_node_id"),
                                 "taxonomy_node_name": meta.get("taxonomy_node_name") or meta.get("matched_symbol"),
