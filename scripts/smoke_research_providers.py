@@ -194,9 +194,13 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
         if members is None or members.empty:
             raise ValueError(f"THS concept constituent page empty for {theme_name}")
     except Exception as ths_exc:
-        members, board_code, source_url = _fetch_em_concept_members(ak, theme_name)
-        provider = "EastMoney"
-        fallback_detail = f"THS constituent page unavailable: {type(ths_exc).__name__}: {str(ths_exc)[:180]}"
+        try:
+            members, board_code, source_url = _fetch_em_concept_members(ak, theme_name)
+            provider = "EastMoney"
+            fallback_detail = f"THS constituent page unavailable: {type(ths_exc).__name__}: {str(ths_exc)[:180]}"
+        except LookupError as em_exc:
+            return {"theme": theme_name, "status": "partial",
+                    "detail": f"THS unavailable ({str(ths_exc)[:120]}); {str(em_exc)[:180]}"}
     member_code_col = next((col for col in ("代码", "股票代码", "证券代码", "code")
                             if col in members.columns), None)
     if not member_code_col:
