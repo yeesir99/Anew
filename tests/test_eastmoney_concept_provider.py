@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.research_provider_utils import fetch_eastmoney_concept_members
+from scripts.research_provider_utils import fetch_baidu_concept_tags, fetch_eastmoney_concept_members
 
 
 class FakeResponse:
@@ -50,6 +50,29 @@ class EastMoneyConceptMirrorTests(unittest.TestCase):
 
         with self.assertRaises(LookupError):
             fetch_eastmoney_concept_members("工业大麻", get=fake_get)
+
+    def test_baidu_per_stock_concept_tags_are_batched_and_parsed_exactly(self):
+        def fake_get(url, params, headers, timeout):
+            import json
+            stocks = json.loads(params["stock"])
+            result = {}
+            for item in stocks:
+                code = item["code"]
+                result[code] = [{"name": "概念", "list": [
+                    {"name": "烟草", "xcx_query": "code=11062228"},
+                    {"name": "其他概念", "xcx_query": "code=11000000"},
+                ]}]
+            return FakeResponse({"Result": result})
+
+        tags, meta = fetch_baidu_concept_tags(
+            ["600000", "000001"], get=fake_get, batch_size=1, max_workers=1
+        )
+        self.assertEqual(set(tags), {"000001", "600000"})
+        self.assertEqual(tags["600000"][0]["name"], "烟草")
+        self.assertEqual(tags["600000"][0]["concept_code"], "11062228")
+        self.assertEqual(meta["coverage_pct"], 100.0)
+        self.assertEqual(meta["status"], "success")
+        self.assertEqual(meta["batch_count"], 2)
 
     def test_all_taxonomy_mirrors_failed_is_transport_error(self):
         def fake_get(url, params, headers, timeout):
