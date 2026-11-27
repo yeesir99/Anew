@@ -151,6 +151,25 @@ def _fetch_ths_concept_members(board_code, http_get=None):
     return tables[0], url
 
 
+def _fetch_em_concept_members(ak, theme_name):
+    """Exact-name EastMoney fallback when THS blocks the cloud runner."""
+    names = ak.stock_board_concept_name_em()
+    if names is None or names.empty:
+        raise ValueError("EastMoney concept taxonomy is empty")
+    name_col = next((col for col in ("板块名称", "名称") if col in names.columns), None)
+    code_col = next((col for col in ("板块代码", "代码") if col in names.columns), None)
+    if not name_col or not code_col:
+        raise ValueError(f"EastMoney concept taxonomy schema changed: {list(names.columns)}")
+    matched = names[names[name_col].astype(str).str.strip() == theme_name]
+    if matched.empty:
+        raise LookupError(f"exact EastMoney concept not found: {theme_name}")
+    board_code = str(matched.iloc[0][code_col]).strip()
+    members = ak.stock_board_concept_cons_em(symbol=board_code)
+    if members is None or members.empty:
+        raise ValueError(f"EastMoney concept constituents empty for {theme_name}/{board_code}")
+    return members, board_code, f"https://quote.eastmoney.com/bk/90.{board_code}.html"
+
+
 def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, http_get=None):
     names = ak.stock_board_concept_name_ths()
     if names is None or names.empty:
@@ -163,14 +182,21 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
     if matched.empty:
         return {"theme": theme_name, "status": "partial", "detail": "exact THS concept not found"}
     board_code = str(matched.iloc[0][code_col]).strip()
-    member_fn = getattr(ak, "stock_board_concept_cons_ths", None)
-    if member_fn is not None:
-        members = member_fn(symbol=theme_name)
-        source_url = f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}"
-    else:
-        members, source_url = _fetch_ths_concept_members(board_code, http_get=http_get)
-    if members is None or members.empty:
-        raise ValueError(f"THS concept constituent page empty for {theme_name}")
+    provider = "THS"
+    fallback_detail = None
+    try:
+        member_fn = getattr(ak, "stock_board_concept_cons_ths", None)
+        if member_fn is not None:
+            members = member_fn(symbol=theme_name)
+            source_url = f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}"
+        else:
+            members, source_url = _fetch_ths_concept_members(board_code, http_get=http_get)
+        if members is None or members.empty:
+            raise ValueError(f"THS concept constituent page empty for {theme_name}")
+    except Exception as ths_exc:
+        members, board_code, source_url = _fetch_em_concept_members(ak, theme_name)
+        provider = "EastMoney"
+        fallback_detail = f"THS constituent page unavailable: {type(ths_exc).__name__}: {str(ths_exc)[:180]}"
     member_code_col = next((col for col in ("代码", "股票代码", "证券代码", "code")
                             if col in members.columns), None)
     if not member_code_col:
@@ -178,8 +204,9 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
     codes = sorted({str(value).strip().zfill(6) for value in members[member_code_col]
                     if str(value).strip() and str(value).strip().lower() != "nan"})
     result = {
-        "theme": theme_name, "status": "success", "board_code": board_code,
-        "source_url": source_url,
+        "theme": theme_name, "status": "success", "provider": provider,
+        "board_code": board_code, "source_url": source_url,
+        "fallback_detail": fallback_detail,
         "candidate_count": len(codes), "member_count": len(codes),
         "member_page_scope": "first page smoke only",
     }
