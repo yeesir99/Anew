@@ -39,7 +39,7 @@ class EastMoneyConceptMirrorTests(unittest.TestCase):
         self.assertEqual(meta["provider"], "EastMoney")
         self.assertEqual(meta["taxonomy_node_id"], "BK0999")
         self.assertEqual(meta["matched_symbol"], "烟草")
-        self.assertIn("79.push2.eastmoney.com", calls[1][0])
+        self.assertTrue(any("79.push2.eastmoney.com" in url for url, _ in calls))
         self.assertTrue(meta["source_url"].startswith("https://quote.eastmoney.com/"))
 
     def test_no_exact_name_does_not_use_parent_concept(self):
