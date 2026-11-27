@@ -23,6 +23,11 @@ except ModuleNotFoundError:
     from build_valuation_snapshot import build_snapshot
     from research_provider_utils import call_with_retry
 
+try:
+    from scripts.theme_mapping_rules import star_next_new_eligible
+except ModuleNotFoundError:
+    from theme_mapping_rules import star_next_new_eligible
+
 
 
 PERIOD_SYMBOLS = {
