@@ -363,17 +363,23 @@ def main():
         })
         normalize_concept = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
         for theme_name in ("烟草", "工业大麻", "参股民营银行"):
-            matches = [
-                code for code, concepts in baidu_tags.items()
-                if any(normalize_concept(item.get("name")) == normalize_concept(theme_name)
-                       for item in concepts)
+            matching_concepts = [
+                (code, item)
+                for code, concepts in baidu_tags.items()
+                for item in concepts
+                if normalize_concept(item.get("name")) == normalize_concept(theme_name)
             ]
+            matches = sorted({code for code, _ in matching_concepts})
+            concept_codes = sorted({str(item.get("concept_code")) for _, item in matching_concepts
+                                    if item.get("concept_code")})
             results.append({
                 "period": "baidu_special_theme_" + theme_name,
                 "theme": theme_name,
                 "status": "success" if matches and baidu_meta["status"] == "success" else "partial",
                 "provider": "Baidu Stock Market",
                 "candidate_count": len(matches),
+                "sample_codes": matches[:10],
+                "concept_codes": concept_codes[:10],
                 "coverage_pct": baidu_meta["coverage_pct"],
                 "source_url": baidu_meta["source_url"],
             })
