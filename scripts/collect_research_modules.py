@@ -59,17 +59,18 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
     change_col = next((x for x in ("行业-涨跌幅", "阶段涨跌幅", "涨跌幅") if x in frame.columns), None)
     if not name_col or not net_col:
         raise RuntimeError("THS industry flow schema changed: " + str(list(frame.columns)))
-    rows = []
+    by_industry = {}
     for _, item in frame.iterrows():
         name = str(item.get(name_col, "")).strip()
         net_yi = number(item.get(net_col))
+        change = number(item.get(change_col)) if change_col else None
         if not name or name.lower() == "nan" or net_yi is None:
             continue
-        rows.append({
+        normalized = {
             "trade_date": trade_day.isoformat(),
             "indicator": indicator,
             "industry": name,
-            "change_pct": number(item.get(change_col)) if change_col else None,
+            "change_pct": change,
             "net_inflow_cny": net_yi * 1e8,
             "main_net_inflow_cny": None,
             "main_net_ratio_pct": None,
@@ -78,7 +79,15 @@ def ths_industry_flow_rows(frame, indicator, trade_day, captured_at):
             "source_field": net_col,
             "metric_definition": f"THS provider-defined industry net amount from {net_col}; source unit 亿元 converted to CNY; not relabelled as EastMoney main-net flow",
             "captured_at": captured_at,
-        })
+        }
+        previous = by_industry.get(name)
+        if previous and (
+            previous["net_inflow_cny"] != normalized["net_inflow_cny"]
+            or previous["change_pct"] != normalized["change_pct"]
+        ):
+            raise RuntimeError(f"THS industry flow has conflicting duplicate rows for {name}")
+        by_industry[name] = normalized
+    rows = list(by_industry.values())
     if not rows:
         raise RuntimeError("THS industry flow contains no finite net-amount rows")
     return rows
