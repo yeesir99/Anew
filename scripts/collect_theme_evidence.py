@@ -930,9 +930,16 @@ def main():
                 "source": "工业和信息化部官网文件发布索引及原文页"},
         }
 
+    # Bind every theme-evidence payload to the actual market snapshot date.
+    # research.generated_at is a build timestamp, not a trading date.
+    market_snapshot_path = SITE / "latest.json"
+    market_snapshot = json.loads(market_snapshot_path.read_text(encoding="utf-8")) if market_snapshot_path.exists() else {}
+    market_trade_date = str(market_snapshot.get("trade_date") or "")
+    if not market_trade_date:
+        raise RuntimeError("latest.json has no trade_date; refusing to publish unanchored theme evidence")
     evidence = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "market_trade_date": research.get("generated_at"),
+        "market_trade_date": market_trade_date,
         "financial_report_date": report_date,
         "themes": output,
         "sources": source_status,
