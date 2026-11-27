@@ -776,7 +776,7 @@ def main():
                     "matched_symbol":candidate_meta.get("matched_symbol") if candidate_meta else None,
                     "source_url":candidate_meta.get("source_url") if candidate_meta else None,
                     "checked_at":candidate_meta.get("checked_at") if candidate_meta else None,
-                    "mapping_source":(candidate_meta.get("mapping_source") if candidate_meta else "candidate taxonomy only") + "; not accepted as equity proof",
+                    "mapping_source":(candidate_meta.get("mapping_source") if candidate_meta and candidate_meta.get("mapping_source") else "candidate taxonomy only") + "; not accepted as equity proof",
                     "candidate_codes":[x["code"] for x in candidates],
                     "candidate_count":len(candidates),
                     "verified_relationships":[],
