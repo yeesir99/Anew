@@ -28,6 +28,21 @@ class ProviderRetryTests(unittest.TestCase):
             call_with_retry(operation, operation="fixture", attempts=2,
                              delay_seconds=0, sleep=lambda _: None)
 
+    def test_non_retryable_provider_error_stops_without_sleep(self):
+        calls = []
+        sleeps = []
+
+        def operation():
+            calls.append(1)
+            raise RuntimeError("rate limited")
+
+        with self.assertRaisesRegex(RuntimeError, "1 bounded attempt"):
+            call_with_retry(operation, operation="fixture", attempts=3,
+                             delay_seconds=1, sleep=sleeps.append,
+                             should_retry=lambda exc: "rate limited" not in str(exc))
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(sleeps, [])
+
     def test_invalid_retry_policy_is_rejected(self):
         with self.assertRaises(ValueError):
             call_with_retry(lambda: None, operation="fixture", attempts=0)
