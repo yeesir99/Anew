@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import time
+import re
+
+import requests
 from collections.abc import Callable
 from typing import TypeVar
 
@@ -40,3 +43,124 @@ def call_with_retry(
             elif not retry_allowed:
                 break
     raise RuntimeError(f"{operation} failed after {attempts_made} bounded attempt(s): " + " | ".join(errors))
+
+
+def fetch_eastmoney_concept_members(
+    concept_name: str,
+    *,
+    get=None,
+    timeout_seconds: float = 12.0,
+) -> tuple[list[dict], dict]:
+    """Fetch an exact EastMoney concept board and its constituents via mirror hosts.
+
+    AkShare's wrapper uses the primary push2 host only. Public mirror hosts are
+    tried in a bounded order so a single 502/timeout does not erase valid data.
+    Exact concept-name matching is mandatory; parent/alias substitution is not.
+    """
+    get = get or requests.get
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Referer": "https://quote.eastmoney.com/",
+        "Accept": "application/json, text/plain, */*",
+    }
+    hosts = ("82.push2.eastmoney.com", "79.push2.eastmoney.com",
+             "29.push2.eastmoney.com", "push2.eastmoney.com")
+    list_params = {
+        "pn": 1, "pz": 500, "po": 1, "np": 1, "fltt": 2, "invt": 2,
+        "fs": "m:90+t:3+f:!50", "fields": "f12,f14",
+        "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+    }
+
+    def fetch_diff(host, params, operation):
+        url = f"https://{host}/api/qt/clist/get"
+        response = get(url, params=params, headers=headers, timeout=timeout_seconds)
+        response.raise_for_status()
+        payload = response.json()
+        data = payload.get("data") if isinstance(payload, dict) else None
+        if not isinstance(data, dict):
+            raise ValueError(f"{operation}: missing data object from {host}")
+        diff = data.get("diff")
+        if not isinstance(diff, list):
+            raise ValueError(f"{operation}: missing diff array from {host}")
+        return diff, data, url
+
+    normal = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+    target = normal(concept_name)
+    matched = None
+    list_errors = []
+    for host in hosts:
+        try:
+            diff, _, _ = fetch_diff(host, list_params, "EastMoney concept taxonomy")
+            matched = next((row for row in diff
+                            if normal(row.get("f14")) == target), None)
+            if matched:
+                break
+        except Exception as exc:
+            list_errors.append(f"{host}: {type(exc).__name__}: {str(exc)[:160]}")
+    if not matched:
+        if list_errors and len(list_errors) == len(hosts):
+            raise RuntimeError("EastMoney concept taxonomy mirrors failed: " + " | ".join(list_errors))
+        raise LookupError(f"exact EastMoney concept name not found: {concept_name}")
+
+    board_code = str(matched.get("f12") or "").strip()
+    matched_name = str(matched.get("f14") or "").strip()
+    if not board_code or not matched_name:
+        raise ValueError("EastMoney exact concept row missing board code/name")
+
+    member_params = {
+        "pn": 1, "pz": 1000, "po": 1, "np": 1, "fltt": 2, "invt": 2,
+        "fs": f"b:{board_code}+f:!50", "fields": "f12,f14",
+        "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+    }
+    member_hosts = ("29.push2.eastmoney.com", "82.push2.eastmoney.com",
+                    "79.push2.eastmoney.com", "push2.eastmoney.com")
+    rows = []
+    page = 1
+    total = None
+    member_errors = []
+    while True:
+        page_params = {**member_params, "pn": page}
+        page_rows = None
+        for host in member_hosts:
+            try:
+                diff, data, source_url = fetch_diff(host, page_params, "EastMoney concept constituents")
+                page_rows = diff
+                if total is None:
+                    total = int(data.get("total") or len(diff))
+                break
+            except Exception as exc:
+                member_errors.append(f"{host}: {type(exc).__name__}: {str(exc)[:160]}")
+        if page_rows is None:
+            raise RuntimeError("EastMoney constituent mirrors failed: " + " | ".join(member_errors[-8:]))
+        if not page_rows:
+            break
+        for row in page_rows:
+            code = str(row.get("f12") or "").strip().zfill(6)
+            name = str(row.get("f14") or "").strip()
+            if len(code) == 6 and code.isdigit():
+                rows.append({"code": code, "name": name or None})
+        if total is not None and len(rows) >= total:
+            break
+        if len(page_rows) < int(member_params["pz"]):
+            break
+        page += 1
+        if page > 20:
+            raise ValueError("EastMoney concept constituent pagination exceeded 20 pages")
+
+    deduped = {row["code"]: row for row in rows}
+    members = [deduped[key] for key in sorted(deduped)]
+    if not members:
+        raise ValueError(f"EastMoney exact concept returned no constituents: {matched_name}")
+    source_url = f"https://quote.eastmoney.com/center/boardlist.html#boards2-90.{board_code}"
+    return members, {
+        "status": "success",
+        "records": len(members),
+        "provider": "EastMoney",
+        "taxonomy": "EastMoney exact concept board",
+        "taxonomy_node_id": board_code,
+        "taxonomy_node_name": matched_name,
+        "matched_symbol": matched_name,
+        "mapping_source": "EastMoney exact concept taxonomy via mirror hosts",
+        "source_url": source_url,
+        "mirror_hosts": list(hosts),
+    }
