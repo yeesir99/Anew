@@ -80,8 +80,8 @@ class ResearchQualityTests(unittest.TestCase):
 
     def test_broad_market_valuation_is_labelled_and_not_promoted_to_theme_scope(self):
         valuation = {
-            "status": "validated", "trade_date": "2026-11-20",
-            "provider_dates": {"pe": "2026-11-20", "pb": "2026-11-20"},
+            "status": "validated", "trade_date": "20261120",
+            "provider_dates": {"pe": "20261120", "pb": "20261120"},
             "records": 2, "coverage_pct": 100,
             "source": "AkShare/Legulegu A-share historical valuation series",
             "provider": "AkShare",
