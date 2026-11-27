@@ -1,6 +1,8 @@
 import unittest
 from datetime import date
 
+import pandas as pd
+
 from scripts.smoke_research_providers import (
     PERIOD_SYMBOLS, smoke_exit_code, validate_ths_flow_frame, validate_ths_theme_concept,
 )
