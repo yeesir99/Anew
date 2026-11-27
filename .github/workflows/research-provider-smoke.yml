@@ -8,6 +8,7 @@ on:
     paths:
       - 'scripts/smoke_research_providers.py'
       - 'scripts/research_provider_utils.py'
+      - 'scripts/collect_theme_evidence.py'
       - 'requirements.txt'
       - '.github/workflows/research-provider-smoke.yml'
 
