@@ -284,7 +284,7 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         "metric_definition": (valuation or {}).get("metric_definition"),
         "provider_dates": valuation_provider_dates,
         "provider_dates_match_market": valuation_dates_match,
-        "note": "仅验证全A股市场整体PE/PB历史分位，不冒充主题估值；PE与PB来源日期必须分别匹配行情交易日，字段覆盖至少95%。缺失时不以涨跌幅、换手率或资金流替代。",
+        "note": "仅验证全A股市场整体PE/PB历史分位，不代表任何行业或主题的估值分位；PE与PB来源日期必须分别匹配行情交易日，字段覆盖至少95%。缺失时不以涨跌幅、换手率或资金流替代。",
     }
 
     all_checks = [v["status"] for v in checks.values()]
