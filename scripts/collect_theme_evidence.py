@@ -26,9 +26,9 @@ from import_sector_archive import is_concept_code
 from theme_mapping_rules import (merge_exact_components, star_next_new_eligible,
     private_bank_records_for_trade_date, consistent_provider_flow_persistence)
 try:
-    from scripts.research_provider_utils import call_with_retry, fetch_eastmoney_concept_members
+    from scripts.research_provider_utils import call_with_retry, fetch_baidu_concept_tags, fetch_eastmoney_concept_members
 except ModuleNotFoundError:
-    from research_provider_utils import call_with_retry, fetch_eastmoney_concept_members
+    from research_provider_utils import call_with_retry, fetch_baidu_concept_tags, fetch_eastmoney_concept_members
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -307,6 +307,27 @@ def main():
     source_status = []
     theme_members = {}
     all_codes = set()
+    market_universe = []
+    market_trade_day = None
+    try:
+        market_frame = pd.read_csv(DATA / "latest_market.csv", dtype=str, encoding="utf-8-sig")
+        market_code_col = find_col(market_frame.columns, ("symbol", "股票代码", "代码"))
+        market_name_col = find_col(market_frame.columns, ("name", "股票名称", "名称"))
+        market_date_col = find_col(market_frame.columns, ("trade_date", "交易日期", "日期"))
+        if market_code_col:
+            market_universe = [
+                (str(row.get(market_code_col) or "").strip().zfill(6),
+                 str(row.get(market_name_col) or "").strip() if market_name_col else None)
+                for row in market_frame.to_dict("records")
+                if str(row.get(market_code_col) or "").strip()
+            ]
+        if market_date_col and not market_frame.empty:
+            market_trade_day = str(market_frame.iloc[0][market_date_col])
+    except Exception as exc:
+        LOG.warning("Baidu fallback universe unavailable: %s", str(exc)[:200])
+    baidu_concept_cache = None
+    baidu_concept_meta = None
+    baidu_status_recorded = False
     # Sina publishes industry and popular-concept classifications independently
     # of EastMoney Push2. Resolve the requested theme against this taxonomy first,
     # then fetch only the matched category's members. EastMoney remains a fallback.
@@ -496,6 +517,86 @@ def main():
     def fetch_members(theme, name):
         nonlocal cache_dirty, push2_circuit_open
         code = clean(theme.get("sector_code"))
+
+        def fetch_baidu_exact_concept_members(component_name):
+            nonlocal baidu_concept_cache, baidu_concept_meta, baidu_status_recorded
+            if not market_universe:
+                return [], {"status":"unavailable","provider":"Baidu Stock Market",
+                            "taxonomy":"Baidu per-stock concept tags",
+                            "detail":"latest_market.csv has no usable stock universe"}
+            if baidu_concept_cache is None:
+                try:
+                    baidu_concept_cache, baidu_concept_meta = fetch_baidu_concept_tags(
+                        [code for code, _ in market_universe],
+                        batch_size=100, max_workers=3, timeout_seconds=15.0
+                    )
+                    baidu_concept_meta["checked_at"] = datetime.now(timezone.utc).isoformat()
+                    baidu_concept_meta["trade_date"] = market_trade_day
+                except Exception as exc:
+                    baidu_concept_cache = {}
+                    baidu_concept_meta = {
+                        "status":"unavailable","provider":"Baidu Stock Market",
+                        "taxonomy":"Baidu per-stock concept tags",
+                        "source_url":"https://finance.pae.baidu.com/api/getrelatedblock",
+                        "checked_at":datetime.now(timezone.utc).isoformat(),
+                        "trade_date":market_trade_day,
+                        "detail":f"{type(exc).__name__}: {str(exc)[:240]}",
+                    }
+                if not baidu_status_recorded:
+                    source_status.append({
+                        "source":"baidu_concept_tags",
+                        "status":baidu_concept_meta.get("status","unavailable"),
+                        "provider":"Baidu Stock Market",
+                        "coverage_pct":baidu_concept_meta.get("coverage_pct"),
+                        "records":baidu_concept_meta.get("records",0),
+                        "detail":baidu_concept_meta.get("detail") or
+                                 f"returned {baidu_concept_meta.get('returned_codes',0)}/{baidu_concept_meta.get('input_codes',0)} stock records",
+                    })
+                    baidu_status_recorded = True
+            normal = lambda value: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+            names_by_code = {code:name for code,name in market_universe}
+            members = []
+            concept_codes = set()
+            for code, concepts in (baidu_concept_cache or {}).items():
+                for concept in concepts:
+                    if normal(concept.get("name")) == normal(component_name):
+                        concept_code = concept.get("concept_code")
+                        if concept_code:
+                            concept_codes.add(str(concept_code))
+                        members.append({
+                            "code":code, "name":names_by_code.get(code),
+                            "concept_code":concept_code,
+                            "membership_reason":f"exact Baidu per-stock concept tag: {component_name}",
+                        })
+                        break
+            if not members:
+                return [], {
+                    "status":"unresolved" if baidu_concept_meta.get("status") == "success" else baidu_concept_meta.get("status","unavailable"),
+                    "provider":"Baidu Stock Market",
+                    "taxonomy":"Baidu per-stock concept tags",
+                    "matched_symbol":component_name,
+                    "mapping_source":"Baidu exact per-stock concept-name match",
+                    "source_url":"https://finance.pae.baidu.com/api/getrelatedblock",
+                    "checked_at":baidu_concept_meta.get("checked_at"),
+                    "trade_date":market_trade_day,
+                    "detail":f"no exact Baidu concept tag found for {component_name}",
+                }
+            meta = {
+                **(baidu_concept_meta or {}),
+                "status":baidu_concept_meta.get("status","partial"),
+                "provider":"Baidu Stock Market",
+                "taxonomy":"Baidu per-stock concept tags",
+                "taxonomy_node_id":next(iter(concept_codes)) if len(concept_codes)==1 else None,
+                "taxonomy_node_name":component_name,
+                "matched_symbol":component_name,
+                "mapping_source":"Baidu exact per-stock concept-name match",
+                "source_url":"https://finance.pae.baidu.com/api/getrelatedblock",
+                "records":len(members),
+                "candidate_count":len(members),
+                "checked_at":baidu_concept_meta.get("checked_at"),
+                "trade_date":market_trade_day,
+            }
+            return members, meta
 
         def fetch_eastmoney_exact_concept_members(component_name):
             try:
