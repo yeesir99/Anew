@@ -14,6 +14,16 @@ class FakeFrame:
 
 
 class ResearchProviderSmokeContractTests(unittest.TestCase):
+    def test_flow_coverage_uses_exact_ths_industry_universe(self):
+        frame = FakeFrame(
+            ["行业", "净额"],
+            [{"行业": "银行", "净额": "12.5"}, {"行业": "电子", "净额": "4.2"}],
+        )
+        result = validate_ths_flow_frame(frame, universe_names={"银行", "电子", "医药"})
+        self.assertEqual(result["expected_industries"], 3)
+        self.assertAlmostEqual(result["coverage_pct"], 66.67)
+        self.assertEqual(result["status"], "success")
+
     def test_partial_provider_data_is_warning_but_schema_failure_is_error(self):
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "partial"}]), 0)
         self.assertEqual(smoke_exit_code([{"status": "success"}, {"status": "failed"}]), 1)
