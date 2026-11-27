@@ -163,8 +163,9 @@ def _fetch_em_concept_members(ak, theme_name):
     matched = names[names[name_col].astype(str).str.strip() == theme_name]
     if matched.empty:
         raise LookupError(f"exact EastMoney concept not found: {theme_name}")
+    matched_name = str(matched.iloc[0][name_col]).strip()
     board_code = str(matched.iloc[0][code_col]).strip()
-    members = ak.stock_board_concept_cons_em(symbol=board_code)
+    members = ak.stock_board_concept_cons_em(symbol=matched_name)
     if members is None or members.empty:
         raise ValueError(f"EastMoney concept constituents empty for {theme_name}/{board_code}")
     return members, board_code, f"https://quote.eastmoney.com/bk/90.{board_code}.html"
