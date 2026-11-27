@@ -108,7 +108,7 @@ def validate_ths_flow_frame(frame, universe_names=None):
         if expected_names and not unexpected_names else None
     )
     return {
-        "status": "partial" if (conflicts or coverage_pct is None or unexpected_names) else "success",
+        "status": "partial" if (conflicts or coverage_pct is None or coverage_pct < 95.0 or unexpected_names) else "success",
         "records": len(by_name),
         "raw_records": raw_count,
         "unique_industries": len(by_name),
