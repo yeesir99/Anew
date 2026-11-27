@@ -14,6 +14,13 @@ from datetime import date
 from pathlib import Path
 
 try:
+    from scripts.build_valuation_snapshot import build_snapshot
+    from scripts.research_provider_utils import call_with_retry
+except ModuleNotFoundError:
+    from build_valuation_snapshot import build_snapshot
+    from research_provider_utils import call_with_retry
+
+try:
     from scripts.theme_mapping_rules import star_next_new_eligible
 except ModuleNotFoundError:
     from theme_mapping_rules import star_next_new_eligible
@@ -223,6 +230,25 @@ def main():
         except Exception as exc:
             results.append({"theme": theme_name, "status": "failed",
                             "detail": f"{type(exc).__name__}: {str(exc)[:400]}"})
+
+    # Broad-market valuation is checked independently from theme valuation.
+    # A stale provider date is reported as partial, never relabelled as current.
+    try:
+        latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
+        with latest_path.open(encoding="utf-8-sig", newline="") as handle:
+            target_day = next(csv.DictReader(handle)).get("trade_date")
+        pe_frame = call_with_retry(ak.stock_a_ttm_lyr, operation="A-share historical PE valuation smoke")
+        pb_frame = call_with_retry(ak.stock_a_all_pb, operation="A-share historical PB valuation smoke")
+        valuation = build_snapshot(target_day, pe_frame, pb_frame)
+        results.append({"period": "broad_market_valuation", "symbol": "stock_a_ttm_lyr + stock_a_all_pb",
+                        "status": valuation["status"], "trade_date": valuation["trade_date"],
+                        "provider_dates": valuation["provider_dates"],
+                        "coverage_pct": valuation["coverage_pct"],
+                        "scope": valuation["scope"]})
+    except Exception as exc:
+        results.append({"period": "broad_market_valuation",
+                        "symbol": "stock_a_ttm_lyr + stock_a_all_pb", "status": "failed",
+                        "error": f"{type(exc).__name__}: {str(exc)[:400]}"})
 
     report = {
         "provider": "THS",
