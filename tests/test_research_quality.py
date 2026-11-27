@@ -90,10 +90,13 @@ class ResearchQualityTests(unittest.TestCase):
                    "mapping": {"status": "success", "mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
             for name in ("主题甲", "主题乙")
         }}
-        valuation = {"status": "validated", "trade_date": "2026-11-20",
-                     "records": 5575, "coverage_pct": 100,
-                     "source": "official valuation history", "provider": "Exchange",
-                     "metric_definition": "PE/PB historical percentile"}
+        valuation = {"status": "validated", "scope": "broad_market",
+                     "coverage_basis": "required_broad_market_valuation_metrics",
+                     "trade_date": "2026-11-20", "provider_dates": {
+                         "pe": "2026-11-20", "pb": "2026-11-20"},
+                     "records": 2, "coverage_pct": 100,
+                     "source": "AkShare/Legulegu", "provider": "AkShare",
+                     "metric_definition": "A-share market-wide PE/PB historical percentile"}
         registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "industry_snapshot", "status": "success", "provider": "EastMoney",
              "records": 90, "coverage_pct": 100},
@@ -136,6 +139,19 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(check["status"], "unavailable")
         self.assertFalse(check["provenance_valid"])
         self.assertFalse(check["trade_date_matches_market"])
+
+    def test_valuation_provider_dates_must_match_market_trade_date(self):
+        valuation = {"status": "validated", "scope": "broad_market",
+            "coverage_basis": "required_broad_market_valuation_metrics",
+            "trade_date": "2026-11-20",
+            "provider_dates": {"pe": "2026-11-19", "pb": "2026-11-20"},
+            "records": 2, "coverage_pct": 100, "source": "AkShare/Legulegu",
+            "provider": "AkShare", "metric_definition": "A-share market-wide PE/PB"}
+        report = evaluate_quality(self.market, self.research, [], {}, {},
+                                  self.technical, valuation, {})
+        check = report["checks"]["valuation_crowding"]
+        self.assertEqual(check["status"], "unavailable")
+        self.assertFalse(check["provider_dates_match_market"])
 
     def test_success_without_coverage_is_not_complete(self):
         flows = [{
