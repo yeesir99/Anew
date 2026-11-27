@@ -273,6 +273,7 @@ def main():
 
     checked = datetime.now(TZ).isoformat(timespec="seconds")
     statuses = []
+    ths_universe_names = None
     # Once EastMoney explicitly rate-limits this run, stop calling its other
     # endpoints and switch to the independent THS provider.
     eastmoney_circuit_open = False
@@ -353,7 +354,8 @@ def main():
                     "source":"AKShare/THS live industry summary","captured_at":checked})
             if not ths_rows:
                 raise RuntimeError("THS industry summary has no valid rows")
-            ths_universe_count = ths_industry_universe_count(ak)
+            ths_universe_names = ths_industry_universe_names(ak)
+            ths_universe_count = len(ths_universe_names) if ths_universe_names else None
             ths_coverage = (len({x["industry_name"] for x in ths_rows}) / ths_universe_count * 100.0
                             if ths_universe_count else None)
             ths_snapshot = {"trade_date":trade_day.isoformat(),"status":"success",
@@ -378,13 +380,12 @@ def main():
     # remain distinct: THS "净额" is never relabelled as EastMoney "主力净流入".
     flow_rows = []
     flow_period_outcomes = []
-    try:
-        ths_universe_names = ths_industry_universe_names(ak)
-        ths_universe_count = len(ths_universe_names) if ths_universe_names else None
-    except Exception as exc:
-        ths_universe_names = None
-        ths_universe_count = None
-        LOG.warning("THS industry taxonomy unavailable: %s", str(exc)[:180])
+    if not ths_universe_names:
+        try:
+            ths_universe_names = ths_industry_universe_names(ak)
+        except Exception as exc:
+            ths_universe_names = None
+            LOG.warning("THS industry taxonomy unavailable: %s", str(exc)[:180])
 
     for indicator in ("今日", "5日", "10日"):
         period_rows = []
