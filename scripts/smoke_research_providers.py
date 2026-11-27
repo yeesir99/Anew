@@ -216,11 +216,20 @@ def main():
                 "error": f"{type(exc).__name__}: {str(exc)[:400]}",
             })
 
+    for theme_name in ("烟草", "工业大麻", "科创次新股"):
+        try:
+            facts = validate_ths_theme_concept(ak, theme_name, as_of=as_of)
+            results.append({"theme": theme_name, **facts})
+        except Exception as exc:
+            results.append({"theme": theme_name, "status": "failed",
+                            "detail": f"{type(exc).__name__}: {str(exc)[:400]}"})
+
     report = {
         "provider": "THS",
         "endpoint": "stock_fund_flow_industry_ths",
         "akshare_version": getattr(ak, "__version__", "unknown"),
         "read_only": True,
+        "as_of_trade_date": as_of.isoformat(),
         "results": results,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2))
