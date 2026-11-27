@@ -361,8 +361,6 @@ def main():
             "records": baidu_meta["records"],
             "failed_batches": baidu_meta["failed_batches"],
         })
-        star_facts = validate_star_listing_roster(ak, market_trade_day)
-        results.append({"period": "star_listing_roster", **star_facts})
         normalize_concept = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
         for theme_name in ("烟草", "工业大麻", "参股民营银行"):
             matches = [
@@ -384,6 +382,17 @@ def main():
             "period": "baidu_concept_tag_smoke",
             "status": "unavailable" if is_transport_unavailable(exc) else "failed",
             "error": f"{type(exc).__name__}: {str(exc)[:300]}",
+        })
+
+    try:
+        star_facts = validate_star_listing_roster(ak, market_trade_day)
+        results.append({"period": "star_listing_roster", **star_facts})
+    except Exception as exc:
+        results.append({
+            "period":"star_listing_roster",
+            "status":"unavailable" if is_transport_unavailable(exc) else "failed",
+            "provider":"Shanghai Stock Exchange",
+            "error":f"{type(exc).__name__}: {str(exc)[:300]}",
         })
 
     try:
