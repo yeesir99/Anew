@@ -96,6 +96,8 @@ class ResearchQualityTests(unittest.TestCase):
                          "pe": "2026-11-20", "pb": "2026-11-20"},
                      "records": 2, "coverage_pct": 100,
                      "source": "AkShare/Legulegu", "provider": "AkShare",
+                     "source_urls": {"pe": "https://legulegu.com/stockdata/a-ttm-lyr",
+                                     "pb": "https://legulegu.com/stockdata/all-pb"},
                      "metric_definition": "A-share market-wide PE/PB historical percentile"}
         registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "industry_snapshot", "status": "success", "provider": "EastMoney",
@@ -146,7 +148,10 @@ class ResearchQualityTests(unittest.TestCase):
             "trade_date": "2026-11-20",
             "provider_dates": {"pe": "2026-11-19", "pb": "2026-11-20"},
             "records": 2, "coverage_pct": 100, "source": "AkShare/Legulegu",
-            "provider": "AkShare", "metric_definition": "A-share market-wide PE/PB"}
+            "provider": "AkShare",
+            "source_urls": {"pe": "https://legulegu.com/stockdata/a-ttm-lyr",
+                            "pb": "https://legulegu.com/stockdata/all-pb"},
+            "metric_definition": "A-share market-wide PE/PB"}
         report = evaluate_quality(self.market, self.research, [], {}, {},
                                   self.technical, valuation, {})
         check = report["checks"]["valuation_crowding"]
