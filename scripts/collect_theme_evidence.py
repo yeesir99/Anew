@@ -598,6 +598,23 @@ def main():
             }
             return members, meta
 
+        def persist_baidu_mapping(members, meta):
+            nonlocal cache_dirty
+            if members and meta and meta.get("status") == "success":
+                fetched = meta.get("checked_at") or datetime.now(timezone.utc).isoformat(timespec="seconds")
+                cache[name] = {
+                    "members":members,"fetched_at":fetched,"source":meta.get("provider"),
+                    "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
+                    "matched_symbol":meta.get("matched_symbol"),
+                    "taxonomy":meta.get("taxonomy"),
+                    "taxonomy_node_id":meta.get("taxonomy_node_id"),
+                    "taxonomy_node_name":meta.get("taxonomy_node_name"),
+                    "source_url":meta.get("source_url"),
+                    "mapping_source":meta.get("mapping_source"),"sector_code":code,
+                }
+                cache_dirty = True
+            return members, {"source":"constituents:"+name, **(meta or {})}
+
         def fetch_eastmoney_exact_concept_members(component_name):
             try:
                 return fetch_eastmoney_concept_members(component_name)
@@ -873,9 +890,8 @@ def main():
             LOG.warning("Sina/THS constituents %s failed: %s", name, exc)
         # EastMoney Push2 fallback. Open a circuit on the first upstream rate limit.
         if push2_circuit_open:
-            return [], {"source":"constituents:"+name,"status":"failed","records":0,
-                "detail":"Sina taxonomy unmatched/unavailable; EastMoney Push2 circuit breaker open",
-                "checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
+            members, meta = fetch_baidu_exact_concept_members(name)
+            return persist_baidu_mapping(members, meta)
         concept = is_concept_code(code)
         attempts = [("stock_board_concept_cons_em" if concept else "stock_board_industry_cons_em",
                      "EastMoney concept" if concept else "EastMoney industry")]
@@ -932,9 +948,10 @@ def main():
                 time.sleep(0.8)
             if push2_circuit_open:
                 break
-        return [], {"source":"constituents:"+name,"status":"failed","records":0,
-            "detail":"; ".join(errors)[:400],
-            "checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        members, meta = fetch_baidu_exact_concept_members(name)
+        if not members and meta:
+            meta["detail"] = (meta.get("detail") or "") + ("; " + "; ".join(errors)[:240] if errors else "")
+        return persist_baidu_mapping(members, meta)
 
     for theme in themes:
         name = clean(theme.get("industry_name") or theme.get("industry"))
