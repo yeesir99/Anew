@@ -62,6 +62,30 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         self.assertEqual(expired["status"], "partial")
         self.assertEqual(expired["expired_or_outside_rule"], 2)
 
+    def test_ths_theme_constituents_use_live_html_page_when_akshare_wrapper_removed(self):
+        class FakeAk:
+            def stock_board_concept_name_ths(self):
+                return pd.DataFrame([{"name": "烟草", "code": "885999"}])
+
+        class FakeResponse:
+            text = "<table><tr><th>代码</th><th>名称</th></tr><tr><td>600000</td><td>浦发银行</td></tr></table>"
+
+            def raise_for_status(self):
+                return None
+
+        calls = []
+        def fake_get(url, headers, timeout):
+            calls.append(url)
+            return FakeResponse()
+
+        result = validate_ths_theme_concept(
+            FakeAk(), "烟草", date(2026, 11, 26), http_get=fake_get
+        )
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["candidate_count"], 1)
+        self.assertIn("885999", calls[0])
+        self.assertIn("10jqka.com.cn", result["source_url"])
+
     def test_star_theme_smoke_can_bound_ipo_lookups_and_report_untested(self):
         class FakeAk:
             calls = 0
