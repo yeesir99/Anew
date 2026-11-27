@@ -207,6 +207,20 @@ def main():
         raise SystemExit("FAIL: installed AkShare has no stock_fund_flow_industry_ths endpoint")
 
     results = []
+    market_trade_day = date.today()
+    market_target_day = None
+    try:
+        latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
+        with latest_path.open(encoding="utf-8-sig", newline="") as handle:
+            market_row = next(csv.DictReader(handle))
+        raw_day = str(market_row.get("trade_date") or "")
+        digits = "".join(ch for ch in raw_day if ch.isdigit())
+        if len(digits) >= 8:
+            market_target_day = digits[:8]
+            market_trade_day = date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
+    except Exception as exc:
+        results.append({"period": "market_trade_date", "status": "failed",
+                        "error": f"{type(exc).__name__}: {str(exc)[:300]}"})
     try:
         universe_names = ths_industry_universe_names(ak)
     except Exception as exc:
@@ -244,7 +258,7 @@ def main():
     for theme_name in ("烟草", "工业大麻", "科创次新股"):
         try:
             facts = validate_ths_theme_concept(
-                ak, theme_name, date.today(), max_ipo_checks=10
+                ak, theme_name, market_trade_day, max_ipo_checks=10
             )
             results.append({"period": "special_theme_" + theme_name,
                             "symbol": theme_name, **facts})
@@ -256,12 +270,11 @@ def main():
     # Broad-market valuation is checked independently from theme valuation.
     # A stale provider date is reported as partial, never relabelled as current.
     try:
-        latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
-        with latest_path.open(encoding="utf-8-sig", newline="") as handle:
-            target_day = next(csv.DictReader(handle)).get("trade_date")
+        if not market_target_day:
+            raise RuntimeError("market trade date is unavailable for valuation comparison")
         pe_frame = call_with_retry(ak.stock_a_ttm_lyr, operation="A-share historical PE valuation smoke")
         pb_frame = call_with_retry(ak.stock_a_all_pb, operation="A-share historical PB valuation smoke")
-        valuation = build_snapshot(target_day, pe_frame, pb_frame)
+        valuation = build_snapshot(market_target_day, pe_frame, pb_frame)
         results.append({"period": "broad_market_valuation", "symbol": "stock_a_ttm_lyr + stock_a_all_pb",
                         "status": valuation["status"], "trade_date": valuation["trade_date"],
                         "provider_dates": valuation["provider_dates"],
