@@ -28,7 +28,7 @@ class ResearchQualityTests(unittest.TestCase):
             "industry_name": f"行业{i}", "main_net_inflow_cny": 100,
             "source": "THS",
         } for i in range(60)]}
-        evidence = {"themes": {"主题甲": {
+        evidence = {"market_trade_date": "2026-11-20", "themes": {"主题甲": {
             "constituent_codes": ["600000"], "constituent_count": 1,
             "mapping": {"status": "success", "mapping_source": "Sina taxonomy", "matched_symbol": "主题甲", "mapping_date": "2026-11-20"},
         }}}
@@ -51,7 +51,7 @@ class ResearchQualityTests(unittest.TestCase):
                 "trade_date": "2026-11-20", "indicator": period,
                 "main_net_inflow_cny": "100", "source": "verified-provider",
             } for _ in range(50))
-        evidence = {"themes": {
+        evidence = {"market_trade_date": "2026-11-20", "themes": {
             name: {"constituent_codes": ["600000"], "constituent_count": 1,
                    "mapping": {"status": "success", "mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
             for name in ("主题甲", "主题乙")
@@ -126,7 +126,7 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(check["providers"], ["AKShare/THS industry fund-flow ranking"])
 
     def test_mapping_requires_source_symbol_and_date(self):
-        evidence = {"themes": {
+        evidence = {"market_trade_date": "2026-11-20", "themes": {
             "主题甲": {"constituent_codes": ["600000"], "constituent_count": 1,
                        "mapping": {"status": "success", "mapping_source": "taxonomy only"}},
             "主题乙": {"constituent_codes": ["000001"], "constituent_count": 1,
@@ -159,6 +159,22 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertFalse(check["available"])
         self.assertFalse(check["record_count_matches"])
         self.assertEqual(check["records"], 0)
+
+    def test_stale_theme_evidence_does_not_validate_current_mapping(self):
+        evidence = {"market_trade_date": "2026-11-19", "themes": {
+            "主题甲": {"constituent_codes": ["600000"], "constituent_count": 1,
+                      "mapping": {"status": "success", "mapping_source": "taxonomy",
+                                  "matched_symbol": "主题甲", "mapping_date": "2026-11-19"}},
+            "主题乙": {"constituent_codes": ["000001"], "constituent_count": 1,
+                      "mapping": {"status": "success", "mapping_source": "taxonomy",
+                                  "matched_symbol": "主题乙", "mapping_date": "2026-11-19"}},
+        }}
+        report = evaluate_quality(self.market, self.research, [], {}, evidence, self.technical)
+        check = report["checks"]["theme_mapping"]
+        self.assertEqual(check["status"], "partial")
+        self.assertFalse(check["trade_date_matches_market"])
+        self.assertEqual(check["mapped"], 0)
+        self.assertEqual(len(check["unresolved"]), 2)
 
     def test_stale_technical_snapshot_does_not_validate_current_market(self):
         technical = {**self.technical, "trade_date": "20261119"}
