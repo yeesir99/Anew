@@ -98,6 +98,10 @@ def build_snapshot(target_trade_date, pe_frame, pb_frame, captured_at=None):
         "trade_date": iso_day(target_day),
         "provider_dates": {"pe": iso_day(pe_day), "pb": iso_day(pb_day)},
         "source": "AkShare/Legulegu A-share historical valuation series",
+        "source_urls": {
+            "pe": "https://legulegu.com/stockdata/a-ttm-lyr",
+            "pb": "https://legulegu.com/stockdata/all-pb",
+        },
         "provider": "AkShare",
         "metric_definition": (
             "Broad A-share median PE(TTM/LYR) and median PB with provider-supplied "
