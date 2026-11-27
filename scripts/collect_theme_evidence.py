@@ -494,6 +494,10 @@ def main():
         code = clean(theme.get("sector_code"))
 
         def fetch_eastmoney_exact_concept_members(component_name):
+            if push2_circuit_open:
+                return [], {"status":"skipped","provider":"EastMoney",
+                            "taxonomy":"EastMoney exact concept board",
+                            "detail":"EastMoney circuit breaker is open"}
             name_fn = getattr(ak, "stock_board_concept_name_em", None)
             cons_fn = getattr(ak, "stock_board_concept_cons_em", None)
             if name_fn is None or cons_fn is None:
