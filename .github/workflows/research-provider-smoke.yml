@@ -31,7 +31,7 @@ jobs:
         run: pip install --disable-pip-version-check -r requirements.txt
       - name: Compile provider smoke contract
         run: python -m py_compile scripts/smoke_research_providers.py
-      - name: Check THS industry-flow and broad-market valuation providers (read-only)
+      - name: Check THS flows, special-theme taxonomy and broad-market valuation (read-only)
         timeout-minutes: 5
         env:
           TZ: Asia/Shanghai
