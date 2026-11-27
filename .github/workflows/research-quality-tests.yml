@@ -37,6 +37,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: research-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality-contract:
     runs-on: ubuntu-latest
