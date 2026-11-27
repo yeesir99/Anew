@@ -206,7 +206,7 @@ def fetch_baidu_concept_tags(
     stock_codes,
     *,
     get=None,
-    batch_size: int = 100,
+    batch_size: int = 20,
     max_workers: int = 3,
     timeout_seconds: float = 15.0,
 ) -> tuple[dict[str, list[dict]], dict]:
@@ -220,8 +220,8 @@ def fetch_baidu_concept_tags(
     codes = [code for code in codes if len(code) == 6 and code.isdigit()]
     if not codes:
         raise ValueError("Baidu concept lookup requires a non-empty A-share universe")
-    if batch_size < 1 or batch_size > 200:
-        raise ValueError("Baidu concept batch_size must be between 1 and 200")
+    if batch_size < 1 or batch_size > 30:
+        raise ValueError("Baidu concept batch_size must be between 1 and 30")
 
     if get is None:
         def get(url, **kwargs):
