@@ -72,15 +72,16 @@ jobs:
           if ! python scripts/build_market_technicals.py; then
             python -c 'import json; from datetime import datetime, timezone; from pathlib import Path; p=Path("data/technical_coverage.json"); r=json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}; r["status"]="degraded"; r["last_attempt_at"]=datetime.now(timezone.utc).isoformat(timespec="seconds"); r["last_attempt_error"]="technical builder exited abnormally; previous values retained and not relabelled as fresh"; p.write_text(json.dumps(r, ensure_ascii=False, indent=2)+"\\n", encoding="utf-8"); print(json.dumps({"technical_status":"degraded","last_attempt_error":r["last_attempt_error"]}))'
           fi
+      - name: Clear previous broad-market valuation snapshot
+        if: always() && !cancelled()
+        run: rm -f data/valuation_crowding.json
       - name: Build broad-market historical PE/PB valuation snapshot
         if: steps.live.outcome == 'success'
         continue-on-error: true
         timeout-minutes: 8
         env:
           TZ: Asia/Shanghai
-        run: |
-          rm -f data/valuation_crowding.json
-          python scripts/build_valuation_snapshot.py
+        run: python scripts/build_valuation_snapshot.py
       - name: Collect validated archive fallback if live API is unavailable
         if: steps.live.outcome == 'failure'
         env:
@@ -107,7 +108,7 @@ jobs:
         run: python scripts/validate_industry_data.py
       - name: Clear previous research-source status before current collection
         if: always() && !cancelled()
-        run: rm -f data/research_sources.json
+        run: rm -f data/research_sources.json data/industry_snapshot_ths.json
       - name: Collect public industry, capital-flow and ETF-share history
         if: always() && !cancelled() && steps.live.outcome == 'success'
         continue-on-error: true
@@ -121,6 +122,9 @@ jobs:
       - name: Build evidence-labelled research modules and 12-section report
         if: always() && !cancelled()
         run: python scripts/enrich_research_snapshot.py
+      - name: Clear previous theme evidence before current collection
+        if: always() && !cancelled()
+        run: rm -f data/theme_evidence.json
       - name: Collect auditable theme evidence (financials, forecasts, holdings, contracts, announcements)
         if: always() && !cancelled()
         continue-on-error: true
