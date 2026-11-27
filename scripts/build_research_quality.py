@@ -121,8 +121,13 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
     expected_names = [x for x in expected_names if x]
     mapped = []
     unresolved = []
+    evidence_trade_day = str((theme_evidence or {}).get("market_trade_date") or "")
+    theme_evidence_date_matches = evidence_trade_day == trade_day
     for name in expected_names:
         item = themes.get(name) or {}
+        if not theme_evidence_date_matches:
+            unresolved.append(name)
+            continue
         codes = item.get("constituent_codes") or []
         mapping = item.get("mapping") or {}
         count_matches = int(item.get("constituent_count") or 0) == len(codes)
@@ -135,7 +140,9 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
             unresolved.append(name)
     theme_coverage = (len(mapped) / len(expected_names)) if expected_names else 0.0
     checks["theme_mapping"] = {
-        "status": "validated" if expected_names and not unresolved else "partial",
+        "status": "validated" if expected_names and not unresolved and theme_evidence_date_matches else "partial",
+        "evidence_trade_date": evidence_trade_day or None,
+        "trade_date_matches_market": theme_evidence_date_matches,
         "mapped": len(mapped),
         "expected": len(expected_names),
         "coverage_pct": round(theme_coverage * 100, 1),
