@@ -3,10 +3,16 @@ from datetime import date
 
 import pandas as pd
 
-from scripts.collect_research_modules import number, ths_industry_flow_rows
+from scripts.collect_research_modules import is_eastmoney_rate_limit, number, ths_industry_flow_rows
 
 
 class THSIndustryFlowNormalizationTests(unittest.TestCase):
+    def test_eastmoney_rate_limit_opens_circuit_breaker(self):
+        self.assertTrue(is_eastmoney_rate_limit(RuntimeError("Push2RateLimitError")))
+        self.assertTrue(is_eastmoney_rate_limit(RuntimeError("HTTP 429 too many requests")))
+        self.assertTrue(is_eastmoney_rate_limit(RuntimeError("短时间内请求过多")))
+        self.assertFalse(is_eastmoney_rate_limit(RuntimeError("temporary timeout")))
+
     def test_amount_suffix_is_parsed_without_losing_unit(self):
         self.assertEqual(number("12.5亿元"), 12.5)
 
