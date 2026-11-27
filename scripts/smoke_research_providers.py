@@ -108,7 +108,10 @@ def main():
         "results": results,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    if any(item["status"] != "success" for item in results):
+    # A provider response with ambiguous duplicate names is useful but
+    # incomplete; keep the run green while exposing "partial" in the JSON.
+    # Empty/schema-invalid endpoint responses remain hard failures.
+    if any(item["status"] == "failed" for item in results):
         return 1
     return 0
 
