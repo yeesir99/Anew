@@ -314,6 +314,7 @@ def fetch_baidu_concept_tags(
         "records": sum(len(items) for items in merged.values()),
         "batch_count": len(batches),
         "failed_batches": failed_batches,
-        "status": "success" if not failed_batches and coverage_pct >= 95.0 else "partial",
+        "status": ("unavailable" if not merged and failed_batches else
+                   "success" if not failed_batches and coverage_pct >= 95.0 else "partial"),
     }
     return merged, meta
