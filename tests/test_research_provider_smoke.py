@@ -116,7 +116,8 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         self.assertEqual(result["status"], "success")
         self.assertEqual(result["provider"], "EastMoney")
         self.assertEqual(result["candidate_count"], 1)
-        self.assertIn("THS constituent page unavailable", result["fallback_detail"])
+        self.assertIn("THS", result["fallback_detail"])
+        self.assertIn("403", result["fallback_detail"])
 
     def test_ths_constituent_403_falls_back_to_exact_eastmoney_concept(self):
         class FakeAk:
