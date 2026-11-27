@@ -51,6 +51,22 @@ class THSIndustryFlowNormalizationTests(unittest.TestCase):
                 frame, "5日", date(2026, 11, 26), "2026-11-27T10:00:00+08:00"
             )
 
+    def test_ths_normalizer_keeps_unambiguous_rows_and_reports_conflicts(self):
+        frame = pd.DataFrame([
+            {"行业": "银行", "净额": 12.5, "涨跌幅": 1.2},
+            {"行业": "银行", "净额": 13.0, "涨跌幅": 1.2},
+            {"行业": "电子", "净额": 4.2, "涨跌幅": 0.5},
+        ])
+        rows, diagnostics = ths_industry_flow_rows(
+            frame, "今日", date(2026, 11, 26), "2026-11-27T10:00:00+08:00",
+            return_diagnostics=True,
+        )
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["industry"], "电子")
+        self.assertEqual(diagnostics["records"], 1)
+        self.assertEqual(diagnostics["raw_records"], 3)
+        self.assertEqual(diagnostics["conflicting_duplicates"][0]["industry"], "银行")
+
     def test_ths_normalizer_rejects_empty_or_schema_drift(self):
         with self.assertRaises(RuntimeError):
             ths_industry_flow_rows(
