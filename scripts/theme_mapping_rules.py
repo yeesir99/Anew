@@ -85,7 +85,7 @@ def verified_private_bank_relationship(record):
     if not url.startswith(("https://", "http://")):
         return False
     if str(record.get("source_type") or "").lower() not in {
-        "annual_report", "semiannual_report", "quarterly_report",
+        "annual_report", "semiannual_report", "semi_annual_report", "quarterly_report",
         "periodic_report", "exchange_announcement", "cninfo_filing"
     }:
         return False
