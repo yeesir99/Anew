@@ -553,6 +553,9 @@ def main():
                     "investee_bank_name": record.get("investee_bank_name"),
                     "holding_pct": float(record["holding_pct"]),
                     "disclosure_date": record["disclosure_date"],
+                    "source_url": record.get("source_url"),
+                    "source_excerpt": record.get("source_excerpt"),
+                    "membership_reason": "listed-company primary disclosure confirms equity ownership in the named private bank",
                 })
             if not members:
                 candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
@@ -741,6 +744,20 @@ def main():
         if not name:
             continue
         members, status = fetch_members(theme, name)
+        if members and name not in {"参股民营银行", "烟草与大麻", "科创次新股"}:
+            evidence_ref = {
+                "provider": status.get("provider"),
+                "taxonomy": status.get("taxonomy"),
+                "taxonomy_node_id": status.get("taxonomy_node_id"),
+                "taxonomy_node_name": status.get("taxonomy_node_name"),
+                "matched_symbol": status.get("matched_symbol"),
+                "mapping_source": status.get("mapping_source"),
+                "source_url": status.get("source_url"),
+                "mapping_date": status.get("mapping_date"),
+                "reason": "security returned by the constituent endpoint for the recorded taxonomy node",
+            }
+            for member in members:
+                member["membership_evidence"] = dict(evidence_ref)
         source_status.append(status)
         theme_members[name] = members
         theme_member_meta[name] = status
