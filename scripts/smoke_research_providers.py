@@ -24,6 +24,10 @@ try:
     from scripts.theme_mapping_rules import star_next_new_eligible
 except ModuleNotFoundError:
     from theme_mapping_rules import star_next_new_eligible
+try:
+    from scripts.build_valuation_snapshot import build_snapshot as build_valuation_snapshot
+except ModuleNotFoundError:
+    from build_valuation_snapshot import build_snapshot as build_valuation_snapshot
 
 
 PERIOD_SYMBOLS = {
@@ -249,6 +253,22 @@ def main():
         results.append({"period": "broad_market_valuation",
                         "symbol": "stock_a_ttm_lyr + stock_a_all_pb", "status": "failed",
                         "error": f"{type(exc).__name__}: {str(exc)[:400]}"})
+
+    try:
+        pe_fn = getattr(ak, "stock_a_ttm_lyr", None)
+        pb_fn = getattr(ak, "stock_a_all_pb", None)
+        if pe_fn is None or pb_fn is None:
+            raise AttributeError("AkShare broad-market PE/PB endpoints unavailable")
+        pe_frame = pe_fn()
+        pb_frame = pb_fn()
+        valuation = build_valuation_snapshot(as_of, pe_frame, pb_frame)
+        results.append({"valuation": "broad_market", **valuation})
+    except Exception as exc:
+        results.append({
+            "valuation": "broad_market", "status": "partial",
+            "scope": "broad_market",
+            "detail": f"{type(exc).__name__}: {str(exc)[:400]}",
+        })
 
     report = {
         "provider": "THS",
