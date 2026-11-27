@@ -225,6 +225,7 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
     if as_of is None:
         as_of = date.today()
     failures, expired, eligible = [], 0, 0
+    listing_checks = []
     ipo_fn = getattr(ak, "stock_ipo_info", None)
     if ipo_fn is None:
         return {**result, "status": "partial", "detail": "IPO listing-date endpoint unavailable"}
@@ -244,7 +245,10 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
             if values.empty:
                 raise ValueError("listing date absent")
             listed = date.fromisoformat(str(values.iloc[0])[:10])
-            if star_next_new_eligible(code, listed, as_of):
+            is_eligible = star_next_new_eligible(code, listed, as_of)
+            listing_checks.append({"code": code, "listing_date": listed.isoformat(),
+                                   "eligible": is_eligible})
+            if is_eligible:
                 eligible += 1
             else:
                 expired += 1
@@ -254,6 +258,7 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None, 
         "eligible_within_one_calendar_year": eligible,
         "expired_or_outside_rule": expired,
         "listing_lookup_failures": failures,
+        "listing_checks": listing_checks,
         "listing_checks_performed": len(checked_codes),
         "untested_candidates": untested_candidates,
         "listing_age_policy": "THS: STAR-listed and listed less than one calendar year ago",
