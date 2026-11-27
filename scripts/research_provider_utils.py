@@ -15,6 +15,7 @@ def call_with_retry(
     attempts: int = 2,
     delay_seconds: float = 1.0,
     sleep: Callable[[float], None] = time.sleep,
+    should_retry: Callable[[Exception], bool] | None = None,
 ) -> T:
     """Retry a provider transport call a bounded number of times.
 
@@ -31,6 +32,9 @@ def call_with_retry(
             return operation_fn()
         except Exception as exc:
             errors.append(f"attempt {attempt}/{attempts}: {type(exc).__name__}: {str(exc)[:240]}")
-            if attempt < attempts and delay_seconds:
+            retry_allowed = should_retry(exc) if should_retry is not None else True
+            if attempt < attempts and delay_seconds and retry_allowed:
                 sleep(delay_seconds * attempt)
+            elif not retry_allowed:
+                break
     raise RuntimeError(f"{operation} failed after {attempts} bounded attempt(s): " + " | ".join(errors))
