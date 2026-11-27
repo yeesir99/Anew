@@ -1,6 +1,6 @@
 {
-  "trade_date": "2026-11-26",
-  "checked_at": "2026-11-27T04:31:57+08:00",
+  "trade_date": "2026-11-27",
+  "checked_at": "2026-11-28T04:19:41+08:00",
   "sources": [
     {
       "source": "modi-hu/stock-data sector_daily_quotes",
@@ -9,23 +9,28 @@
     },
     {
       "source": "industry_snapshot",
-      "status": "failed",
-      "detail": "东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。"
+      "status": "success",
+      "records": 496,
+      "provider": "EastMoney",
+      "detail": "行业涨跌幅及成交额快照；代理分不等同产业基本面评分"
     },
     {
       "source": "sector_flow_今日",
-      "status": "failed",
-      "detail": "Expecting value: line 1 column 1 (char 0)"
+      "status": "success",
+      "records": 496,
+      "detail": "公开市场主力资金估算，不代表机构专属账户"
     },
     {
       "source": "sector_flow_5日",
-      "status": "failed",
-      "detail": "Expecting value: line 1 column 1 (char 0)"
+      "status": "success",
+      "records": 496,
+      "detail": "公开市场主力资金估算，不代表机构专属账户"
     },
     {
       "source": "sector_flow_10日",
-      "status": "failed",
-      "detail": "Expecting value: line 1 column 1 (char 0)"
+      "status": "success",
+      "records": 496,
+      "detail": "公开市场主力资金估算，不代表机构专属账户"
     },
     {
       "source": "etf_shares_sse",
@@ -36,7 +41,7 @@
     {
       "source": "etf_shares_szse",
       "status": "success",
-      "records": 84398,
+      "records": 84508,
       "detail": "SZSE official ETF daily share history; 60-day chunks; failed_ranges=[]"
     },
     {

@@ -1,7 +1,7 @@
 {
   "trade_date": "20261126",
   "stocks": 5579,
-  "status": "validated",
+  "status": "degraded",
   "history_sessions": 41,
   "snapshot_history_sessions": 7,
   "coverage": {
@@ -42,5 +42,7 @@
     "history_sessions_min": 14,
     "history_sessions_max": 120
   },
-  "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated"
-}
+  "method": "bulk daily quote archive with backward-adjusted returns; per-symbol bars are fallback only; no missing values fabricated",
+  "last_attempt_at": "2026-11-27T20:19:37+00:00",
+  "last_attempt_error": "technical builder exited abnormally; previous values retained and not relabelled as fresh"
+}\n
