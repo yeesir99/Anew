@@ -245,9 +245,12 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
     valuation_records = int((valuation or {}).get("records") or 0)
     valuation_coverage = (valuation or {}).get("coverage_pct")
     valuation_provider_dates = (valuation or {}).get("provider_dates") or {}
+    valuation_source_urls = (valuation or {}).get("source_urls") or {}
     valuation_scope_valid = (
         (valuation or {}).get("scope") == "broad_market"
         and (valuation or {}).get("coverage_basis") == "required_broad_market_valuation_metrics"
+        and str(valuation_source_urls.get("pe") or "").startswith("https://")
+        and str(valuation_source_urls.get("pb") or "").startswith("https://")
     )
     valuation_dates_match = (
         str(valuation_provider_dates.get("pe") or "") == trade_day
