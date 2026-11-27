@@ -49,7 +49,7 @@ class ResearchQualityTests(unittest.TestCase):
         for period in ("今日", "5日", "10日"):
             flows.extend({
                 "trade_date": "2026-11-20", "indicator": period,
-                "main_net_inflow_cny": "100", "source": "verified-provider",
+                "main_net_inflow_cny": "100", "provider": "EastMoney", "source": "verified-provider",
             } for _ in range(50))
         evidence = {"market_trade_date": "2026-11-20", "themes": {
             name: {"constituent_codes": ["600000"], "constituent_count": 1,
@@ -58,7 +58,7 @@ class ResearchQualityTests(unittest.TestCase):
         }}
         valuation = {"status": "validated", "records": 5575}
         registry = {"trade_date": "2026-11-20", "sources": [
-            {"source": "sector_flow_" + period, "status": "success", "records": 50, "coverage_pct": 100}
+            {"source": "sector_flow_" + period, "status": "success", "provider": "EastMoney", "records": 50, "coverage_pct": 100}
             for period in ("今日", "5日", "10日")
         ]}
         report = evaluate_quality(self.market, self.research, flows, {}, evidence,
@@ -93,7 +93,7 @@ class ResearchQualityTests(unittest.TestCase):
             "net_inflow_cny": "100", "source": "THS",
         } for _ in range(90)]
         registry = {"trade_date": "2026-11-20", "sources": [
-            {"source": "sector_flow_5日", "status": "success", "records": 90}
+            {"source": "sector_flow_5日", "status": "success", "provider": "THS", "records": 90}
         ]}
         report = evaluate_quality(self.market, self.research, flows, {}, {}, self.technical,
                                   {}, registry)
