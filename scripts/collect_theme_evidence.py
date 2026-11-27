@@ -500,10 +500,24 @@ def main():
             component_members = {}
             for component in ("烟草", "工业大麻"):
                 members, meta = fetch_ths_concept_members({"sector_code": None}, component)
-                component_members[component] = members
+                tagged_members = [{
+                    **member,
+                    "theme_component": component,
+                    "membership_reason": f"returned by the exact THS constituent endpoint for component {component}",
+                    "membership_evidence": {
+                        "provider": (meta or {}).get("provider"),
+                        "taxonomy": (meta or {}).get("taxonomy"),
+                        "taxonomy_node_id": (meta or {}).get("taxonomy_node_id"),
+                        "taxonomy_node_name": (meta or {}).get("taxonomy_node_name"),
+                        "matched_symbol": (meta or {}).get("matched_symbol"),
+                        "mapping_source": (meta or {}).get("mapping_source"),
+                        "source_url": (meta or {}).get("source_url"),
+                    },
+                } for member in members]
+                component_members[component] = tagged_members
                 components[component] = {"status": meta.get("status") if meta else "unresolved",
                                           "matched_symbol": meta.get("matched_symbol") if meta else None,
-                                          "records": len(members), "members": members}
+                                          "records": len(tagged_members), "members": tagged_members}
                 if not members:
                     return [], {"source":"constituents:"+name,"status":"pending_components",
                         "provider":"THS","taxonomy":"separate exact concept components",
