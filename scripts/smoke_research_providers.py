@@ -125,7 +125,7 @@ def validate_ths_flow_frame(frame, universe_names=None):
     }
 
 
-def validate_ths_theme_concept(ak, theme_name, as_of=None):
+def validate_ths_theme_concept(ak, theme_name, as_of=None, max_ipo_checks=None):
     names = ak.stock_board_concept_name_ths()
     if names is None or names.empty:
         raise ValueError("THS concept-name taxonomy is empty")
@@ -159,7 +159,9 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None):
     ipo_fn = getattr(ak, "stock_ipo_info", None)
     if ipo_fn is None:
         return {**result, "status": "partial", "detail": "IPO listing-date endpoint unavailable"}
-    for code in codes:
+    checked_codes = codes if max_ipo_checks is None else codes[:max(0, int(max_ipo_checks))]
+    untested_candidates = max(0, len(codes) - len(checked_codes))
+    for code in checked_codes:
         if not code.startswith(("688", "689")):
             failures.append({"code": code, "error": "not a STAR Market code"})
             continue
@@ -183,9 +185,11 @@ def validate_ths_theme_concept(ak, theme_name, as_of=None):
         "eligible_within_one_calendar_year": eligible,
         "expired_or_outside_rule": expired,
         "listing_lookup_failures": failures,
+        "listing_checks_performed": len(checked_codes),
+        "untested_candidates": untested_candidates,
         "listing_age_policy": "THS: STAR-listed and listed less than one calendar year ago",
     })
-    if failures or expired:
+    if failures or expired or untested_candidates:
         result["status"] = "partial"
     return result
 
@@ -234,6 +238,20 @@ def main():
         except Exception as exc:
             results.append({"theme": theme_name, "status": "failed",
                             "detail": f"{type(exc).__name__}: {str(exc)[:400]}"})
+
+    # Exact special-theme taxonomy smoke: tobacco and industrial cannabis
+    # are separate components; STAR new listings are checked against IPO dates.
+    for theme_name in ("烟草", "工业大麻", "科创次新股"):
+        try:
+            facts = validate_ths_theme_concept(
+                ak, theme_name, date.today(), max_ipo_checks=10
+            )
+            results.append({"period": "special_theme_" + theme_name,
+                            "symbol": theme_name, **facts})
+        except Exception as exc:
+            results.append({"period": "special_theme_" + theme_name,
+                            "symbol": theme_name, "status": "failed",
+                            "error": f"{type(exc).__name__}: {str(exc)[:400]}"})
 
     # Broad-market valuation is checked independently from theme valuation.
     # A stale provider date is reported as partial, never relabelled as current.
