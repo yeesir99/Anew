@@ -16,7 +16,9 @@
 - `source_type`：`annual_report`、`exchange_announcement` 或 `cninfo_filing`
 - `source_excerpt`：足以支持股权关系的原文摘录（至少30字符）
 
-可选字段：`listed_company_name`、`reporting_period`、`shareholder_name`、`notes`。
+可选字段：`listed_company_name`、`reporting_period`、`shareholder_name`、`notes`、`cross_check_urls`。
+
+`as_of_trade_date` 是本次人工复核并纳入研究的行情交易日，不等同于披露文件日期。若最新明确披露早于该交易日，必须在 `notes` 中说明所用报告期、最近一次明确披露日期，以及后续定期报告是否更新；不得把旧披露伪装成当日披露。
 
 采集器会拒绝证券代码格式错误、持股比例非法、披露日期晚于 `as_of_trade_date`、交易日不匹配、来源类型不在允许列表或缺少原文摘录的记录。同一上市公司与同一被投资银行的重复记录会去重。
 
