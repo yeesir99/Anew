@@ -146,16 +146,32 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
     technical_stocks = int((technical or {}).get("stocks") or 0)
     stock_total = valid_stocks
     technical_universe_matches_market = bool(stock_total and technical_stocks == stock_total)
+    # Technical coverage is valid only for the exact market trade date. A prior
+    # day's complete indicator file must never be carried forward as current.
+    def day_key(value):
+        raw = str(value or "").strip()
+        digits = "".join(ch for ch in raw if ch.isdigit())
+        return digits[:8] if len(digits) >= 8 else raw
+    technical_date_matches = bool(
+        day_key((technical or {}).get("trade_date")) and
+        day_key((technical or {}).get("trade_date")) == day_key(trade_day)
+    )
+    technical_status_valid = (technical or {}).get("status") == "validated"
     tech_coverage = (technical or {}).get("coverage") or {}
     required_indicators = ("ma5", "ma10", "ma20", "ma60", "rsi14",
                            "macd_dif", "macd_dea", "macd_hist", "volatility20")
     tech_values = [int(tech_coverage.get(key) or 0) for key in required_indicators]
     tech_min = min(tech_values) if tech_values else 0
+    technical_valid = (technical_universe_matches_market and technical_date_matches
+                       and technical_status_valid and tech_min >= stock_total)
     checks["technical_indicators"] = {
-        "status": "validated" if technical_universe_matches_market and tech_min >= stock_total else "partial",
+        "status": "validated" if technical_valid else "partial",
         "stocks": stock_total,
         "technical_snapshot_stocks": technical_stocks,
         "universe_matches_market": technical_universe_matches_market,
+        "trade_date_matches_market": technical_date_matches,
+        "technical_snapshot_trade_date": (technical or {}).get("trade_date"),
+        "technical_snapshot_status": (technical or {}).get("status"),
         "minimum_indicator_coverage": tech_min,
         "coverage_pct": round(min(100.0, tech_min / stock_total * 100), 1) if stock_total else 0,
         "method": (technical or {}).get("method"),
