@@ -239,6 +239,20 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(check["status"], "partial")
         self.assertEqual(check["technical_snapshot_status"], "degraded")
 
+    def test_technical_indicators_validate_at_explicit_95_percent_coverage(self):
+        technical = {
+            "trade_date": "20261120", "status": "validated", "stocks": 5575,
+            "coverage": {
+                key: 5297 for key in ("ma5", "ma10", "ma20", "ma60", "rsi14",
+                                      "macd_dif", "macd_dea", "macd_hist", "volatility20")
+            },
+        }
+        report = evaluate_quality(self.market, self.research, [], {}, {}, technical)
+        check = report["checks"]["technical_indicators"]
+        self.assertEqual(check["status"], "validated")
+        self.assertGreaterEqual(check["coverage_pct"], 95.0)
+        self.assertEqual(check["required_coverage_pct"], 95.0)
+
     def test_technical_coverage_uses_market_universe_as_denominator(self):
         technical = {"stocks": 100, "coverage": {
             key: 100 for key in ("ma5", "ma10", "ma20", "ma60", "rsi14",
