@@ -517,6 +517,10 @@ def main():
                 component_members[component] = tagged_members
                 components[component] = {"status": meta.get("status") if meta else "unresolved",
                                           "matched_symbol": meta.get("matched_symbol") if meta else None,
+                                          "taxonomy_node_id": meta.get("taxonomy_node_id") if meta else None,
+                                          "taxonomy_node_name": meta.get("taxonomy_node_name") if meta else None,
+                                          "source_url": meta.get("source_url") if meta else None,
+                                          "mapping_source": meta.get("mapping_source") if meta else None,
                                           "records": len(tagged_members), "members": tagged_members}
                 if not members:
                     return [], {"source":"constituents:"+name,"status":"pending_components",
