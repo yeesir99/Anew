@@ -81,6 +81,11 @@ def validate_ths_flow_frame(frame):
     }
 
 
+def smoke_exit_code(results):
+    """Partial source data is reported but does not fail the code contract."""
+    return 1 if any(item.get("status") == "failed" for item in results) else 0
+
+
 def main():
     import akshare as ak
 
@@ -111,9 +116,7 @@ def main():
     # A provider response with ambiguous duplicate names is useful but
     # incomplete; keep the run green while exposing "partial" in the JSON.
     # Empty/schema-invalid endpoint responses remain hard failures.
-    if any(item["status"] == "failed" for item in results):
-        return 1
-    return 0
+    return smoke_exit_code(results)
 
 
 if __name__ == "__main__":
