@@ -601,60 +601,94 @@ def main():
 
         if name == "科创次新股":
             candidates, meta = fetch_ths_concept_members({"sector_code": None}, "科创次新股")
-            threshold_raw = os.getenv("STAR_NEXT_NEW_MAX_LISTING_DAYS", "").strip()
-            if not threshold_raw.isdigit() or int(threshold_raw) <= 0:
-                return [], {"source":"constituents:"+name,"status":"pending_rule",
-                    "provider":"THS" if candidates else None,
-                    "taxonomy":"THS concept candidates only" if candidates else None,
+            if not candidates or not meta or meta.get("status") != "success":
+                return [], {"source":"constituents:"+name,"status":"unresolved",
+                    "provider":"THS" if meta else None,
+                    "taxonomy":"THS exact concept board",
                     "matched_symbol":meta.get("matched_symbol") if meta else None,
-                    "mapping_source":"THS candidate taxonomy; listing-age rule not configured",
-                    "candidate_codes":[x["code"] for x in candidates],
+                    "mapping_source":"THS exact concept board; no broad industry fallback",
+                    "source_url":meta.get("source_url") if meta else None,
                     "candidate_count":len(candidates),
-                    "detail":"未配置 STAR_NEXT_NEW_MAX_LISTING_DAYS；不猜测次新股期限"}
-            max_days = int(threshold_raw)
+                    "detail":"THS exact 科创次新股 concept board unavailable; no inferred members"}
             ipo_fn = getattr(ak, "stock_ipo_info", None)
             if ipo_fn is None:
-                return [], {"source":"constituents:"+name,"status":"pending_listing_dates",
-                    "mapping_source":"THS candidate taxonomy; IPO listing-date endpoint unavailable",
-                    "candidate_count":len(candidates)}
+                return [], {"source":"constituents:"+name,"status":"pending_listing_verification",
+                    "provider":"THS","taxonomy":"THS exact concept board",
+                    "matched_symbol":meta.get("matched_symbol"),
+                    "mapping_source":"THS exact concept board + IPO listing-date verification",
+                    "source_url":meta.get("source_url"),
+                    "candidate_count":len(candidates),
+                    "detail":"IPO listing-date endpoint unavailable"}
             verified, failures = [], []
+            expired_count = 0
             as_of = date.fromisoformat(str(theme.get("trade_date") or date.today().isoformat())[:10])
             for candidate in candidates:
                 stock_code = candidate["code"]
                 if not stock_code.startswith(("688", "689")):
                     continue
                 try:
-                    info = ipo_fn(symbol=stock_code)
+                    info = call_with_retry(
+                        lambda code=stock_code: ipo_fn(symbol=code),
+                        operation=f"IPO listing date {stock_code}",
+                    )
                     item_col = find_col(info.columns, ("item", "项目"))
                     value_col = find_col(info.columns, ("value", "值"))
                     if not item_col or not value_col:
                         raise RuntimeError("IPO info schema changed")
-                    listing_values = info.loc[info[item_col].astype(str).str.strip() == "上市日期", value_col]
+                    listing_values = info.loc[
+                        info[item_col].astype(str).str.strip() == "上市日期", value_col
+                    ]
                     if listing_values.empty:
                         raise RuntimeError("listing date absent")
                     listed = datetime.strptime(str(listing_values.iloc[0])[:10], "%Y-%m-%d").date()
-                    age = (as_of - listed).days
-                    if star_next_new_eligible(stock_code, listed, as_of, max_days):
-                        verified.append({**candidate,"listing_date":listed.isoformat(),
-                                         "listing_age_days":age})
+                    if star_next_new_eligible(stock_code, listed, as_of):
+                        verified.append({
+                            **candidate,
+                            "listing_date": listed.isoformat(),
+                            "listing_age_days": (as_of - listed).days,
+                            "membership_reason": "THS defines 科创次新股 as STAR-listed securities listed less than one calendar year ago",
+                            "membership_evidence": {
+                                "provider": "THS",
+                                "taxonomy": meta.get("taxonomy"),
+                                "taxonomy_node_id": meta.get("taxonomy_node_id"),
+                                "taxonomy_node_name": meta.get("taxonomy_node_name") or meta.get("matched_symbol"),
+                                "source_url": meta.get("source_url"),
+                                "listing_date_source": "AkShare stock_ipo_info",
+                                "listing_date": listed.isoformat(),
+                                "as_of_trade_date": as_of.isoformat(),
+                                "policy": "less than one calendar year",
+                            },
+                        })
+                    else:
+                        expired_count += 1
                 except Exception as exc:
                     failures.append({"code":stock_code,"error":str(exc)[:120]})
                 time.sleep(0.08)
             if not verified:
-                return [], {"source":"constituents:"+name,"status":"pending_listing_verification",
-                    "provider":"THS","taxonomy":"科创板代码 + 新浪IPO上市日期",
-                    "matched_symbol":meta.get("matched_symbol") if meta else None,
-                    "mapping_source":"THS concept candidates + stock_ipo_info listing date",
-                    "listing_age_max_days":max_days,"as_of":as_of.isoformat(),
-                    "candidate_count":len(candidates),"failed_listing_lookups":len(failures),
-                    "detail":"未取得满足配置期限的可核验成分股；不回填候选名单"}
+                return [], {"source":"constituents:"+name,
+                    "status":"pending_listing_verification" if failures else "unresolved",
+                    "provider":"THS","taxonomy":"THS exact concept board + IPO listing date",
+                    "matched_symbol":meta.get("matched_symbol"),
+                    "mapping_source":"THS exact concept board + stock_ipo_info listing date",
+                    "source_url":meta.get("source_url"),
+                    "listing_age_policy":"less than one calendar year",
+                    "as_of":as_of.isoformat(),"candidate_count":len(candidates),
+                    "expired_candidates":expired_count,"failed_listing_lookups":len(failures),
+                    "detail":"No verified constituent currently satisfies the THS one-year definition"}
             fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
-            return verified, {"source":"constituents:"+name,"status":"success",
-                "records":len(verified),"provider":"THS + Sina IPO",
-                "taxonomy":"科创板代码 + IPO上市日期","matched_symbol":"科创次新股",
-                "mapping_source":"THS exact concept candidates + stock_ipo_info listing date",
-                "listing_age_max_days":max_days,"as_of":as_of.isoformat(),
-                "failed_listing_lookups":len(failures),"mapping_date":fetched,"checked_at":fetched}
+            return verified, {"source":"constituents:"+name,
+                "status":"partial" if failures else "success",
+                "records":len(verified),"provider":"THS + IPO listing-date source",
+                "taxonomy":"THS exact concept board + STAR code + IPO listing date",
+                "matched_symbol":"科创次新股",
+                "mapping_source":"THS exact concept board definition: STAR listings less than one calendar year",
+                "taxonomy_node_id":meta.get("taxonomy_node_id"),
+                "taxonomy_node_name":meta.get("taxonomy_node_name") or meta.get("matched_symbol"),
+                "source_url":meta.get("source_url"),
+                "listing_age_policy":"less than one calendar year",
+                "as_of":as_of.isoformat(),"expired_candidates":expired_count,
+                "failed_listing_lookups":len(failures),
+                "mapping_date":fetched,"checked_at":fetched}
 
         cached = cache.get(name) or {}
         cached_members = cached.get("members") or []
