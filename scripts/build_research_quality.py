@@ -78,19 +78,24 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
                         "coverage_pct": (ths_snapshot or {}).get("coverage_pct"),
                         "provider": "THS", "detail": "separate live industry snapshot"}
         expected_provider = upstream.get("provider")
-        if expected_provider == "THS":
-            rows = [row for row in rows if row.get("provider") == "THS"
-                    or "THS" in str(row.get("source") or "")]
-        elif expected_provider == "EastMoney":
-            rows = [row for row in rows if row.get("provider") == "EastMoney"
-                    or "EastMoney" in str(row.get("source") or "")]
+        def row_provider(row):
+            declared = str(row.get("provider") or "").strip()
+            if declared in {"THS", "EastMoney"}:
+                return declared
+            source = str(row.get("source") or "")
+            return "THS" if "THS" in source else "EastMoney" if "EastMoney" in source else None
+        provider_contract_valid = expected_provider in {"THS", "EastMoney"}
+        if provider_contract_valid:
+            rows = [row for row in rows if row_provider(row) == expected_provider]
+        else:
+            rows = []
         providers = sorted({str(row.get("source") or "") for row in rows})
         upstream_status = upstream.get("status", "not_recorded")
         coverage_pct = upstream.get("coverage_pct")
         declared_records = int(upstream.get("records") or 0)
         record_count_matches = declared_records > 0 and len(rows) == declared_records
         period_available = (len(rows) >= MIN_FLOW_ROWS and upstream_status == "success"
-                            and record_count_matches)
+                            and provider_contract_valid and record_count_matches)
         period_valid = (period_available and isinstance(coverage_pct, (int, float))
                         and coverage_pct >= REQUIRED_FLOW_COVERAGE_PCT)
         checks["capital_flow_" + period] = {
@@ -100,6 +105,8 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
             "records": len(rows) if period_available else 0,
             "declared_records": declared_records,
             "record_count_matches": record_count_matches,
+            "provider_contract_valid": provider_contract_valid,
+            "expected_provider": expected_provider,
             "coverage_pct": coverage_pct,
             "required_coverage_pct": REQUIRED_FLOW_COVERAGE_PCT,
             "latest_collection_status": upstream_status,
