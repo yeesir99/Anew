@@ -155,6 +155,33 @@ def append_rows(path: Path, rows: list[dict], keys: tuple[str, ...]):
     return len(rows)
 
 
+def replace_flow_period_rows(path: Path, trade_date: str, indicator: str, rows: list[dict]):
+    """Replace one current trade-date/period slice; never retain stale omitted rows."""
+    old = []
+    fieldnames = []
+    if path.exists():
+        with path.open(encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = list(reader.fieldnames or [])
+            old = list(reader)
+    kept = [
+        row for row in old
+        if not (str(row.get("trade_date") or "")[:10] == trade_date
+                and str(row.get("indicator") or "") == indicator)
+    ]
+    combined = kept + list(rows or [])
+    fields = list(dict.fromkeys(fieldnames + [key for row in combined for key in row]))
+    if not fields:
+        return 0
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(combined)
+    tmp.replace(path)
+    return len(rows or [])
+
+
 def load_validated_trade_day() -> date:
     path = DATA / "latest_market.csv"
     if not path.exists():
@@ -333,6 +360,7 @@ def main():
     # independently labelled fallback for each failed period. Provider metrics
     # remain distinct: THS "净额" is never relabelled as EastMoney "主力净流入".
     flow_rows = []
+    flow_period_outcomes = []
     try:
         ths_universe_count = ths_industry_universe_count(ak)
     except Exception as exc:
@@ -341,6 +369,7 @@ def main():
 
     for indicator in ("今日", "5日", "10日"):
         period_rows = []
+        period_status = "failed"
         em_error = None
         try:
             if eastmoney_circuit_open:
@@ -378,6 +407,7 @@ def main():
                 raise RuntimeError("EastMoney sector-flow rows contain no finite net values")
             # THS taxonomy is not a valid denominator for EastMoney's sector universe.
             # Without an EastMoney-native expected-universe count, completeness is unknown.
+            period_status = "success"
             statuses.append({
                 "source": "sector_flow_" + indicator, "status": "success",
                 "records": len(period_rows), "provider": "EastMoney",
@@ -430,9 +460,14 @@ def main():
                 })
 
         flow_rows.extend(period_rows)
+        flow_period_outcomes.append((indicator, period_rows))
 
-    if flow_rows:
-        append_rows(DATA / "capital_flows.csv", flow_rows, ("trade_date", "indicator", "industry"))
+    # Replace each current period as a complete slice. If a provider fails or
+    # an ambiguous duplicate is excluded, old rows for that same period are
+    # removed rather than left visible as if they were freshly collected.
+    flow_path = DATA / "capital_flows.csv"
+    for indicator, period_rows in flow_period_outcomes:
+        replace_flow_period_rows(flow_path, trade_day.isoformat(), indicator, period_rows)
 
     # Exchange-published ETF share snapshots. Prefer the SZSE daily history
     # endpoint (up to six months) so historical share changes are available
