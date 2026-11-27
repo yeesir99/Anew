@@ -27,6 +27,15 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         result = validate_ths_flow_frame(frame, universe_names={"银行", "电子", "医药"})
         self.assertEqual(result["expected_industries"], 3)
         self.assertAlmostEqual(result["coverage_pct"], 66.67)
+        self.assertEqual(result["status"], "partial")
+
+    def test_full_ths_flow_coverage_is_success(self):
+        frame = FakeFrame(
+            ["行业", "净额"],
+            [{"行业": "银行", "净额": "12.5"}, {"行业": "电子", "净额": "4.2"}],
+        )
+        result = validate_ths_flow_frame(frame, universe_names={"银行", "电子"})
+        self.assertEqual(result["coverage_pct"], 100.0)
         self.assertEqual(result["status"], "success")
 
     def test_ths_star_theme_requires_exact_board_and_one_year_listing_rule(self):
