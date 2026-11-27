@@ -96,6 +96,9 @@ jobs:
         if: steps.live.outcome == 'failure'
         continue-on-error: true
         run: python scripts/validate_industry_data.py
+      - name: Clear previous research-source status before current collection
+        if: always() && !cancelled()
+        run: rm -f data/research_sources.json
       - name: Collect public industry, capital-flow and ETF-share history
         if: always() && !cancelled() && steps.live.outcome == 'success'
         continue-on-error: true
