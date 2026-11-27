@@ -103,6 +103,22 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertIsNone(check["coverage_pct"])
 
 
+    def test_missing_registry_provider_cannot_validate_flow_rows(self):
+        flows = [{
+            "trade_date": "2026-11-20", "indicator": "5日",
+            "main_net_inflow_cny": 10, "source": "unverified-source",
+        }]
+        registry = {"trade_date": "2026-11-20", "sources": [{
+            "source": "sector_flow_5日", "status": "success",
+            "records": 1, "coverage_pct": 100,
+        }]}
+        report = evaluate_quality(self.market, self.research, flows, {}, {},
+                                  self.technical, {}, registry)
+        check = report["checks"]["capital_flow_5日"]
+        self.assertFalse(check["provider_contract_valid"])
+        self.assertFalse(check["available"])
+        self.assertEqual(check["records"], 0)
+
     def test_current_provider_excludes_retained_rows_from_previous_provider(self):
         flows = [{
             "trade_date": "2026-11-20", "indicator": "5日",
