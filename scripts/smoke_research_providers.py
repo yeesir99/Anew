@@ -293,19 +293,37 @@ def main():
     try:
         latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
         with latest_path.open(encoding="utf-8-sig", newline="") as handle:
-            sample_codes = [str(row.get("symbol") or "").zfill(6)
-                            for _, row in zip(range(10), csv.DictReader(handle))]
+            universe_codes = [str(row.get("symbol") or "").zfill(6)
+                              for row in csv.DictReader(handle)]
         baidu_tags, baidu_meta = fetch_baidu_concept_tags(
-            sample_codes, batch_size=10, max_workers=1
+            universe_codes, batch_size=100, max_workers=3
         )
         results.append({
             "period": "baidu_concept_tag_smoke",
             "status": baidu_meta["status"],
             "provider": baidu_meta["provider"],
             "coverage_pct": baidu_meta["coverage_pct"],
+            "input_codes": baidu_meta["input_codes"],
+            "returned_codes": baidu_meta["returned_codes"],
             "records": baidu_meta["records"],
             "failed_batches": baidu_meta["failed_batches"],
         })
+        normalize_concept = lambda value: re.sub(r"[\\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+        for theme_name in ("烟草", "工业大麻", "参股民营银行", "科创次新股"):
+            matches = [
+                code for code, concepts in baidu_tags.items()
+                if any(normalize_concept(item.get("name")) == normalize_concept(theme_name)
+                       for item in concepts)
+            ]
+            results.append({
+                "period": "baidu_special_theme_" + theme_name,
+                "theme": theme_name,
+                "status": "success" if matches and baidu_meta["status"] == "success" else "partial",
+                "provider": "Baidu Stock Market",
+                "candidate_count": len(matches),
+                "coverage_pct": baidu_meta["coverage_pct"],
+                "source_url": baidu_meta["source_url"],
+            })
     except Exception as exc:
         results.append({
             "period": "baidu_concept_tag_smoke",
@@ -372,8 +390,8 @@ def main():
         })
 
     report = {
-        "providers": ["THS", "AkShare/Legulegu"],
-        "endpoint": "THS industry flow + THS concept pages + broad-market PE/PB",
+        "providers": ["THS", "Baidu Stock Market", "AkShare/Legulegu"],
+        "endpoint": "THS industry flow + Baidu/THS concept tags + broad-market PE/PB",
         "akshare_version": getattr(ak, "__version__", "unknown"),
         "read_only": True,
         "as_of_trade_date": market_trade_day.isoformat(),
