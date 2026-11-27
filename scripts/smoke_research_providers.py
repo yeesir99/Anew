@@ -38,6 +38,7 @@ def validate_ths_flow_frame(frame):
     if not industry_col or not net_col:
         raise ValueError("schema mismatch; columns=" + repr(columns))
     by_name = {}
+    source_rows = {}
     raw_count = 0
     for _, row in frame.iterrows():
         name = str(row.get(industry_col, "")).strip()
@@ -46,11 +47,14 @@ def validate_ths_flow_frame(frame):
             raw_count += 1
             previous = by_name.get(name)
             if previous is not None and previous != amount:
+                current_row = {str(key): str(value) for key, value in row.to_dict().items()}
                 raise ValueError(
                     f"conflicting duplicate industry rows: {name}; "
-                    f"net_amount={previous} vs {amount}"
+                    f"net_amount={previous} vs {amount}; "
+                    f"rows={source_rows.get(name)} vs {current_row}"
                 )
             by_name[name] = amount
+            source_rows[name] = {str(key): str(value) for key, value in row.to_dict().items()}
     if not by_name:
         raise ValueError("no rows with both industry name and finite net amount")
     return {
