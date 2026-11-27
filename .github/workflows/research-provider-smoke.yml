@@ -2,6 +2,12 @@ name: Research provider network smoke
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/smoke_research_providers.py'
+      - 'requirements.txt'
+      - '.github/workflows/research-provider-smoke.yml'
 
 permissions:
   contents: read
