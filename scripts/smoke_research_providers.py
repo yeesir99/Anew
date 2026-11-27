@@ -19,10 +19,10 @@ from pathlib import Path
 
 try:
     from scripts.build_valuation_snapshot import build_snapshot
-    from scripts.research_provider_utils import call_with_retry, fetch_eastmoney_concept_members
+    from scripts.research_provider_utils import call_with_retry, fetch_baidu_concept_tags, fetch_eastmoney_concept_members
 except ModuleNotFoundError:
     from build_valuation_snapshot import build_snapshot
-    from research_provider_utils import call_with_retry, fetch_eastmoney_concept_members
+    from research_provider_utils import call_with_retry, fetch_baidu_concept_tags, fetch_eastmoney_concept_members
 
 try:
     from scripts.theme_mapping_rules import star_next_new_eligible
@@ -289,6 +289,29 @@ def main():
         market_trade_day = date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
     except Exception as exc:
         raise SystemExit(f"FAIL: cannot read market trade date: {type(exc).__name__}: {str(exc)[:300]}")
+
+    try:
+        latest_path = Path(__file__).resolve().parents[1] / "data" / "latest_market.csv"
+        with latest_path.open(encoding="utf-8-sig", newline="") as handle:
+            sample_codes = [str(row.get("symbol") or "").zfill(6)
+                            for _, row in zip(range(10), csv.DictReader(handle))]
+        baidu_tags, baidu_meta = fetch_baidu_concept_tags(
+            sample_codes, batch_size=10, max_workers=1
+        )
+        results.append({
+            "period": "baidu_concept_tag_smoke",
+            "status": baidu_meta["status"],
+            "provider": baidu_meta["provider"],
+            "coverage_pct": baidu_meta["coverage_pct"],
+            "records": baidu_meta["records"],
+            "failed_batches": baidu_meta["failed_batches"],
+        })
+    except Exception as exc:
+        results.append({
+            "period": "baidu_concept_tag_smoke",
+            "status": "unavailable" if is_transport_unavailable(exc) else "failed",
+            "error": f"{type(exc).__name__}: {str(exc)[:300]}",
+        })
 
     try:
         universe_names = ths_industry_universe_names(ak)
