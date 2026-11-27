@@ -17,6 +17,7 @@ DATA = ROOT / "data"
 SITE_DATA = ROOT / "site" / "data"
 MIN_FLOW_ROWS = 1
 REQUIRED_FLOW_COVERAGE_PCT = 95.0
+REQUIRED_TECHNICAL_COVERAGE_PCT = 95.0
 
 
 def read_json(path: Path, default=None):
@@ -218,8 +219,10 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
                            "macd_dif", "macd_dea", "macd_hist", "volatility20")
     tech_values = [int(tech_coverage.get(key) or 0) for key in required_indicators]
     tech_min = min(tech_values) if tech_values else 0
+    minimum_technical_count = int(stock_total * REQUIRED_TECHNICAL_COVERAGE_PCT / 100.0 + 0.999)
+    tech_coverage_pct = round(min(100.0, tech_min / stock_total * 100), 1) if stock_total else 0
     technical_valid = (technical_universe_matches_market and technical_date_matches
-                       and technical_status_valid and tech_min >= stock_total)
+                       and technical_status_valid and tech_min >= minimum_technical_count)
     checks["technical_indicators"] = {
         "status": "validated" if technical_valid else "partial",
         "stocks": stock_total,
@@ -229,7 +232,9 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         "technical_snapshot_trade_date": (technical or {}).get("trade_date"),
         "technical_snapshot_status": (technical or {}).get("status"),
         "minimum_indicator_coverage": tech_min,
-        "coverage_pct": round(min(100.0, tech_min / stock_total * 100), 1) if stock_total else 0,
+        "coverage_pct": tech_coverage_pct,
+        "required_coverage_pct": REQUIRED_TECHNICAL_COVERAGE_PCT,
+        "minimum_required_count": minimum_technical_count,
         "method": (technical or {}).get("method"),
     }
 
@@ -279,6 +284,7 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         "policy": {
             "stale_rows_do_not_satisfy_current_trade_date": True,
             "flow_completeness_requires_provider_coverage_pct": REQUIRED_FLOW_COVERAGE_PCT,
+            "technical_indicator_minimum_coverage_pct": REQUIRED_TECHNICAL_COVERAGE_PCT,
             "flow_rows_require_explicit_provider_identity": True,
             "theme_evidence_requires_market_trade_date": True,
             "industry_snapshot_separate_from_historical_archive": True,
