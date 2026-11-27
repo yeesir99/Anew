@@ -16,6 +16,8 @@ def has_mapping_provenance(mapping):
         date_ok = False
     return bool(
         status_ok
+        and mapping.get("provider")
+        and mapping.get("source_url")
         and (mapping.get("mapping_source") or mapping.get("source"))
         and (mapping.get("matched_symbol") or mapping.get("matched_name"))
         and date_ok
