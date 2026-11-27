@@ -41,7 +41,7 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
                 ["板块", "主力净流入"], [{"板块": "银行", "主力净流入": 10}]
             ))
 
-    def test_deduplicates_identical_rows_and_rejects_conflicting_duplicates(self):
+    def test_deduplicates_identical_rows_and_marks_conflicting_names_partial(self):
         identical = FakeFrame(
             ["行业", "净额"],
             [{"行业": "银行", "净额": "12.5"}, {"行业": "银行", "净额": "12.5"}],
@@ -52,10 +52,16 @@ class ResearchProviderSmokeContractTests(unittest.TestCase):
         self.assertEqual(result["duplicate_rows_removed"], 1)
         conflicting = FakeFrame(
             ["行业", "净额"],
-            [{"行业": "银行", "净额": "12.5"}, {"行业": "银行", "净额": "13.0"}],
+            [
+                {"行业": "银行", "净额": "12.5"},
+                {"行业": "银行", "净额": "13.0"},
+                {"行业": "电子", "净额": "4.2"},
+            ],
         )
-        with self.assertRaises(ValueError):
-            validate_ths_flow_frame(conflicting)
+        partial = validate_ths_flow_frame(conflicting)
+        self.assertEqual(partial["status"], "partial")
+        self.assertEqual(partial["records"], 1)
+        self.assertEqual(partial["conflicting_duplicates"][0]["industry"], "银行")
 
     def test_rejects_rows_without_numeric_net_amount(self):
         with self.assertRaises(ValueError):
