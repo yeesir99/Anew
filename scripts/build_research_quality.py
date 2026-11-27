@@ -244,14 +244,25 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
     valuation_trade_day = str((valuation or {}).get("trade_date") or "")
     valuation_records = int((valuation or {}).get("records") or 0)
     valuation_coverage = (valuation or {}).get("coverage_pct")
+    valuation_provider_dates = (valuation or {}).get("provider_dates") or {}
+    valuation_scope_valid = (
+        (valuation or {}).get("scope") == "broad_market"
+        and (valuation or {}).get("coverage_basis") == "required_broad_market_valuation_metrics"
+    )
+    valuation_dates_match = (
+        str(valuation_provider_dates.get("pe") or "") == trade_day
+        and str(valuation_provider_dates.get("pb") or "") == trade_day
+    )
     valuation_provenance = bool(
         (valuation or {}).get("source")
         and (valuation or {}).get("provider")
         and (valuation or {}).get("metric_definition")
+        and valuation_scope_valid
     )
     valuation_valid = bool(
         (valuation or {}).get("status") == "validated"
         and valuation_trade_day == trade_day
+        and valuation_dates_match
         and valuation_records > 0
         and valuation_provenance
         and isinstance(valuation_coverage, (int, float))
@@ -265,7 +276,10 @@ def evaluate_quality(market, research, flow_rows, ths_snapshot, theme_evidence, 
         "records": valuation_records,
         "coverage_pct": valuation_coverage,
         "provenance_valid": valuation_provenance,
-        "note": "必须提供同交易日PE/PB历史分位、来源、Provider、指标定义和至少95%覆盖；缺失时不以涨跌幅、换手率或资金流替代。",
+        "scope": (valuation or {}).get("scope"),
+        "provider_dates": valuation_provider_dates,
+        "provider_dates_match_market": valuation_dates_match,
+        "note": "仅验证全A股市场整体PE/PB历史分位，不冒充主题估值；PE与PB来源日期必须分别匹配行情交易日，字段覆盖至少95%。缺失时不以涨跌幅、换手率或资金流替代。",
     }
 
     all_checks = [v["status"] for v in checks.values()]
