@@ -64,7 +64,7 @@ class ResearchQualityTests(unittest.TestCase):
         } for i in range(60)]}
         evidence = {"market_trade_date": "2026-11-20", "themes": {"主题甲": {
             "constituent_codes": ["600000"], "constituent_count": 1,
-            "mapping": {"status": "success", "mapping_source": "Sina taxonomy", "matched_symbol": "主题甲", "mapping_date": "2026-11-20"},
+            "mapping": {"status": "success", "provider": "Sina", "source_url": "https://vip.stock.finance.sina.com.cn/mkt/", "mapping_source": "Sina taxonomy", "matched_symbol": "主题甲", "mapping_date": "2026-11-20"},
         }}}
         registry = {"trade_date": "2026-11-20", "sources": [
             {"source": "sector_flow_今日", "status": "failed", "detail": "EastMoney unavailable"}
@@ -115,7 +115,7 @@ class ResearchQualityTests(unittest.TestCase):
             } for _ in range(50))
         evidence = {"market_trade_date": "2026-11-20", "themes": {
             name: {"constituent_codes": ["600000"], "constituent_count": 1,
-                   "mapping": {"status": "success", "mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
+                   "mapping": {"status": "success", "provider": "Sina", "source_url": "https://vip.stock.finance.sina.com.cn/mkt/", "mapping_source": "verified taxonomy", "matched_symbol": name, "mapping_date": "2026-11-20"}}
             for name in ("主题甲", "主题乙")
         }}
         valuation = {"status": "validated", "scope": "broad_market",
@@ -247,6 +247,8 @@ class ResearchQualityTests(unittest.TestCase):
             "主题乙": {"constituent_codes": ["000001"], "constituent_count": 1,
                        "mapping": {"status": "success", "mapping_source": "taxonomy",
                                    "matched_symbol": "主题乙",
+                                   "provider": "Sina",
+                                   "source_url": "https://vip.stock.finance.sina.com.cn/mkt/",
                                    "mapping_date": "2026-11-20"}},
         }}
         report = evaluate_quality(self.market, self.research, [], {}, evidence, self.technical)
