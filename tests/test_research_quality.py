@@ -19,6 +19,22 @@ class ResearchQualityTests(unittest.TestCase):
                                   "macd_dif", "macd_dea", "macd_hist", "volatility20")
         }}
 
+    def test_current_ths_industry_snapshot_is_available_but_needs_coverage(self):
+        ths = {"trade_date": "2026-11-20", "status": "success", "records": 90,
+               "items": [{"industry_name": f"行业{i}"} for i in range(90)]}
+        registry = {"trade_date": "2026-11-20", "sources": [
+            {"source": "industry_snapshot", "status": "failed"},
+            {"source": "industry_snapshot_ths", "status": "success",
+             "provider": "THS", "records": 90},
+        ]}
+        report = evaluate_quality(self.market, self.research, [], ths, {}, self.technical,
+                                  {}, registry)
+        check = report["checks"]["industry_snapshot"]
+        self.assertTrue(check["available"])
+        self.assertEqual(check["provider"], "THS")
+        self.assertEqual(check["status"], "partial")
+        self.assertIsNone(check["coverage_pct"])
+
     def test_stale_flow_rows_do_not_satisfy_current_period(self):
         old_rows = [{
             "trade_date": "2026-11-19", "indicator": "5日",
@@ -61,8 +77,12 @@ class ResearchQualityTests(unittest.TestCase):
                      "source": "official valuation history", "provider": "Exchange",
                      "metric_definition": "PE/PB historical percentile"}
         registry = {"trade_date": "2026-11-20", "sources": [
-            {"source": "sector_flow_" + period, "status": "success", "provider": "EastMoney", "records": 50, "coverage_pct": 100}
-            for period in ("今日", "5日", "10日")
+            {"source": "industry_snapshot", "status": "success", "provider": "EastMoney",
+             "records": 90, "coverage_pct": 100},
+            *[
+                {"source": "sector_flow_" + period, "status": "success", "provider": "EastMoney", "records": 50, "coverage_pct": 100}
+                for period in ("今日", "5日", "10日")
+            ],
         ]}
         report = evaluate_quality(self.market, self.research, flows, {}, evidence,
                                   self.technical, valuation, registry)
