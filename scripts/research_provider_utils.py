@@ -63,8 +63,9 @@ def fetch_eastmoney_concept_members(
         "Referer": "https://quote.eastmoney.com/",
         "Accept": "application/json, text/plain, */*",
     }
-    hosts = ("82.push2.eastmoney.com", "79.push2.eastmoney.com",
-             "29.push2.eastmoney.com", "push2.eastmoney.com")
+    hosts = ("push2delay.eastmoney.com", "82.push2.eastmoney.com",
+             "79.push2.eastmoney.com", "29.push2.eastmoney.com",
+             "push2.eastmoney.com")
     list_params = {
         "pn": 1, "pz": 500, "po": 1, "np": 1, "fltt": 2, "invt": 2,
         "fs": "m:90+t:3+f:!50", "fields": "f12,f14",
@@ -112,8 +113,9 @@ def fetch_eastmoney_concept_members(
         "fs": f"b:{board_code}", "fields": "f12,f14",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
     }
-    member_hosts = ("29.push2.eastmoney.com", "82.push2.eastmoney.com",
-                    "79.push2.eastmoney.com", "push2.eastmoney.com")
+    member_hosts = ("push2delay.eastmoney.com", "29.push2.eastmoney.com",
+                    "82.push2.eastmoney.com", "79.push2.eastmoney.com",
+                    "push2.eastmoney.com")
     rows = []
     page = 1
     total = None
