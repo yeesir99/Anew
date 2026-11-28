@@ -1,0 +1,108 @@
+import unittest
+
+from scripts.theme_mapping_rules import (
+    has_mapping_provenance,
+    merge_exact_components,
+    star_next_new_eligible,
+    verified_private_bank_relationship,
+    private_bank_records_for_trade_date,
+    consistent_provider_flow_persistence,
+)
+
+
+class SpecialThemeMappingTests(unittest.TestCase):
+    def test_composite_theme_requires_both_exact_components(self):
+        complete = {
+            "烟草": {"status": "success", "members": [{"code": "600001"}]},
+            "工业大麻": {"status": "success", "members": [{"code": "000002"}]},
+        }
+        self.assertEqual(len(merge_exact_components(complete)), 2)
+        incomplete = {**complete, "工业大麻": {"status": "failed", "members": []}}
+        self.assertEqual(merge_exact_components(incomplete), [])
+
+    def test_star_new_uses_ths_less_than_one_calendar_year_definition(self):
+        self.assertTrue(star_next_new_eligible("688001", "2025-11-27", "2026-11-26"))
+        self.assertFalse(star_next_new_eligible("688001", "2025-11-26", "2026-11-26"))
+        self.assertFalse(star_next_new_eligible("688001", "2026-11-27", "2026-11-26"))
+        self.assertFalse(star_next_new_eligible("600001", "2026-01-01", "2026-01-20"))
+        self.assertTrue(star_next_new_eligible("688001", "2026-01-01", "2026-01-20", 30))
+        self.assertFalse(star_next_new_eligible("688001", "2025-12-21", "2026-01-20", 30))
+        self.assertFalse(star_next_new_eligible("688001", "2026-01-01", "2026-01-20", 0))
+
+    def test_private_bank_requires_primary_dated_equity_disclosure(self):
+        valid = {
+            "listed_company_code": "600001",
+            "investee_bank_name": "某民营银行",
+            "relationship_type": "equity_investment",
+            "holding_pct": 5.0,
+            "disclosure_date": "2026-03-31",
+            "source_url": "https://example.com/annual-report",
+            "source_type": "annual_report",
+            "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之五，具体投资情况见年度报告附注。",
+        }
+        self.assertTrue(verified_private_bank_relationship(valid))
+        self.assertFalse(verified_private_bank_relationship({**valid, "holding_pct": None}))
+        self.assertFalse(verified_private_bank_relationship({**valid, "source_type": "concept_tag"}))
+
+
+    def test_private_bank_evidence_carries_forward_within_freshness_window(self):
+        record = {
+            "listed_company_code": "600001",
+            "investee_bank_name": "某民营银行",
+            "relationship_type": "equity_investment",
+            "holding_pct": 5.0,
+            "disclosure_date": "2026-09-30",
+            "as_of_trade_date": "2026-11-20",
+            "source_url": "https://example.com/annual-report",
+            "source_type": "annual_report",
+            "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之五，具体投资情况见年度报告附注。",
+        }
+        self.assertEqual(len(private_bank_records_for_trade_date([record], "2026-11-20")), 1)
+        carried = private_bank_records_for_trade_date([record], "2026-11-21")
+        self.assertEqual(len(carried), 1)
+        self.assertEqual(carried[0]["review_age_days"], 1)
+        self.assertEqual(private_bank_records_for_trade_date([record], "2027-04-01"), [])
+        self.assertEqual(private_bank_records_for_trade_date(
+            [{**record, "disclosure_date": "2026-12-01"}], "2026-11-20"), [])
+        self.assertEqual(private_bank_records_for_trade_date(
+            [{**record, "listed_company_code": "60001"}], "2026-11-20"), [])
+
+
+
+    def test_private_bank_duplicate_relationship_uses_latest_disclosure(self):
+        base = {
+            "listed_company_code": "600001",
+            "investee_bank_name": "某民营银行",
+            "relationship_type": "equity_investment",
+            "holding_pct": 4.0,
+            "disclosure_date": "2026-08-01",
+            "as_of_trade_date": "2026-11-20",
+            "source_url": "https://example.com/annual-report",
+            "source_type": "annual_report",
+            "source_excerpt": "公司持有某民营银行股份，报告期末持股比例为百分之四，具体投资情况见年度报告附注。",
+        }
+        newer = {**base, "holding_pct": 5.0, "disclosure_date": "2026-09-01"}
+        rows = private_bank_records_for_trade_date([base, newer], "2026-11-20")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["holding_pct"], 5.0)
+
+    def test_flow_persistence_requires_same_provider_for_both_periods(self):
+        self.assertEqual(consistent_provider_flow_persistence(("THS", 10), ("THS", 20)), 75.0)
+        self.assertEqual(consistent_provider_flow_persistence(("EastMoney", -10), ("EastMoney", -20)), 25.0)
+        self.assertIsNone(consistent_provider_flow_persistence(("THS", 10), ("EastMoney", 20)))
+        self.assertIsNone(consistent_provider_flow_persistence(("THS", 10), None))
+
+    def test_mapping_provenance_requires_source_symbol_and_date(self):
+        self.assertTrue(has_mapping_provenance({
+            "status": "success",
+            "provider": "Sina",
+            "source_url": "https://vip.stock.finance.sina.com.cn/mkt/",
+            "mapping_source": "Sina taxonomy",
+            "matched_symbol": "某主题",
+            "mapping_date": "2026-11-20",
+        }))
+        self.assertFalse(has_mapping_provenance({"status": "success", "mapping_source": "Sina taxonomy"}))
+
+
+if __name__ == "__main__":
+    unittest.main()

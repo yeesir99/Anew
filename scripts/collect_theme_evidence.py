@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import inspect
 import re
 import time
@@ -22,29 +23,39 @@ from pathlib import Path
 import akshare as ak
 import pandas as pd
 from import_sector_archive import is_concept_code
+from theme_mapping_rules import (merge_exact_components, star_next_new_eligible,
+    private_bank_records_for_trade_date, consistent_provider_flow_persistence)
+try:
+    from scripts.research_provider_utils import call_with_retry, fetch_baidu_concept_tags, fetch_eastmoney_concept_members
+except ModuleNotFoundError:
+    from research_provider_utils import call_with_retry, fetch_baidu_concept_tags, fetch_eastmoney_concept_members
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SITE = ROOT / "site" / "data"
 LOG = logging.getLogger("theme-evidence")
+THEME_MAPPING_POLICY_VERSION = 3
 THEME_ALIASES = {
-    "集成电路制造": ("半导体", "集成电路", "芯片概念"),
-    "橡胶助剂": ("橡胶制品", "橡胶制品Ⅱ", "化工新材料"),
-    "厨房小家电": ("小家电", "厨卫电器"),
-    "半导体材料": ("半导体", "电子化学品", "新材料概念"),
-    "钼": ("小金属", "小金属概念"),
+    # Only near-equivalent taxonomy labels are allowed. Broad parent sectors
+    # (e.g. semiconductor, small metals, medical services, trade) are excluded
+    # because they do not prove membership in the narrower research theme.
+    "集成电路制造": ("集成电路制造",),
+    "橡胶助剂": ("橡胶助剂",),
+    "厨房小家电": ("厨房小家电", "小家电"),
+    "半导体材料": ("半导体材料",),
+    "钼": ("钼",),
     "医疗器械": ("医疗器械", "医疗器械概念"),
-    "辅助生殖": ("辅助生殖", "医疗服务"),
-    "商业服务": ("专业服务", "商业服务"),
+    "辅助生殖": ("辅助生殖",),
+    "商业服务": ("商业服务",),
     "烟草与大麻": ("烟草与大麻",),
-    "个护用品Ⅲ": ("美容护理", "个护用品"),
+    "个护用品Ⅲ": ("个护用品Ⅲ", "个护用品"),
     "白酒概念": ("白酒", "白酒概念"),
-    "养老概念": ("养老概念", "养老产业", "养老服务", "养老金"),
-    "港口航运": ("港口航运", "航运港口", "航运概念"),
-    "第三代半导体": ("第三代半导体", "半导体"),
+    "养老概念": ("养老概念", "养老产业", "养老服务"),
+    "港口航运": ("港口航运", "航运港口"),
+    "第三代半导体": ("第三代半导体",),
     "机器人概念": ("机器人概念", "机器人"),
-    "乳业": ("乳业", "乳品", "乳品饮料"),
-    "可选消费经销Ⅲ": ("可选消费经销Ⅲ", "贸易", "贸易Ⅱ", "贸易行业"),
+    "乳业": ("乳业", "乳品"),
+    "可选消费经销Ⅲ": ("可选消费经销Ⅲ",),
     "参股民营银行": ("参股民营银行", "民营银行", "民营银行概念"),
     "粤港澳大湾区": ("粤港澳大湾区", "粤港澳大湾区概念", "大湾区", "粤港澳"),
     "科创次新股": ("科创次新股",),
@@ -209,16 +220,9 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
     """Score only dimensions supported by sufficiently broad, attributable evidence."""
     evidence = evidence or {}
     change = number(change_pct)
-    f5, f10 = number(flow_5d), number(flow_10d)
+    f5, f10 = flow_5d, flow_10d
     structure = None if change is None else max(0.0, min(100.0, 50.0 + change * 8.0))
-    persistence = None
-    if f5 is not None and f10 is not None:
-        if f5 > 0 and f10 > 0:
-            persistence = 75.0
-        elif f5 < 0 and f10 < 0:
-            persistence = 25.0
-        else:
-            persistence = 50.0
+    persistence = consistent_provider_flow_persistence(f5, f10)
     codes = set(evidence.get("constituent_codes") or [])
     revenue_score, revenue_meta = _breadth_score(
         (evidence.get("financials") or {}).get("records") or [], codes,
@@ -254,20 +258,38 @@ def model_score(change_pct, flow_5d=None, flow_10d=None, evidence=None):
 
 
 def flow_ratio_for_theme(flow_rows, theme, period):
+    """Return a provider-tagged signed flow amount; never compare mixed providers."""
     name = _score_key(theme.get("industry_name") or theme.get("industry"))
     code = _score_key(theme.get("sector_code"))
+    target_day = str(theme.get("trade_date") or "")
+    if not target_day:
+        return None
     matches = []
     for row in flow_rows:
+        if str(row.get("trade_date") or "") != target_day:
+            continue
         if str(row.get("indicator") or "").strip() != period:
             continue
         row_keys = {_score_key(row.get("industry_name")), _score_key(row.get("industry")),
                     _score_key(row.get("sector_code"))}
         row_keys.discard("")
-        if name and name in row_keys or code and code in row_keys:
-            value = number(row.get("main_net_ratio"))
-            if value is not None:
-                matches.append((str(row.get("trade_date") or ""), value))
-    return max(matches, key=lambda x: x[0])[1] if matches else None
+        if not ((name and name in row_keys) or (code and code in row_keys)):
+            continue
+        provider = str(row.get("provider") or "")
+        if row.get("main_net_inflow_cny") not in (None, ""):
+            value = number(row.get("main_net_inflow_cny"))
+            provider = provider or "EastMoney"
+        else:
+            value = number(row.get("net_inflow_cny"))
+            provider = provider or ("THS" if "THS" in str(row.get("source") or "") else "")
+        if value is not None and provider:
+            matches.append((provider, value))
+    if not matches:
+        return None
+    providers = {provider for provider, _ in matches}
+    if len(providers) != 1:
+        return None
+    return matches[0]
 
 
 def main():
@@ -285,6 +307,27 @@ def main():
     source_status = []
     theme_members = {}
     all_codes = set()
+    market_universe = []
+    market_trade_day = None
+    try:
+        market_frame = pd.read_csv(DATA / "latest_market.csv", dtype=str, encoding="utf-8-sig")
+        market_code_col = find_col(market_frame.columns, ("symbol", "股票代码", "代码"))
+        market_name_col = find_col(market_frame.columns, ("name", "股票名称", "名称"))
+        market_date_col = find_col(market_frame.columns, ("trade_date", "交易日期", "日期"))
+        if market_code_col:
+            market_universe = [
+                (str(row.get(market_code_col) or "").strip().zfill(6),
+                 str(row.get(market_name_col) or "").strip() if market_name_col else None)
+                for row in market_frame.to_dict("records")
+                if str(row.get(market_code_col) or "").strip()
+            ]
+        if market_date_col and not market_frame.empty:
+            market_trade_day = str(market_frame.iloc[0][market_date_col])
+    except Exception as exc:
+        LOG.warning("Baidu fallback universe unavailable: %s", str(exc)[:200])
+    baidu_concept_cache = None
+    baidu_concept_meta = None
+    baidu_status_recorded = False
     # Sina publishes industry and popular-concept classifications independently
     # of EastMoney Push2. Resolve the requested theme against this taxonomy first,
     # then fetch only the matched category's members. EastMoney remains a fallback.
@@ -404,6 +447,8 @@ def main():
             if not members:
                 return [], None
             return list(members.values()), {"provider":"THS","taxonomy":"概念板块",
+                "taxonomy_node_id":board_code,"taxonomy_node_name":matched_name,
+                "source_url":f"https://q.10jqka.com.cn/gn/detail/field/199112/order/desc/code/{board_code}",
                 "matched_symbol":matched_name,
                 "mapping_source":"THS stock_board_concept_name_ths + gn constituent endpoint",
                 "status":"success"}
@@ -464,24 +509,395 @@ def main():
             return [], {"provider":"Sina","taxonomy":group,"matched_symbol":item["name"],
                         "mapping_source":"Sina stock_classify_board","status":"empty"}
         return list(members.values()), {"provider":"Sina","taxonomy":group,
+            "taxonomy_node_id":item["node"],"taxonomy_node_name":item["name"],
+            "source_url":data_url,
             "matched_symbol":item["name"],"mapping_source":"Sina stock_classify_board",
             "status":"success"}
 
     def fetch_members(theme, name):
         nonlocal cache_dirty, push2_circuit_open
         code = clean(theme.get("sector_code"))
-        cached = cache.get(name) or {}
-        cached_members = cached.get("members") or []
-        cached_at = clean(cached.get("fetched_at"))
-        if cached_members and cached_at and cached.get("sector_code") == code:
+
+        def fetch_baidu_exact_concept_members(component_name):
+            nonlocal baidu_concept_cache, baidu_concept_meta, baidu_status_recorded
+            if not market_universe:
+                return [], {"status":"unavailable","provider":"Baidu Stock Market",
+                            "taxonomy":"Baidu per-stock concept tags",
+                            "detail":"latest_market.csv has no usable stock universe"}
+            if baidu_concept_cache is None:
+                try:
+                    baidu_concept_cache, baidu_concept_meta = fetch_baidu_concept_tags(
+                        [code for code, _ in market_universe],
+                        batch_size=20, max_workers=4, timeout_seconds=8.0
+                    )
+                    baidu_concept_meta["checked_at"] = datetime.now(timezone.utc).isoformat()
+                    baidu_concept_meta["trade_date"] = market_trade_day
+                except Exception as exc:
+                    baidu_concept_cache = {}
+                    baidu_concept_meta = {
+                        "status":"unavailable","provider":"Baidu Stock Market",
+                        "taxonomy":"Baidu per-stock concept tags",
+                        "source_url":"https://finance.pae.baidu.com/api/getrelatedblock",
+                        "checked_at":datetime.now(timezone.utc).isoformat(),
+                        "trade_date":market_trade_day,
+                        "detail":f"{type(exc).__name__}: {str(exc)[:240]}",
+                    }
+                if not baidu_status_recorded:
+                    source_status.append({
+                        "source":"baidu_concept_tags",
+                        "status":baidu_concept_meta.get("status","unavailable"),
+                        "provider":"Baidu Stock Market",
+                        "coverage_pct":baidu_concept_meta.get("coverage_pct"),
+                        "records":baidu_concept_meta.get("records",0),
+                        "detail":baidu_concept_meta.get("detail") or
+                                 f"returned {baidu_concept_meta.get('returned_codes',0)}/{baidu_concept_meta.get('input_codes',0)} stock records",
+                    })
+                    baidu_status_recorded = True
+            normal = lambda value: re.sub(r"[\s·（）()ⅢⅣ]", "", str(value or "")).lower()
+            names_by_code = {code:name for code,name in market_universe}
+            members = []
+            concept_codes = set()
+            for code, concepts in (baidu_concept_cache or {}).items():
+                for concept in concepts:
+                    if normal(concept.get("name")) == normal(component_name):
+                        concept_code = concept.get("concept_code")
+                        if concept_code:
+                            concept_codes.add(str(concept_code))
+                        members.append({
+                            "code":code, "name":names_by_code.get(code),
+                            "concept_code":concept_code,
+                            "membership_reason":f"exact Baidu per-stock concept tag: {component_name}",
+                        })
+                        break
+            if not members:
+                return [], {
+                    "status":"unresolved" if baidu_concept_meta.get("status") == "success" else baidu_concept_meta.get("status","unavailable"),
+                    "provider":"Baidu Stock Market",
+                    "taxonomy":"Baidu per-stock concept tags",
+                    "matched_symbol":component_name,
+                    "mapping_source":"Baidu exact per-stock concept-name match",
+                    "source_url":"https://finance.pae.baidu.com/api/getrelatedblock",
+                    "checked_at":baidu_concept_meta.get("checked_at"),
+                    "trade_date":market_trade_day,
+                    "detail":f"no exact Baidu concept tag found for {component_name}",
+                }
+            meta = {
+                **(baidu_concept_meta or {}),
+                "status":baidu_concept_meta.get("status","partial"),
+                "provider":"Baidu Stock Market",
+                "taxonomy":"Baidu per-stock concept tags",
+                "taxonomy_node_id":next(iter(concept_codes)) if len(concept_codes)==1 else None,
+                "taxonomy_node_name":component_name,
+                "matched_symbol":component_name,
+                "mapping_source":"Baidu exact per-stock concept-name match",
+                "source_url":"https://finance.pae.baidu.com/api/getrelatedblock",
+                "records":len(members),
+                "candidate_count":len(members),
+                "checked_at":baidu_concept_meta.get("checked_at"),
+                "trade_date":market_trade_day,
+            }
+            return members, meta
+
+        def persist_baidu_mapping(members, meta):
+            nonlocal cache_dirty
+            if members and meta and meta.get("status") == "success":
+                fetched = meta.get("checked_at") or datetime.now(timezone.utc).isoformat(timespec="seconds")
+                cache[name] = {
+                    "members":members,"fetched_at":fetched,"source":meta.get("provider"),
+                    "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
+                    "matched_symbol":meta.get("matched_symbol"),
+                    "taxonomy":meta.get("taxonomy"),
+                    "taxonomy_node_id":meta.get("taxonomy_node_id"),
+                    "taxonomy_node_name":meta.get("taxonomy_node_name"),
+                    "source_url":meta.get("source_url"),
+                    "mapping_source":meta.get("mapping_source"),"sector_code":code,
+                }
+                cache_dirty = True
+            return members, {"source":"constituents:"+name, **(meta or {})}
+
+        def fetch_eastmoney_exact_concept_members(component_name):
             try:
-                age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(cached_at.replace("Z","+00:00"))).days
-                if age_days <= 30:
-                    return cached_members, {"source":"constituents:"+name,"status":"cached",
-                        "records":len(cached_members),"mapping_source":cached.get("source"),
-                        "mapping_date":cached_at,"checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
-            except Exception:
-                pass
+                return fetch_eastmoney_concept_members(component_name)
+            except LookupError as exc:
+                return [], {"status":"unresolved","provider":"EastMoney",
+                            "taxonomy":"EastMoney exact concept board",
+                            "detail":str(exc)[:240]}
+            except Exception as exc:
+                return [], {"status":"failed","provider":"EastMoney",
+                            "taxonomy":"EastMoney exact concept board",
+                            "detail":f"{type(exc).__name__}: {str(exc)[:240]}"}
+
+        # Composite/special themes are deliberately excluded from the generic
+        # name-alias cache. Each requires its own explicit evidence contract.
+        if name == "烟草与大麻":
+            components = {}
+            component_members = {}
+            for component in ("烟草", "工业大麻"):
+                try:
+                    members, meta = fetch_ths_concept_members(theme, component)
+                except Exception as exc:
+                    members, meta = [], {"status":"failed","provider":"THS",
+                                         "detail":f"{type(exc).__name__}: {str(exc)[:180]}"}
+                if not members or not meta or meta.get("status") != "success":
+                    members, meta = fetch_eastmoney_exact_concept_members(component)
+                if not members or not meta or meta.get("status") != "success":
+                    members, meta = fetch_baidu_exact_concept_members(component)
+                tagged_members = [{
+                    **member,
+                    "theme_component": component,
+                    "membership_reason": f"returned by the exact {(meta or {}).get('provider') or 'unverified'} constituent source for component {component}",
+                    "membership_evidence": {
+                        "provider": (meta or {}).get("provider"),
+                        "concept_code": member.get("concept_code"),
+                        "taxonomy": (meta or {}).get("taxonomy"),
+                        "taxonomy_node_id": (meta or {}).get("taxonomy_node_id"),
+                        "taxonomy_node_name": (meta or {}).get("taxonomy_node_name"),
+                        "matched_symbol": (meta or {}).get("matched_symbol"),
+                        "mapping_source": (meta or {}).get("mapping_source"),
+                        "source_url": (meta or {}).get("source_url"),
+                    },
+                } for member in members]
+                component_members[component] = tagged_members
+                components[component] = {"status": meta.get("status") if meta else "unresolved",
+                                          "provider": meta.get("provider") if meta else None,
+                                          "matched_symbol": meta.get("matched_symbol") if meta else None,
+                                          "taxonomy_node_id": meta.get("taxonomy_node_id") if meta else None,
+                                          "taxonomy_node_name": meta.get("taxonomy_node_name") if meta else None,
+                                          "source_url": meta.get("source_url") if meta else None,
+                                          "mapping_source": meta.get("mapping_source") if meta else None,
+                                          "records": len(tagged_members), "members": tagged_members}
+                if not members:
+                    return [], {"source":"constituents:"+name,"status":"pending_components",
+                        "provider":meta.get("provider") if meta else None,
+                        "taxonomy":"separate exact concept components",
+                        "mapping_source":"exact THS/EastMoney concept taxonomy; both components required",
+                        "matched_symbol":"烟草 + 工业大麻",
+                        "components":{key:{k:v for k,v in value.items() if k != "members"}
+                                     for key,value in components.items()},
+                        "detail":"烟草与工业大麻必须分别精确命中；任一组件缺失则不合并"}
+            members = merge_exact_components(components)
+            if not members:
+                return [], {"source":"constituents:"+name,"status":"pending_components",
+                    "mapping_source":"THS exact concept components; merge validation failed",
+                    "matched_symbol":"烟草 + 工业大麻","components":{
+                        key:{k:v for k,v in value.items() if k != "members"}
+                        for key,value in components.items()}}
+            fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            component_summary = {key:{k:v for k,v in value.items() if k != "members"}
+                                 for key,value in components.items()}
+            component_providers = sorted({str(value.get("provider") or "unknown")
+                                           for value in components.values()})
+            cache[name] = {"members":members,"fetched_at":fetched,"source":"+".join(component_providers),
+                "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
+                "matched_symbol":"烟草 + 工业大麻","taxonomy":"separate exact concept components",
+                "mapping_source":"exact THS/EastMoney concept taxonomy; two components merged",
+                "components":component_summary,"sector_code":code}
+            cache_dirty = True
+            return members, {"source":"constituents:"+name,"status":"success",
+                "records":len(members),"provider":" + ".join(component_providers),
+                "taxonomy":"separate exact concept components",
+                "matched_symbol":"烟草 + 工业大麻",
+                "mapping_source":"exact THS/EastMoney concept taxonomy; two components merged",
+                "components":component_summary,"mapping_date":fetched,"checked_at":fetched}
+
+        if name == "参股民营银行":
+            # Taxonomy labels are discovery-only. Every included company must
+            # have a primary disclosure proving equity ownership in a named bank.
+            evidence_path = DATA / "private_bank_equity_evidence.json"
+            try:
+                evidence_doc = json.loads(evidence_path.read_text(encoding="utf-8")) if evidence_path.exists() else {}
+            except Exception as evidence_exc:
+                evidence_doc = {}
+                LOG.warning("Private-bank evidence file unreadable: %s", str(evidence_exc)[:160])
+            evidence_records = private_bank_records_for_trade_date(
+                evidence_doc.get("records") or [], trade_day.isoformat())
+            verified_members = [{
+                "code":str(record["listed_company_code"]).strip(),
+                "name":clean(record.get("listed_company_name")),
+                "investee_bank_name":record.get("investee_bank_name"),
+                "holding_pct":float(record["holding_pct"]),
+                "disclosure_date":record["disclosure_date"],
+                "evidence_age_days":record.get("evidence_age_days"),
+                "review_age_days":record.get("review_age_days"),
+                "evidence_status":record.get("evidence_status"),
+                "source_url":record.get("source_url"),
+                "source_excerpt":record.get("source_excerpt"),
+                "membership_reason":"listed-company primary disclosure confirms equity ownership in the named private bank",
+            } for record in evidence_records]
+
+            candidate_key = "参股民营银行_candidates"
+            cached_candidates = cache.get(candidate_key) or {}
+            cached_at = cached_candidates.get("fetched_at")
+            cache_valid = False
+            if (cached_candidates.get("candidate_only") is True
+                    and cached_candidates.get("mapping_policy_version") == THEME_MAPPING_POLICY_VERSION
+                    and cached_candidates.get("source_url") and cached_at):
+                try:
+                    cached_dt = datetime.fromisoformat(str(cached_at).replace("Z", "+00:00"))
+                    if cached_dt.tzinfo is None:
+                        cached_dt = cached_dt.replace(tzinfo=timezone.utc)
+                    cache_valid = (datetime.now(timezone.utc) - cached_dt).total_seconds() <= CACHE_TTL_DAYS * 86400
+                except Exception:
+                    cache_valid = False
+            if cache_valid:
+                candidates = cached_candidates.get("members") or []
+                candidate_meta = {
+                    "status":"success","provider":cached_candidates.get("source"),
+                    "taxonomy":cached_candidates.get("taxonomy"),
+                    "matched_symbol":cached_candidates.get("matched_symbol"),
+                    "mapping_source":cached_candidates.get("mapping_source"),
+                    "source_url":cached_candidates.get("source_url"),
+                    "checked_at":cached_at,
+                }
+            else:
+                candidates, candidate_meta = fetch_ths_concept_members({"sector_code": None}, "参股民营银行")
+                if not candidates:
+                    candidates, candidate_meta = fetch_eastmoney_exact_concept_members("参股民营银行")
+                if not candidates:
+                    candidates, candidate_meta = fetch_baidu_exact_concept_members("参股民营银行")
+                if candidates and candidate_meta and candidate_meta.get("status") == "success":
+                    fetched_candidates = candidate_meta.get("checked_at") or datetime.now(timezone.utc).isoformat(timespec="seconds")
+                    cache[candidate_key] = {
+                        "members":candidates,"fetched_at":fetched_candidates,
+                        "source":candidate_meta.get("provider"),
+                        "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
+                        "matched_symbol":"参股民营银行",
+                        "taxonomy":candidate_meta.get("taxonomy"),
+                        "source_url":candidate_meta.get("source_url"),
+                        "mapping_source":candidate_meta.get("mapping_source"),
+                        "coverage_pct":candidate_meta.get("coverage_pct"),
+                        "candidate_only":True,
+                    }
+                    cache_dirty = True
+
+            candidate_codes = sorted({str(item.get("code") or "").zfill(6) for item in candidates})
+            verified_codes = sorted({str(item.get("code") or "").zfill(6) for item in verified_members})
+            unverified_codes = sorted(set(candidate_codes) - set(verified_codes))
+            candidate_source_valid = bool(candidate_meta and candidate_meta.get("status") == "success")
+            fully_verified = bool(candidate_source_valid and candidate_codes and not unverified_codes)
+            status = "success" if fully_verified else (
+                "pending_relation_evidence" if candidate_codes or verified_members else
+                candidate_meta.get("status", "unavailable") if candidate_meta else "unavailable"
+            )
+            checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            return verified_members, {
+                "source":"constituents:"+name,
+                "status":status,
+                "records":len(verified_members),
+                "provider":(
+                    (candidate_meta.get("provider") + " + reviewed primary disclosures")
+                    if candidate_meta and candidate_meta.get("provider")
+                    else "reviewed primary disclosures"
+                ),
+                "taxonomy":(
+                    (candidate_meta.get("taxonomy") or "candidate taxonomy")
+                    + " + listed-company equity disclosures"
+                ),
+                "matched_symbol":"参股民营银行（逐条披露核验）",
+                "mapping_source":"primary disclosure required for every candidate; taxonomy is discovery-only",
+                "source_url":candidate_meta.get("source_url") if candidate_meta else (
+                    verified_members[0].get("source_url") if verified_members else None
+                ),
+                "candidate_source_url":candidate_meta.get("source_url") if candidate_meta else None,
+                "candidate_count":len(candidate_codes),
+                "verified_count":len(verified_codes),
+                "unverified_candidate_count":len(unverified_codes),
+                "candidate_codes":candidate_codes,
+                "unverified_candidate_codes":unverified_codes,
+                "candidate_coverage_pct":candidate_meta.get("coverage_pct") if candidate_meta else None,
+                "verified_relationships":verified_members,
+                "mapping_date":checked_at,
+                "checked_at":checked_at,
+                "detail":(
+                    f"已核验 {len(verified_codes)}/{len(candidate_codes)} 个候选；"
+                    "未取得逐家公司原始披露的候选不会加入成分"
+                ),
+            }
+
+        if name == "科创次新股":
+            listing_fn = getattr(ak, "stock_info_sh_name_code", None)
+            if listing_fn is None:
+                return [], {"source":"constituents:"+name,"status":"unavailable",
+                            "provider":"Shanghai Stock Exchange",
+                            "detail":"AkShare stock_info_sh_name_code endpoint unavailable"}
+            try:
+                frame = call_with_retry(
+                    lambda: listing_fn(symbol="科创板"),
+                    operation="SSE STAR Market official listing roster",
+                    attempts=2, delay_seconds=0.5,
+                )
+                if frame is None or frame.empty:
+                    raise ValueError("SSE STAR Market listing roster is empty")
+                code_col = find_col(frame.columns, ("证券代码", "股票代码", "代码"))
+                name_col = find_col(frame.columns, ("证券简称", "股票简称", "名称"))
+                date_col = find_col(frame.columns, ("上市日期", "上市时间", "LIST_DATE"))
+                if not code_col or not date_col:
+                    raise ValueError(f"SSE listing roster schema mismatch: {list(frame.columns)}")
+                digits = "".join(ch for ch in str(market_trade_day or "") if ch.isdigit())
+                if len(digits) < 8:
+                    raise ValueError(f"invalid report trade date for STAR listing rule: {market_trade_day!r}")
+                as_of = date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
+                star_codes, valid_dates, eligible = [], 0, []
+                for row in frame.to_dict("records"):
+                    code = str(row.get(code_col) or "").strip().zfill(6)
+                    if not code.startswith(("688", "689")) or len(code) != 6 or not code.isdigit():
+                        continue
+                    star_codes.append(code)
+                    listed = pd.to_datetime(row.get(date_col), errors="coerce")
+                    if pd.isna(listed):
+                        continue
+                    valid_dates += 1
+                    listed_date = listed.date()
+                    if star_next_new_eligible(code, listed_date, as_of):
+                        eligible.append({
+                            "code":code,
+                            "name":str(row.get(name_col) or "").strip() if name_col else None,
+                            "listing_date":listed_date.isoformat(),
+                            "membership_reason":"SSE official STAR listing date within one calendar year",
+                            "membership_evidence":{
+                                "provider":"Shanghai Stock Exchange",
+                                "taxonomy":"official STAR Market listing roster",
+                                "source_url":"https://www.sse.com.cn/assortment/stock/list/share/",
+                                "listing_date":listed_date.isoformat(),
+                                "as_of_trade_date":as_of.isoformat(),
+                                "policy":"less than one calendar year",
+                            },
+                        })
+                coverage_pct = round(valid_dates / max(1, len(star_codes)) * 100, 1)
+                checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                meta = {
+                    "status":"success" if star_codes and coverage_pct >= 95.0 else "partial",
+                    "provider":"Shanghai Stock Exchange",
+                    "taxonomy":"official STAR Market listing roster",
+                    "taxonomy_node_id":"SSE:STAR",
+                    "taxonomy_node_name":"科创板",
+                    "matched_symbol":"SSE 科创板上市日期",
+                    "mapping_source":"SSE official STAR listing dates + one calendar year eligibility rule",
+                    "source_url":"https://www.sse.com.cn/assortment/stock/list/share/",
+                    "checked_at":checked_at,
+                    "trade_date":as_of.isoformat(),
+                    "coverage_pct":coverage_pct,
+                    "records":len(eligible),
+                    "candidate_count":len(eligible),
+                    "roster_count":len(star_codes),
+                    "eligibility_rule":"688/689 listing date within one calendar year as of report trade date",
+                }
+                source_status.append({
+                    "source":"sse_star_listing_roster",
+                    "status":meta["status"],
+                    "provider":meta["provider"],
+                    "coverage_pct":coverage_pct,
+                    "records":len(star_codes),
+                    "detail":f"{len(eligible)} eligible new listings as of {as_of.isoformat()}",
+                })
+                return eligible, {"source":"constituents:"+name, **meta}
+            except Exception as exc:
+                return [], {"source":"constituents:"+name,
+                            "status":"unavailable" if any(token in str(exc).lower() for token in ("timeout","connection","502","403","remote disconnected")) else "failed",
+                            "provider":"Shanghai Stock Exchange",
+                            "taxonomy":"official STAR Market listing roster",
+                            "source_url":"https://www.sse.com.cn/assortment/stock/list/share/",
+                            "detail":f"{type(exc).__name__}: {str(exc)[:240]}"}
         try:
             members, meta = fetch_sina_members(theme, name)
             if not members:
@@ -490,7 +906,12 @@ def main():
                 fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 source_name = meta.get("provider", "Sina")
                 cache[name] = {"members":members,"fetched_at":fetched,"source":source_name,
-                    "matched_symbol":meta.get("matched_symbol"),"sector_code":code}
+                    "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
+                    "matched_symbol":meta.get("matched_symbol"),"taxonomy":meta.get("taxonomy"),
+                    "taxonomy_node_id":meta.get("taxonomy_node_id"),
+                    "taxonomy_node_name":meta.get("taxonomy_node_name"),
+                    "source_url":meta.get("source_url"),
+                    "mapping_source":meta.get("mapping_source"),"sector_code":code}
                 cache_dirty = True
                 return members, {"source":"constituents:"+name,"status":"success","records":len(members),
                     **meta,"mapping_date":fetched,"checked_at":fetched}
@@ -498,9 +919,8 @@ def main():
             LOG.warning("Sina/THS constituents %s failed: %s", name, exc)
         # EastMoney Push2 fallback. Open a circuit on the first upstream rate limit.
         if push2_circuit_open:
-            return [], {"source":"constituents:"+name,"status":"failed","records":0,
-                "detail":"Sina taxonomy unmatched/unavailable; EastMoney Push2 circuit breaker open",
-                "checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
+            members, meta = fetch_baidu_exact_concept_members(name)
+            return persist_baidu_mapping(members, meta)
         concept = is_concept_code(code)
         attempts = [("stock_board_concept_cons_em" if concept else "stock_board_industry_cons_em",
                      "EastMoney concept" if concept else "EastMoney industry")]
@@ -538,7 +958,11 @@ def main():
                     if members:
                         fetched = datetime.now(timezone.utc).isoformat(timespec="seconds")
                         cache[name] = {"members":members,"fetched_at":fetched,"source":fn_name,
-                            "matched_symbol":candidate,"sector_code":code}
+                            "mapping_policy_version":THEME_MAPPING_POLICY_VERSION,
+                            "matched_symbol":candidate,"taxonomy":label,
+                            "taxonomy_node_id":None,"taxonomy_node_name":candidate,
+                            "source_url":None,
+                            "mapping_source":fn_name,"sector_code":code}
                         cache_dirty = True
                         return members, {"source":"constituents:"+name,"status":"success",
                             "records":len(members),"provider":label,"matched_symbol":candidate,
@@ -553,15 +977,30 @@ def main():
                 time.sleep(0.8)
             if push2_circuit_open:
                 break
-        return [], {"source":"constituents:"+name,"status":"failed","records":0,
-            "detail":"; ".join(errors)[:400],
-            "checked_at":datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        members, meta = fetch_baidu_exact_concept_members(name)
+        if not members and meta:
+            meta["detail"] = (meta.get("detail") or "") + ("; " + "; ".join(errors)[:240] if errors else "")
+        return persist_baidu_mapping(members, meta)
 
     for theme in themes:
         name = clean(theme.get("industry_name") or theme.get("industry"))
         if not name:
             continue
         members, status = fetch_members(theme, name)
+        if members and name not in {"参股民营银行", "烟草与大麻", "科创次新股"}:
+            evidence_ref = {
+                "provider": status.get("provider"),
+                "taxonomy": status.get("taxonomy"),
+                "taxonomy_node_id": status.get("taxonomy_node_id"),
+                "taxonomy_node_name": status.get("taxonomy_node_name"),
+                "matched_symbol": status.get("matched_symbol"),
+                "mapping_source": status.get("mapping_source"),
+                "source_url": status.get("source_url"),
+                "mapping_date": status.get("mapping_date"),
+                "reason": "security returned by the constituent endpoint for the recorded taxonomy node",
+            }
+            for member in members:
+                member["membership_evidence"] = dict(evidence_ref)
         source_status.append(status)
         theme_members[name] = members
         theme_member_meta[name] = status
@@ -747,6 +1186,8 @@ def main():
             "sector_code": theme.get("sector_code"),
             "constituent_count": len(members),
             "mapping": theme_member_meta.get(name, {}),
+            "private_bank_equity_evidence": (theme_member_meta.get(name, {}).get("verified_relationships", [])
+                if name == "参股民营银行" else []),
             "constituent_codes": sorted(codes),
             "financials": {"report_date": report_date, "records": financial,
                 "coverage": len({re.sub(r"\D", "", str(r.get("股票代码") or r.get("证券代码") or "")) for r in financial})},
@@ -769,9 +1210,16 @@ def main():
                 "source": "工业和信息化部官网文件发布索引及原文页"},
         }
 
+    # Bind every theme-evidence payload to the actual market snapshot date.
+    # research.generated_at is a build timestamp, not a trading date.
+    market_snapshot_path = SITE / "latest.json"
+    market_snapshot = json.loads(market_snapshot_path.read_text(encoding="utf-8")) if market_snapshot_path.exists() else {}
+    market_trade_date = str(market_snapshot.get("trade_date") or "")
+    if not market_trade_date:
+        raise RuntimeError("latest.json has no trade_date; refusing to publish unanchored theme evidence")
     evidence = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "market_trade_date": research.get("generated_at"),
+        "market_trade_date": market_trade_date,
         "financial_report_date": report_date,
         "themes": output,
         "sources": source_status,

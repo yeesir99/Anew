@@ -1,0 +1,66 @@
+name: Research quality contract tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - 'scripts/build_research_quality.py'
+      - 'scripts/theme_mapping_rules.py'
+      - 'scripts/collect_theme_evidence.py'
+      - 'scripts/collect_research_modules.py'
+      - 'scripts/smoke_research_providers.py'
+      - 'scripts/research_provider_utils.py'
+      - 'scripts/enrich_research_snapshot.py'
+      - 'tests/test_research_quality.py'
+      - 'tests/test_research_collection.py'
+      - 'tests/test_private_bank_evidence_data.py'
+      - 'tests/test_technical_history.py'
+      - 'scripts/build_market_technicals.py'
+      - 'scripts/build_valuation_snapshot.py'
+      - 'tests/test_valuation_snapshot.py'
+      - 'data/private_bank_equity_evidence.json'
+      - 'tests/test_theme_mapping_rules.py'
+      - 'tests/test_research_provider_smoke.py'
+      - 'tests/test_research_provider_utils.py'
+      - 'tests/test_eastmoney_concept_provider.py'
+      - '.github/workflows/research-quality-tests.yml'
+      - '.github/workflows/cloud-public.yml'
+permissions:
+  contents: read
+
+concurrency:
+  group: research-quality-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  quality-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install research test dependencies
+        run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Compile quality contract
+        run: python -m py_compile scripts/build_research_quality.py scripts/theme_mapping_rules.py scripts/collect_theme_evidence.py scripts/collect_research_modules.py scripts/enrich_research_snapshot.py scripts/build_market_technicals.py scripts/build_valuation_snapshot.py tests/test_valuation_snapshot.py scripts/research_provider_utils.py tests/test_eastmoney_concept_provider.py tests/test_research_quality.py tests/test_research_collection.py tests/test_technical_history.py tests/test_theme_mapping_rules.py
+      - name: Run research quality contract tests
+        run: python -m unittest discover -s tests -p 'test_research_quality.py' -v
+      - name: Run research collection normalization tests
+        run: python -m unittest discover -s tests -p 'test_research_collection.py' -v
+      - name: Run private-bank evidence data tests
+        run: python -m unittest discover -s tests -p 'test_private_bank_evidence_data.py' -v
+      - name: Run technical history extension tests
+        run: python -m unittest discover -s tests -p 'test_technical_history.py' -v
+      - name: Run special-theme evidence rule tests
+        run: python -m unittest discover -s tests -p 'test_theme_mapping_rules.py' -v
+      - name: Run provider contract tests
+        run: python -m unittest discover -s tests -p 'test_research_provider_smoke.py' -v
+      - name: Run broad-market valuation contract tests
+        run: python -m unittest discover -s tests -p 'test_valuation_snapshot.py' -v
+      - name: Run EastMoney concept mirror provider tests
+        run: python -m unittest discover -s tests -p 'test_eastmoney_concept_provider.py' -v
+      - name: Run bounded retry tests
+        run: python -m unittest discover -s tests -p 'test_research_provider_utils.py' -v

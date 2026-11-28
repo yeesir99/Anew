@@ -11,8 +11,17 @@ if not evidence_path.exists() or not research_path.exists():
     raise SystemExit("FAIL: theme_evidence.json or research.json is missing")
 evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
 research = json.loads(research_path.read_text(encoding="utf-8"))
+market_path = root / "site" / "data" / "latest.json"
+market = json.loads(market_path.read_text(encoding="utf-8")) if market_path.exists() else {}
+market_trade_date = str(market.get("trade_date") or "")
+evidence_trade_date = str(evidence.get("market_trade_date") or "")
 themes = evidence.get("themes", {})
 errors = []
+if not market_trade_date or evidence_trade_date != market_trade_date:
+    errors.append(
+        f"theme evidence trade date {evidence_trade_date or 'missing'} "
+        f"does not match market trade date {market_trade_date or 'missing'}"
+    )
 weights = {"industry_thesis": 20, "policy_event": 10, "capital_persistence": 20,
            "trend_structure": 20, "earnings_delivery": 15, "valuation_crowding": 15}
 if not themes:

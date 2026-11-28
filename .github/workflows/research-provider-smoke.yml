@@ -1,0 +1,40 @@
+name: Research provider network smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - 'scripts/smoke_research_providers.py'
+      - 'scripts/research_provider_utils.py'
+      - 'scripts/collect_theme_evidence.py'
+      - 'requirements.txt'
+      - '.github/workflows/research-provider-smoke.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ths-provider-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ths-industry-flow-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install research dependencies
+        run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Compile provider smoke contract
+        run: python -m py_compile scripts/smoke_research_providers.py
+      - name: Check THS flows, special-theme taxonomy and broad-market valuation (read-only)
+        timeout-minutes: 10
+        env:
+          TZ: Asia/Shanghai
+        run: python scripts/smoke_research_providers.py

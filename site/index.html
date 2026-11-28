@@ -258,7 +258,21 @@ load();
     ? '<div class="card"><div class="section">同花顺实时行业榜 · '+esc(liveMeta.trade_date||'交易日未知')+' · '+liveIndustries.length+' 个行业</div>'+table(liveIndustries,[['行业',x=>esc(x.industry_name)],['涨跌幅',x=>pct(x.change_pct)],['成交额',x=>x.turnover_cny==null?'—':fmt(Number(x.turnover_cny)/1e8)+'亿'],['估算净流入',x=>x.main_net_inflow_cny==null?'—':fmt(Number(x.main_net_inflow_cny)/1e8)+'亿'],['上涨家数',x=>fmt(x.up_count,0)],['下跌家数',x=>fmt(x.down_count,0)],['领涨股',x=>esc(x.leader_name)],['领涨股涨幅',x=>pct(x.leader_change_pct)]])+'</div><div class="note">来源：'+esc(liveMeta.provider||'THS')+'；采集时间：'+esc(liveMeta.captured_at||'—')+'。实时榜与历史轮动分开展示，不混合计算历史收益。</div>'
     : '<div class="note">同花顺备用实时行业榜本轮未取得数据；历史轮动继续使用公开行业日频归档。状态：'+esc(liveMeta.status||'missing')+'</div>';
   const cap=document.querySelector('#capital .empty');
-  if(cap)cap.outerHTML='<div class="card"><div class="section">公开资金流估算</div>'+table(items('capital-flows').slice(0,60),[['周期',x=>esc(x.indicator)],['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['涨跌幅',x=>pct(x.change_pct)],['估算净流入',x=>x.main_net_inflow==null?'—':fmt(Number(x.main_net_inflow)/1e8)+'亿'],['日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">ETF份额变化</div>'+table(items('etf-shares').slice(0,50),[['代码',x=>esc(x.code)],['名称',x=>esc(x.name)],['基金份额',x=>x.shares==null?'—':fmt(x.shares,0)],['份额变化',x=>pct(x.change_pct)],['对比日期',x=>esc(x.previous_date||'历史基准待积累')],['快照日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">数据源状态</div>'+table(items('data-sources'),[['数据源',x=>esc(x.source)],['状态',x=>esc(x.status)],['说明',x=>esc(x.detail)]])+'</div>';
+  if(cap)cap.outerHTML='<div class="card"><div class="section">公开资金流估算</div>'+table(items('capital-flows').slice(0,60),[['周期',x=>esc(x.indicator)],['行业',x=>esc(x.industry_name||x.display_name||x.industry)],['涨跌幅',x=>pct(x.change_pct)],['估算净额',x=>{const v=x.main_net_inflow!=null?x.main_net_inflow:x.net_inflow;return v==null?'—':fmt(Number(v)/1e8)+'亿'}],['指标口径',x=>esc(x.metric_definition||'口径未记录')],['来源',x=>esc(x.source||'来源待标注')],['日期',x=>esc(x.trade_date)]])+'</div><div class="note">资金流按周期和实际来源展示。THS净额与东方财富主力净流入采用不同指标定义；历史归档不补写本次采集失败的周期。公开估算不代表机构专属账户净流入。</div><div class="card"><div class="section">ETF份额变化</div>'+table(items('etf-shares').slice(0,50),[['代码',x=>esc(x.code)],['名称',x=>esc(x.name)],['基金份额',x=>x.shares==null?'—':fmt(x.shares,0)],['份额变化',x=>pct(x.change_pct)],['对比日期',x=>esc(x.previous_date||'历史基准待积累')],['快照日期',x=>esc(x.trade_date)]])+'</div><div class="card"><div class="section">数据源状态</div>'+table(items('data-sources'),[['数据源',x=>esc(x.source)],['状态',x=>esc(x.status)],['说明',x=>esc(x.detail)]])+'</div>';
+  const valuation=(s['market-valuation']||{}).item||{},valuationStatus=(s['market-valuation']||{}).status||'missing';
+  const valuationRoot=document.querySelector('#capital');
+  if(valuationRoot&&!valuationRoot.querySelector('.market-valuation-card')){
+    const vm=valuation.metrics||{},vd=valuation.provider_dates||{};
+    const valuationHtml='<div class="card market-valuation-card"><div class="section">全A股市场估值 · '+esc(valuation.trade_date||'日期待确认')+'</div>'+
+      '<div class="note">状态：'+esc(valuationStatus==='validated'?'已验证':valuationStatus==='partial'?'历史数据或字段不完整':'不可用')+'；来源：'+esc(valuation.source||'来源待记录')+'；PE日期：'+esc(vd.pe||'—')+'；PB日期：'+esc(vd.pb||'—')+'</div>'+
+      '<div class="report-quality-grid">'+[
+        ['PE(TTM)中位数',vm.median_pe_ttm],['PE(TTM)近10年分位',vm.median_pe_ttm_quantile_10y==null?null:vm.median_pe_ttm_quantile_10y*100],
+        ['PE(LYR)中位数',vm.median_pe_lyr],['PE(LYR)近10年分位',vm.median_pe_lyr_quantile_10y==null?null:vm.median_pe_lyr_quantile_10y*100],
+        ['PB中位数',vm.median_pb],['PB近10年分位',vm.median_pb_quantile_10y==null?null:vm.median_pb_quantile_10y*100]
+      ].map(x=>'<div class="report-quality-cell"><strong>'+esc(x[1]==null?'—':fmt(x[1]))+'</strong><span>'+esc(x[0])+'</span></div>').join('')+'</div>'+
+      '<div class="note">'+esc(valuation.note||'全市场整体估值，不代表行业或主题估值。')+'</div></div>';
+    valuationRoot.insertAdjacentHTML('beforeend',valuationHtml);
+  }
   const newsPage=document.querySelector('#news .empty');
   
   if(newsPage){
@@ -273,6 +287,11 @@ load();
   const reportRoot=document.getElementById('reportContent');
   if(reportRoot){
     const rep=items('reports')[0],bt=s.backtest||{},eq=d.evidence_quality||{},tc=s['technical-coverage']||{};
+    const rq=d.research_quality||{},rqChecks=rq.checks||{};
+    const rqLabels={industry_snapshot:'行业实时快照',capital_flow_今日:'今日资金流',capital_flow_5日:'5日资金流',capital_flow_10日:'10日资金流',theme_mapping:'主题成分证据',technical_indicators:'技术指标覆盖',valuation_crowding:'估值拥挤度'};
+    const rqStatus=v=>v==='validated'?'已验证':v==='partial'?'部分可用':v==='unavailable'?'不可用':'待确认';
+    const rqLevelLabels={L0_INVALID:'行情无效',L1_MARKET_VALID:'仅行情有效',L2_RESEARCH_DEGRADED:'研究数据不完整',L3_RESEARCH_COMPLETE:'研究数据完整'};
+    const qualityGateHtml='<div class="report-quality-note"><strong>研究质量等级：'+esc(rqLevelLabels[rq.quality_level]||'尚未评估')+'</strong> · 交易日 '+esc(rq.market_trade_date||'—')+' · '+(rq.research_complete?'全部质量门槛通过':'存在未完成或不可用维度')+'</div><div class="report-quality-grid">'+Object.entries(rqLabels).map(([key,label])=>{const check=rqChecks[key]||{};const coverage=check.coverage_pct!=null?' · '+fmtBig(check.coverage_pct)+'%':'';const conflicts=(check.duplicate_conflicts||[]).map(x=>x.industry).filter(Boolean).join('、');const detail=conflicts?'重复名称冲突：'+conflicts:(check.source_detail||(check.note||''));return '<div class="report-quality-cell"><strong>'+esc(rqStatus(check.status))+'</strong><span>'+esc(label)+coverage+'</span>'+(detail?'<span>'+esc(detail)+'</span>':'')+'</div>';}).join('')+'</div>';
     const tradeDate=s['market-breadth']?.item?.trade_date||d.trade_date||'—';
     const generated=d.generated_at||'—',dataStatus=d.market_status||'unknown';
     const statusLabel=dataStatus==='stale'?'行情滞后':dataStatus==='validated'?'行情已校验':'数据状态待确认';
@@ -289,7 +308,7 @@ load();
     }).join('')+'</div>':'<div class="empty">当前没有经过验证的行业快照</div>';
     const breadthHtml='<div class="report-breadth"><div><div class="report-breadth-main">'+fmtBig(up)+' / '+fmtBig(down)+'</div><div class="report-breadth-caption">上涨家数 / 下跌家数</div></div><div class="report-breadth-median"><strong>'+(b.median_change_pct==null?'—':pct(b.median_change_pct))+'</strong><span>涨跌幅中位数</span></div></div><div class="report-bar"><span class="report-bar-up" style="width:'+ratio(up)+'%"></span><span class="report-bar-down" style="width:'+ratio(down)+'%"></span><span class="report-bar-flat" style="width:'+ratio(flat)+'%"></span></div><div class="report-legend"><span><i class="report-dot" style="background:#c87970"></i>上涨 '+fmtBig(up)+'</span><span><i class="report-dot" style="background:#65927f"></i>下跌 '+fmtBig(down)+'</span><span><i class="report-dot" style="background:#c7ced1"></i>平盘 '+fmtBig(flat)+'</span></div>';
     const themes=items('themes');
-    const qualityHtml='<div class="report-quality-grid"><div class="report-quality-cell"><strong>'+fmtBig(eq.themes_with_constituents??0)+' / '+fmtBig(eq.themes_total??themes.length)+'</strong><span>主题成分覆盖</span></div><div class="report-quality-cell"><strong>'+fmtBig(eq.unique_constituents??0)+'</strong><span>关联成分股</span></div><div class="report-quality-cell"><strong>'+fmtBig(eq.failed_sources??0)+'</strong><span>失败数据源</span></div></div><div class="report-quality-note">主题证据状态：'+esc(eq.status||'尚未提供')+'；完整主线评分只在要求的证据维度齐备后启用。</div>';
+    const qualityHtml=qualityGateHtml+'<div class="report-quality-grid"><div class="report-quality-cell"><strong>'+fmtBig(eq.themes_with_constituents??0)+' / '+fmtBig(eq.themes_total??themes.length)+'</strong><span>主题成分覆盖</span></div><div class="report-quality-cell"><strong>'+fmtBig(eq.unique_constituents??0)+'</strong><span>关联成分股</span></div><div class="report-quality-cell"><strong>'+fmtBig(eq.failed_sources??0)+'</strong><span>失败数据源</span></div></div><div class="report-quality-note">主题证据状态：'+esc(eq.status||'尚未提供')+'；完整主线评分只在要求的证据维度齐备后启用。</div>';
     const backtestHtml='<div class="report-backtest"><span>回测状态 <strong>'+esc(bt.status||'尚无有效样本')+'</strong></span><span>样本 '+esc(bt.observations??bt.sessions??0)+'</span><span>策略收益 <strong>'+esc(bt.cumulative_return_pct??'—')+'%</strong></span><span>行业基准 '+esc(bt.benchmark_cumulative_return_pct??'—')+'%</span></div>';
     const md=String(rep?.markdown||'');
     const lines=md.split(/\r?\n/);

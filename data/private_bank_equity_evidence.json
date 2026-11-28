@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "description": "Manually reviewed primary-source equity disclosures only. Records represent the latest reviewed filing evidence, not a live ownership feed.",
+  "records": [
+    {
+      "listed_company_code": "601933",
+      "listed_company_name": "永辉超市",
+      "investee_bank_name": "福建华通银行股份有限公司",
+      "relationship_type": "equity_investment",
+      "holding_pct": 29.8,
+      "disclosure_date": "2026-08-21",
+      "as_of_trade_date": "2026-11-26",
+      "reporting_period": "2026年半年度报告，报告期末2026-06-30",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2026-08-21/1225486909.PDF",
+      "source_type": "semiannual_report",
+      "source_excerpt": "福建华通银行股份有限公司；持股比例（%）：直接29.80、间接空白；投资会计处理方法：权益法。",
+      "cross_check_urls": [
+        "https://static.cninfo.com.cn/finalpage/2026-10-31/1225649804.PDF"
+      ],
+      "notes": "截至2026-11-26纳入研究；最新明确列示持股比例的定期报告为2026年半年度报告。2026年第三季度报告未列出该银行股权比例更新，因此仍沿用最后一次明确披露值；后续如有增减持或处置公告，必须更新本记录。"
+    }
+  ]
+}
